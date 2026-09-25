@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-09-23T22:29:38.0441651+08:00",
+  "latest": [
+    {
+      "path": "D:\\Project\\中科安樵\\anqiao-console\\deploy\\preflight_readonly.py",
+      "mtime": "2026-09-23T22:28:11.9447842+08:00"
+    },
+    {
+      "path": "D:\\Project\\中科安樵\\anqiao-dashboard\\scripts\\verify_prod_bundle.py",
+      "mtime": "2026-09-23T22:21:27.2356263+08:00"
+    },
+    {
+      "path": "D:\\Project\\中科安樵\\anqiao-dashboard\\src\\api\\deviceTelemetry.ts",
+      "mtime": "2026-09-23T22:21:27.2241401+08:00"
+    }
+  ],
+  "procs": [
+    {
+      "id": 3180,
+      "name": "Kimi Code",
+      "start": "2026-09-23T20:35:55.8986028+08:00"
+    },
+    {
+      "id": 3392,
+      "name": "Kimi Code",
+      "start": "2026-09-23T20:35:54.2758946+08:00"
+    },
+    {
+      "id": 8536,
+      "name": "Kimi Code",
+      "start": "2026-09-23T20:35:54.5459692+08:00"
+    },
+    {
+      "id": 22072,
+      "name": "Kimi Code",
+      "start": "2026-09-23T20:35:54.1897355+08:00"
+    },
+    {
+      "id": 22080,
+      "name": "Kimi Code",
+      "start": "2026-09-23T20:35:53.4643653+08:00"
+    },
+    {
+      "id": 22264,
+      "name": "Kimi Code",
+      "start": "2026-09-23T20:35:54.1346740+08:00"
+    }
+  ]
+}

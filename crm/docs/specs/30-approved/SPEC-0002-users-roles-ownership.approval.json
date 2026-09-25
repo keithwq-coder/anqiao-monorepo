@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0002",
+  "spec_version": "0.5.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-08-26",
+  "approval_evidence": "DEC-0177 (2026-08-26): product owner directly approved v0.5.0 (multi-role aggregation formalized; new shareholder role for 赵/武 = business-type shareholder without account management; dual management owner/custodian fields; shareholder direct assignment), explicitly skipping independent review (risk accepted). Supersedes v0.4.1 (archived 90-deprecated).",
+  "spec_file": "SPEC-0002-users-roles-ownership.md",
+  "spec_sha256": "2d99c804da98f10104ffa97946bf36bb7f0142e03b36357476746606078512a3"
+}

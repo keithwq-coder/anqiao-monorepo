@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0008",
+  "spec_version": "0.1.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-07-26",
+  "approval_evidence": "DEC-0032; product owner replied 同意 to approve SPEC-0008 v0.1.0 and declare the baseline complete",
+  "spec_file": "SPEC-0008-search.md",
+  "spec_sha256": "d1e60b2ff16dc5a6a7c26d2b8b28a7426d918165103c292ffd54a33e4a749ab2"
+}

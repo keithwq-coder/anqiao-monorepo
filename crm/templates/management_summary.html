@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}管理摘要{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>管理摘要</h2>
+        {% if summary.scope == 'company' %}
+        <span class="status-tag status-accepted">全公司</span>
+        {% else %}
+        <span class="status-tag status-pending">授权范围</span>
+        {% endif %}
+    </div>
+    <p class="hint" style="margin-bottom:1rem;">只读摘要，数据均已脱敏；管理角色默认只读。</p>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="number">{{ summary.total }}</div>
+            <div class="label">可见客户</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ summary.active }}</div>
+            <div class="label">进行中</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ summary.archived }}</div>
+            <div class="label">已归档</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ summary.has_next_action }}</div>
+            <div class="label">有下一步计划</div>
+        </div>
+    </div>
+</div>
+
+{% if summary.breakdown %}
+<div class="card">
+    <div class="card-header">
+        <h2>分项统计</h2>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>指标</th>
+                    <th>数量</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in summary.breakdown %}
+                <tr>
+                    <td>
+                        {% if b.metric == 'visible_institutions' %}可见客户数
+                        {% elif b.metric == 'has_next_action' %}有下一步计划数
+                        {% else %}{{ b.metric }}{% endif %}
+                    </td>
+                    <td>{{ b.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <p>样本不足，分项统计已隐藏（小样本抑制）</p>
+    </div>
+</div>
+{% endif %}
+
+{% if is_admin %}
+<!-- ====== Admin-only: link to the opportunity management view (TASK-0043) ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>商机管理</h2>
+        <a href="/discovery" class="btn btn-sm btn-outline">查看商机管理视图</a>
+    </div>
+    <p class="hint">管理员专属：商机候选的管理视图与手动生成入口位于「商机」页面。</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}批量导入{% endblock %}
+
+{% block content %}
+<!-- ====== Upload form (multipart → POST /api/imports/batches) ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>上传导入文件</h2>
+        <span class="hint">仅管理员</span>
+    </div>
+    <p class="hint" style="margin-bottom:1rem;">
+        接受 UTF-8 编码的 CSV 文件；必填列：<code>name</code>、<code>source_description</code>；
+        可选列：<code>category</code>、<code>region</code>、<code>source_kind</code>、
+        <code>source_evidence_reference</code>、<code>owner_username</code>。
+        相同文件内容重复上传将返回原批次（幂等，不重复导入）。
+    </p>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+        <div class="form-group">
+            <label for="import-file">CSV 文件</label>
+            <input type="file" id="import-file" name="file" accept=".csv,text/csv" required>
+        </div>
+        <button type="submit" class="btn btn-primary">上传并导入</button>
+    </form>
+    <div id="upload-result" class="alert-inline"></div>
+</div>
+
+<!-- ====== Batch list ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>导入批次{% if batches %}（{{ batches|length }}）{% endif %}</h2>
+    </div>
+    {% if batches %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>文件</th>
+                    <th>状态</th>
+                    <th>总行数</th>
+                    <th>导入</th>
+                    <th>重复</th>
+                    <th>失败</th>
+                    <th>导入时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in batches %}
+                <tr>
+                    <td><a href="/imports/{{ b.batch_id }}">{{ b.source_file_name }}</a></td>
+                    <td>
+                        {% if b.status == 'active' %}<span class="status-tag status-pending">进行中</span>
+                        {% else %}<span class="status-tag status-ignored">已撤销</span>{% endif %}
+                    </td>
+                    <td>{{ b.row_count }}</td>
+                    <td>{{ b.imported_count }}</td>
+                    <td>{{ b.duplicate_count }}</td>
+                    <td>{{ b.failed_count }}</td>
+                    <td>{{ b.imported_at }}</td>
+                    <td>
+                        <div class="action-group" style="margin-top:0;">
+                            <a href="/imports/{{ b.batch_id }}" class="btn btn-sm btn-outline">详情</a>
+                            {% if b.undo_eligible %}
+                            <form class="action-form undo-form" data-batch="{{ b.batch_id }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+                                <input type="text" name="undo_reason" placeholder="撤销理由（必填）" required>
+                                <button type="submit" class="btn btn-sm btn-danger">撤销</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">📥</div>
+        <p>暂无导入批次</p>
+    </div>
+    {% endif %}
+    <div id="batch-result" class="alert-inline"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    // ---- Upload ----
+    var uploadForm = document.getElementById('upload-form');
+    var uploadResult = document.getElementById('upload-result');
+    uploadForm.addEventListener('submit', async function(ev) {
+        ev.preventDefault();
+        var csrf = uploadForm.querySelector('input[name="csrf_token"]').value;
+        var file = uploadForm.querySelector('#import-file').files[0];
+        if (!file) return;
+        var fd = new FormData();
+        fd.append('file', file);
+        var btn = uploadForm.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        uploadResult.className = 'alert-inline';
+        uploadResult.textContent = '上传中…';
+        try {
+            var resp = await fetch('/api/imports/batches', {
+                method: 'POST',
+                headers: {'X-CSRF-Token': csrf},
+                body: fd
+            });
+            var data = await resp.json().catch(function() { return {}; });
+            if (resp.ok) {
+                uploadResult.className = 'alert-inline alert alert-success';
+                uploadResult.textContent = '导入完成：' + data.imported_count + '/' + data.row_count + ' 条（重复 ' + data.duplicate_count + '，失败 ' + data.failed_count + '）';
+                setTimeout(function(){ window.location.href = '/imports/' + data.batch_id; }, 1000);
+            } else {
+                uploadResult.className = 'alert-inline alert alert-error';
+                uploadResult.textContent = '导入失败：' + (data.detail || resp.status);
+                btn.disabled = false;
+            }
+        } catch (e) {
+            uploadResult.className = 'alert-inline alert alert-error';
+            uploadResult.textContent = '请求失败，请重试';
+            btn.disabled = false;
+        }
+    });
+
+    // ---- Undo ----
+    var batchResult = document.getElementById('batch-result');
+    document.querySelectorAll('.undo-form').forEach(function(form) {
+        form.addEventListener('submit', async function(ev) {
+            ev.preventDefault();
+            var batchId = form.getAttribute('data-batch');
+            var csrf = form.querySelector('input[name="csrf_token"]').value;
+            var reason = form.querySelector('[name="undo_reason"]').value;
+            if (!window.confirm('确认撤销该导入批次？仅未被修改的导入记录会被移除。')) {
+                return;
+            }
+            var btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            batchResult.className = 'alert-inline';
+            batchResult.textContent = '撤销中…';
+            try {
+                var resp = await fetch('/api/imports/batches/' + encodeURIComponent(batchId) + '/undo', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+                    body: JSON.stringify({undo_reason: reason})
+                });
+                var data = await resp.json().catch(function() { return {}; });
+                if (resp.ok) {
+                    batchResult.className = 'alert-inline alert alert-success';
+                    batchResult.textContent = '已撤销：' + data.undone_count + ' 条移除，' + data.excluded_count + ' 条保留';
+                    setTimeout(function(){ window.location.reload(); }, 800);
+                } else {
+                    batchResult.className = 'alert-inline alert alert-error';
+                    batchResult.textContent = '撤销失败：' + (data.detail || resp.status);
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                batchResult.className = 'alert-inline alert alert-error';
+                batchResult.textContent = '请求失败，请重试';
+                btn.disabled = false;
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

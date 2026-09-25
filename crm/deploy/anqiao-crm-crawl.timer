@@ -1,0 +1,15 @@
+[Unit]
+Description=Anqiao CRM Opportunity Discovery Timer (every 6 hours)
+Requires=anqiao-crm-crawl.service
+
+[Timer]
+# Run every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+# (Beijing time: 08:00, 14:00, 20:00, 02:00)
+OnCalendar=*-*-* 00,06,12,18:00:00
+# If the system was powered off at a scheduled time, run immediately on boot
+Persistent=true
+# Randomize start by up to 5 minutes to avoid thundering herd
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

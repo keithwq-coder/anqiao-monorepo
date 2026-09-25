@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}添加跟进{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:720px; margin:0 auto;">
+    <div class="card-header">
+        <h2>添加跟进</h2>
+        <a href="/institutions/{{ institution_id }}" class="btn btn-sm btn-secondary">返回详情</a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/institutions/{{ institution_id }}/activities/new">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-group">
+            <label for="occurred_at">发生时间 <span style="color:#e74c3c;">*</span></label>
+            <input type="datetime-local" id="occurred_at" name="occurred_at" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="communication_method_category">沟通方式大类</label>
+                <select id="communication_method_category" name="communication_method_category">
+                    <option value="">（不指定）</option>
+                    <option value="电话">电话</option>
+                    <option value="微信">微信</option>
+                    <option value="面谈">面谈</option>
+                    <option value="邮件">邮件</option>
+                    <option value="其他">其他</option>
+                </select>
+                <span class="hint">选择大类后，其他用户可通过精简进度了解沟通方式</span>
+            </div>
+            <div class="form-group">
+                <label for="interaction_method">沟通方式详情 <span style="color:#e74c3c;">*</span></label>
+                <input type="text" id="interaction_method" name="interaction_method" required maxlength="80" placeholder="如：微信语音通话、当面拜访">
+                <span class="hint">此字段仅记录负责人可见</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="factual_body">事实正文 <span style="color:#e74c3c;">*</span></label>
+            <textarea id="factual_body" name="factual_body" required rows="5" placeholder="详细记录沟通或行动中的客观事实、客户反馈、关键信息等"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="shared_summary">共享摘要</label>
+            <textarea id="shared_summary" name="shared_summary" rows="2" placeholder="经确认后供其他用户精简查看的摘要内容"></textarea>
+            <span class="hint">此摘要将出现在其他业务人员的精简进度中</span>
+        </div>
+
+        <div class="form-group">
+            <label for="next_action">下一步行动</label>
+            <input type="text" id="next_action" name="next_action" maxlength="2000" placeholder="描述下一步需要做什么">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="next_action_owner_user_id">下一步负责人（用户 UUID）</label>
+                <input type="text" id="next_action_owner_user_id" name="next_action_owner_user_id" placeholder="可选，与下一步行动同填">
+                <span class="hint">可选。如果填写了下一步行动，可指定负责人 UUID</span>
+            </div>
+            <div class="form-group">
+                <label for="next_action_target_date">下一步目标日期</label>
+                <input type="date" id="next_action_target_date" name="next_action_target_date">
+                <span class="hint">可选，建议与下一步行动一起填写</span>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+            <button type="submit" class="btn btn-primary">添加跟进</button>
+            <a href="/institutions/{{ institution_id }}" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

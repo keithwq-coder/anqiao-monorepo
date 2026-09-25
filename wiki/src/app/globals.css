@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --brand: #0e3b43;
+  --brand-2: #1c7c74;
+  --accent: #e8a33d;
+  --danger: #c0492f;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  background: #f5f6f7;
+  color: #1f2937;
+}
+
+/* T-E：移动端适配（在既有 reset 之上追加，不重写既有规则） */
+.zk-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.zk-nav {
+  flex-wrap: wrap;
+}
+
+.zk-admin-table {
+  overflow-x: auto;
+}
+
+.zk-admin-table table {
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .zk-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .zk-nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .zk-nav nav {
+    width: 100%;
+  }
+  .zk-admin-table table {
+    font-size: 12px;
+  }
+  .zk-admin-table th,
+  .zk-admin-table td {
+    min-width: 96px;
+  }
+}

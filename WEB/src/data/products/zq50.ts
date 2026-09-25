@@ -1,0 +1,123 @@
+import type { Product } from "./types";
+
+/** ZQ-50 健康快速通道一体机。 */
+export const zq50: Product = {
+  slug: "zq50",
+  model: "ZQ-50",
+  name: {
+    zh: "安守护 · 健康快速通道一体机",
+    en: "An Shou Hu · Health Rapid Pass Kiosk",
+    fr: "An Shou Hu · Borne de passage rapide santé",
+    es: "An Shou Hu · Kiosco de paso rápido de salud",
+    ja: "安守護 · 健康高速パス一体機",
+    ru: "An Shou Hu · Киоск быстрого прохода здоровья",
+  },
+  tagline: {
+    zh: "快速通过式检测，高峰时段即来即测",
+    en: "Pass-through testing — measure on arrival even at peak hours",
+    fr: "Détection au passage — testez immédiatement même aux heures de pointe",
+    es: "Detección de paso — mídase al llegar, incluso en horas punta",
+    ja: "通過型測定 — ピーク時でも来たらすぐ測定",
+    ru: "Проходное тестирование — измерение сразу, даже в часы пик",
+  },
+  features: {
+    zh: [
+      "快速通道式检测，即来即测即走",
+      "多参数集成，语音 + 屏幕双引导",
+      "报告打印 + 云端数据同步",
+      "与健康筛查一体机形成标准筛查与快速通道的场景互补",
+    ],
+    en: [
+      "Rapid pass-through testing — measure and go",
+      "Multi-parameter integration with voice + screen guidance",
+      "Report printing + cloud data sync",
+      "Complements the screening kiosk for standard screening and fast-pass scenarios",
+    ],
+    fr: [
+      "Détection rapide au passage — mesurez et partez",
+      "Intégration multi-paramètres avec guidage vocal + écran",
+      "Impression de rapport + synchro cloud",
+      "Complète la borne de dépistage pour les scénarios standard et rapides",
+    ],
+    es: [
+      "Detección rápida de paso — mida y siga",
+      "Integración multiparámetro con guía por voz + pantalla",
+      "Impresión de informes + sincronización en la nube",
+      "Complementa el kiosco de cribado para escenarios estándar y rápidos",
+    ],
+    ja: [
+      "高速パス型測定 — 来たら測定してすぐ通過",
+      "マルチパラメータ統合、音声+画面のダブルガイド",
+      "レポート印刷+クラウドデータ同期",
+      "健康スクリーニング一体機と標準・高速パスのシーン補完",
+    ],
+    ru: [
+      "Проходное тестирование — измерил и прошёл",
+      "Мультипараметрическая интеграция с голосовым + экранным сопровождением",
+      "Печать отчётов + облачная синхронизация",
+      "Дополняет киоск скрининга для стандартных и быстрых сценариев",
+    ],
+  },
+  scenes: {
+    zh: ['社区居家养老', '医疗卫生', '职场健康', '健康管理机构', '大健康·美业', '银行养老金融', '保险健康权益', '长护险监管', '运营商与政企集成', '儿少健康监测', '礼品采购', '劳保用品', '会员服务', '政府采购', '企业福利', '招投标项目', '健康筛查', '健康档案', '慢病管理', '高压力/亚健康人群', '慢病人群'],
+    en: ['Community home care', 'Medical & health', 'Workplace health', 'Health management organizations', 'Wellness & beauty', 'Banking & wealth management', 'Insurance health benefits', 'Long-term care insurance supervision', 'Carrier & digital-government integration', 'Child & adolescent health monitoring', 'Gifting & corporate benefits', 'Occupational health & welfare', 'Membership & rights services', 'Government procurement', 'Corporate benefits', 'Tender projects', 'Health screening', 'Health records', 'Chronic care', 'High-stress & sub-health', 'Chronic-disease patients'],
+    fr: ['Soins à domicile', 'Médical et santé', 'Santé au travail', 'Organismes de gestion de la santé', 'Bien-être et beauté', 'Banque et gestion de patrimoine', 'Avantages santé pour assureurs', "Supervision de l'assurance dépendance", 'Intégration opérateurs et collectivités', 'Suivi de la santé des enfants et adolescents', "Cadeaux et avantages d'entreprise", 'Santé au travail et protection', "Services d'adhésion", 'Achats publics', 'Avantages salariés', "Appels d'offres", 'Dépistage santé', 'Dossiers de santé', 'Soins chroniques', 'Stress et sous-santé', 'Patients chroniques'],
+    es: ['Cuidados en el hogar', 'Médico y salud', 'Salud laboral', 'Organizaciones de gestión de salud', 'Bienestar y estética', 'Banca y gestión patrimonial', 'Beneficios de salud para aseguradoras', 'Supervisión del seguro de larga duración', 'Integración con operadores y gobierno digital', 'Monitorización de la salud infantil y juvenil', 'Regalos y beneficios corporativos', 'Salud laboral y protección', 'Servicios de membresía', 'Compras públicas', 'Beneficios corporativos', 'Licitações / concursos', 'Cribado de salud', 'Historial de salud', 'Cuidados crónicos', 'Estrés y subsalud', 'Pacientes crónicos'],
+    ja: ['在宅介護', '医療衛生', '職場の健康', '健康管理機関', 'ウェルネス・美容', '銀行・ウェルスマネジメント', '保険健康特典', '介護保険監督', '通信事業者・政企連携', '児童・青少年の健康モニタリング', 'ギフト・福利厚生', '労働保護用品', '会員サービス', '政府調達', '企業福利厚生', '入札プロジェクト', '健康スクリーニング', '健康カルテ', '慢性疾患管理', '高ストレス・亜健康層', '慢性疾患患者'],
+    ru: ['Домашний уход', 'Медицина и здоровье', 'Здоровье на рабочем месте', 'Организации управления здоровьем', 'Велнес и красота', 'Банки и управление капиталом', 'Страховые медицинские бонусы', 'Надзор за страхованием долгосрочного ухода', 'Интеграция с операторами и цифровым госуправлением', 'Мониторинг здоровья детей и подростков', 'Подарки и корпоративные льготы', 'Охрана труда и благополучие', 'Членские сервисы и права', 'Госзакупки', 'Корпоративные льготы', 'Тендерные проекты', 'Скрининг здоровья', 'Медкарты', 'Управление хроническими заболеваниями', 'Стресс и субздоровье', 'Пациенты с хроническими заболеваниями'],
+  },
+  spec: {
+    zh: "设计形态：快速通道式\n引导方式：语音 + 屏幕双引导\n数据链路：云端同步\n输出形式：打印报告\n部署形态：落地式",
+    en: "Form: rapid pass-through\nGuidance: voice + screen\nData: cloud sync\nOutput: printed report\nForm factor: floor-standing",
+    fr: "Forme : passage rapide\nGuidage : voix + écran\nDonnées : synchro cloud\nSortie : rapport imprimé\nForme : sur pied",
+    es: "Forma: paso rápido\nGuía: voz + pantalla\nDatos: sincronización en la nube\nSalida: informe impreso\nForma: de pie",
+    ja: "形態：高速パス型\nガイド：音声+画面\nデータ：クラウド同期\n出力：プリントレポート\n形態：床置き型",
+    ru: "Форма: быстрый проход\nСопровождение: голос + экран\nДанные: облачная синхронизация\nВывод: печатный отчёт\nФорма: напольная",
+  },
+  customers: {
+    zh: "人流量较大的社区站点、健康小屋等健康筛查场所。",
+    en: "High-traffic community sites and health cabins that need fast screening.",
+    fr: "Sites communautaires à fort passage et cabines de santé.",
+    es: "Sitios comunitarios de alto tráfico y cabinas de salud.",
+    ja: "人流の多いコミュニティ拠点、健康小屋などの健康スクリーニング施設。",
+    ru: "Места с большим потоком: общественные пункты и кабинеты здоровья.",
+  },
+  warranty: {
+    zh: "12 个月保修，特殊情况另定",
+    en: "12-month warranty, special cases determined separately",
+    fr: "Garantie 12 mois, conditions particulières à convenir",
+    es: "Garantía de 12 meses, casos especiales a convenir",
+    ja: "12ヶ月保証、特殊な状況は別途協議",
+    ru: "Гарантия 12 месяцев, особые случаи оговариваются отдельно",
+  },
+  images: [
+    {
+      src: "/images/products/zq50/three-view.webp",
+      alt: {
+        zh: "ZQ-50 健康快速通道一体机 三视图",
+        en: "ZQ-50 Health Rapid Pass Kiosk — three views",
+        fr: "ZQ-50 Borne de passage rapide — trois vues",
+        es: "ZQ-50 Kiosco de paso rápido — tres vistas",
+        ja: "ZQ-50 健康高速パス一体機 三面図",
+        ru: "ZQ-50 Киоск быстрого прохода — три вида",
+      },
+      width: 1600,
+      height: 878,
+    },
+    {
+      src: "/images/products/zq50/scene.webp",
+      alt: {
+        zh: "ZQ-50 健康快速通道一体机 场景图",
+        en: "ZQ-50 Health Rapid Pass Kiosk — scene",
+        fr: "ZQ-50 Borne de passage rapide — scène",
+        es: "ZQ-50 Kiosco de paso rápido — escena",
+        ja: "ZQ-50 健康高速パス一体機 シーン図",
+        ru: "ZQ-50 Киоск быстрого прохода — сцена",
+      },
+      width: 1536,
+      height: 1024,
+    },
+  ],
+  deployment: ["社区站点", "健康小屋"],
+  relatedSlugs: ["za100"],
+};

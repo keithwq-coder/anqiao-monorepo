@@ -1,0 +1,566 @@
+中科安樵
+ZHONGKE ANQIAO
+产品目录
+PRODUCT CATALOGUE
+科技守护健康 · AI 守护爱
+Technology Guards Health · AI Guards Love
+中科安樵（苏州）科技有限公司  ·  2026
+公司简介   Company Profile
+中科安樵（苏州）科技有限公司成立于 2023 年，坐落于苏州先进技术研究院，是一家国家级科技创新企业。公司聚焦智慧康养领域，以人工智能为核心，集医疗器械、健康管理、智能医疗集成、老人康复等研发与销售为一体，致力于构建「硬件 + 软件 + 服务 + 内容」的 AI 服务生态圈，以「科技赋能养老」为理念，为社会提供高价值解决方案。  Zhongke Anqiao (Suzhou) Technology Co., Ltd., founded in 2023 at the Suzhou Advanced Technology Research Institute, is a national-level technology innovation enterprise. Focusing on smart elderly care, the company builds an AI-driven ecosystem of hardware + software + service + content.
+核心优势   Core Strengths
+▪ 非接触无感监测，无需穿戴、不依赖摄像头，零隐私侵犯  Contactless, wearable-free, camera-free — zero privacy intrusion
+▪ 毫米波雷达 + 红外热像多模融合，精准全天候守护  60GHz mmWave radar + IR fusion for precise 24/7 monitoring
+▪ 监测—预警—数据归档—语音交互完整康养闭环  Full loop: monitoring → alert → archive → voice interaction
+▪ 适配家庭、机构、社区、长护险等多元业务落地  Fits homes, institutions, communities & long-term-care funds
+产品总览   Product Overview
+下表为安樵核心硬件产品速查表，详细参数与图示见后续分节。主图与尺寸图已采用真实素材嵌入；标注〔待提供〕的参数与图示请按末页清单补齐。  Quick index of Anqiao core hardware. Hero & dimension images use real assets; items marked TBD follow the checklist at the end.
+ZQ-SH100  AI Health Guardian
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-D100  Fall Monitor
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-BH100  Under-Bed Health Monitor
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-GJ100  Human Trajectory Monitor
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-A100  Health Screening Kiosk
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-50  Health Rapid Channel
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-ZH100  Care Collection Terminal
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-KFC100  Rehabilitation Smart Bed
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+ZQ-W100  Microfluidic WBC Analyzer
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+智能开关  Smart Switch
+核心功能图标 · Feature Icons（待提供，线性/扁平、透明底 48×48px）
+核心功能 · Key Features
+▪ 非接触无感监测，无需穿戴、不依赖摄像头  Contactless, wearable-free, camera-free
+▪ 毫米波雷达 + 红外多模融合，精准全天候守护  60GHz mmWave + IR fusion, 24/7
+▪ 智能跌倒 / 异常识别，免按紧急按钮自动预警  Auto fall/anomaly detection, no manual SOS
+▪ 人体轨迹跟踪：在床/离床、活动范围、滞留识别  Trajectory: in/out of bed, range, prolonged stay
+▪ AI 健康报告与远程亲情看护，异常实时推送  AI report + remote family care, real-time alert
+技术参数 · Specifications（红色〔待提供〕项须补齐）
+图片交付   Image Delivery
+数据交付   Data Delivery
+说明：本版已将「产品主图」「外形尺寸图」用真实素材嵌入，「场景图」部分产品已嵌入；其余按同行产品目录规范以红色〔待提供〕占位，请按上表补齐后替换。  Note: hero & dimension images are embedded with real assets; some scene photos embedded. Others follow peer-catalogue standards and remain red TBD placeholders.
+--- TABLE 1 ---
+COMPANY PROFILE    公司简介
+--- TABLE 2 ---
+PRODUCT INDEX    产品总览
+--- TABLE 3 ---
+产品 Product | 型号 Model | 定位 Positioning | 关键场景 Key Scene
+AI健康守护仪
+AI Health Guardian | ZQ-SH100 | AI 健康守护设备，面向居家与机构的长辈健康与安全监测。
+AI Health Guardian | 详见后续分节  See next sections
+跌倒监测仪
+Fall Monitor | ZQ-D100 | 跌倒监测设备，面向跌倒高发区域的长辈安全守护。
+Fall Monitor | 详见后续分节  See next sections
+床下健康监测仪
+Under-Bed Health Monitor | ZQ-BH100 | 床下健康监测设备，面向睡眠与离床状态感知。
+Under-Bed Health Monitor | 详见后续分节  See next sections
+人体轨迹监测仪
+Human Trajectory Monitor | ZQ-GJ100 | 人体活动轨迹监测设备，面向活动安全与异常识别。
+Human Trajectory Monitor | 详见后续分节  See next sections
+健康筛查一体机
+Health Screening Kiosk | ZQ-A100 | 健康筛查一体设备，面向社区与机构的自助体征筛查。
+Health Screening Kiosk | 详见后续分节  See next sections
+健康快速通道一体机
+Health Rapid Channel | ZQ-50 | 健康快速通道设备，面向快速体检与自助服务。
+Health Rapid Channel | 详见后续分节  See next sections
+照护采集仪
+Care Collection Terminal | ZQ-ZH100 | 照护数据采集设备，面向照护过程记录与交互。
+Care Collection Terminal | 详见后续分节  See next sections
+康复智能床
+Rehabilitation Smart Bed | ZQ-KFC100 | 康复智能床设备，面向康复与长期卧床照护。
+Rehabilitation Smart Bed | 详见后续分节  See next sections
+白细胞检测仪
+Microfluidic WBC Analyzer | ZQ-W100 | 白细胞检测设备，面向基础血液指标快速检测。
+Microfluidic WBC Analyzer | 详见后续分节  See next sections
+智能开关
+Smart Switch | 智能开关 | 用电安全控制设备，面向远程开关与用电监测。
+Smart Switch | 详见后续分节  See next sections
+--- TABLE 4 ---
+PRODUCT 01    AI健康守护仪
+--- TABLE 5 ---
+ | AI 健康守护设备，面向居家与机构的长辈健康与安全监测。
+AI health-guardian device for home and institutional elderly health & safety monitoring.
+终端零售价 Retail：¥ 4,980
+--- TABLE 6 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 7 ---
+PRODUCT 01 · VISUALS & SPECS    AI健康守护仪 · 图示与参数
+--- TABLE 8 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 9 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 
+应用场景 · 居家卧室
+--- TABLE 10 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 11 ---
+产品型号 Model   | ZQ-SH100
+功能定位 Function   | AI 健康守护设备，面向居家与机构的长辈健康与安全监测。  AI Health Guardian
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | ¥ 4,980
+--- TABLE 12 ---
+PRODUCT 02    跌倒监测仪
+--- TABLE 13 ---
+ | 跌倒监测设备，面向跌倒高发区域的长辈安全守护。
+Fall-monitoring device for elder safety in high-risk fall zones.
+终端零售价 Retail：¥ 2,480
+--- TABLE 14 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 15 ---
+PRODUCT 02 · VISUALS & SPECS    跌倒监测仪 · 图示与参数
+--- TABLE 16 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 17 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 【待提供图片】应用场景图 1
+[IMAGE NEEDED] Scene photo 1
+--- TABLE 18 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 19 ---
+产品型号 Model   | ZQ-D100
+功能定位 Function   | 跌倒监测设备，面向跌倒高发区域的长辈安全守护。  Fall Monitor
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | ¥ 2,480
+--- TABLE 20 ---
+PRODUCT 03    床下健康监测仪
+--- TABLE 21 ---
+ | 床下健康监测设备，面向睡眠与离床状态感知。
+Under-bed health monitor for sleep and out-of-bed status.
+终端零售价 Retail：¥ 2,980
+--- TABLE 22 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 23 ---
+PRODUCT 03 · VISUALS & SPECS    床下健康监测仪 · 图示与参数
+--- TABLE 24 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 25 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 【待提供图片】应用场景图 1
+[IMAGE NEEDED] Scene photo 1
+--- TABLE 26 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 27 ---
+产品型号 Model   | ZQ-BH100
+功能定位 Function   | 床下健康监测设备，面向睡眠与离床状态感知。  Under-Bed Health Monitor
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | ¥ 2,980
+--- TABLE 28 ---
+PRODUCT 04    人体轨迹监测仪
+--- TABLE 29 ---
+ | 人体活动轨迹监测设备，面向活动安全与异常识别。
+Human-activity trajectory monitor for movement safety and anomaly detection.
+终端零售价 Retail：¥ 2,980
+--- TABLE 30 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 31 ---
+PRODUCT 04 · VISUALS & SPECS    人体轨迹监测仪 · 图示与参数
+--- TABLE 32 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 33 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 【待提供图片】应用场景图 1
+[IMAGE NEEDED] Scene photo 1
+--- TABLE 34 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 35 ---
+产品型号 Model   | ZQ-GJ100
+功能定位 Function   | 人体活动轨迹监测设备，面向活动安全与异常识别。  Human Trajectory Monitor
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | ¥ 2,980
+--- TABLE 36 ---
+PRODUCT 05    健康筛查一体机
+--- TABLE 37 ---
+ | 健康筛查一体设备，面向社区与机构的自助体征筛查。
+All-in-one health-screening device for community and institutional self-service checks.
+终端零售价 Retail：待定
+--- TABLE 38 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 39 ---
+PRODUCT 05 · VISUALS & SPECS    健康筛查一体机 · 图示与参数
+--- TABLE 40 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 41 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 
+应用场景 · 社区筛查站点
+--- TABLE 42 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 43 ---
+产品型号 Model   | ZQ-A100
+功能定位 Function   | 健康筛查一体设备，面向社区与机构的自助体征筛查。  Health Screening Kiosk
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | 待定
+--- TABLE 44 ---
+PRODUCT 06    健康快速通道一体机
+--- TABLE 45 ---
+ | 健康快速通道设备，面向快速体检与自助服务。
+Rapid health-channel device for quick check-ups and self-service.
+终端零售价 Retail：待定
+--- TABLE 46 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 47 ---
+PRODUCT 06 · VISUALS & SPECS    健康快速通道一体机 · 图示与参数
+--- TABLE 48 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 49 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 
+应用场景 · 快速体检通道
+--- TABLE 50 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 51 ---
+产品型号 Model   | ZQ-50
+功能定位 Function   | 健康快速通道设备，面向快速体检与自助服务。  Health Rapid Channel
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | 待定
+--- TABLE 52 ---
+PRODUCT 07    照护采集仪
+--- TABLE 53 ---
+ | 照护数据采集设备，面向照护过程记录与交互。
+Care-data collection terminal for care-process logging and interaction.
+终端零售价 Retail：¥ 3,980
+--- TABLE 54 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 55 ---
+PRODUCT 07 · VISUALS & SPECS    照护采集仪 · 图示与参数
+--- TABLE 56 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 57 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 【待提供图片】应用场景图 1
+[IMAGE NEEDED] Scene photo 1
+--- TABLE 58 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 59 ---
+产品型号 Model   | ZQ-ZH100
+功能定位 Function   | 照护数据采集设备，面向照护过程记录与交互。  Care Collection Terminal
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | ¥ 3,980
+--- TABLE 60 ---
+PRODUCT 08    康复智能床
+--- TABLE 61 ---
+ | 康复智能床设备，面向康复与长期卧床照护。
+Rehabilitation smart bed for rehab and long-term bed-bound care.
+终端零售价 Retail：待定
+--- TABLE 62 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 63 ---
+PRODUCT 08 · VISUALS & SPECS    康复智能床 · 图示与参数
+--- TABLE 64 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 65 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 【待提供图片】应用场景图 1
+[IMAGE NEEDED] Scene photo 1
+--- TABLE 66 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 67 ---
+产品型号 Model   | ZQ-KFC100
+功能定位 Function   | 康复智能床设备，面向康复与长期卧床照护。  Rehabilitation Smart Bed
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | 待定
+--- TABLE 68 ---
+PRODUCT 09    白细胞检测仪
+--- TABLE 69 ---
+ | 白细胞检测设备，面向基础血液指标快速检测。
+White-blood-cell analyzer for rapid basic blood screening.
+终端零售价 Retail：待定
+--- TABLE 70 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 71 ---
+PRODUCT 09 · VISUALS & SPECS    白细胞检测仪 · 图示与参数
+--- TABLE 72 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 73 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 
+应用场景 · 居家使用
+--- TABLE 74 ---
+
+应用场景 · 开盖操作 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 75 ---
+产品型号 Model   | ZQ-W100
+功能定位 Function   | 白细胞检测设备，面向基础血液指标快速检测。  Microfluidic WBC Analyzer
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | 待定
+--- TABLE 76 ---
+PRODUCT 10    智能开关
+--- TABLE 77 ---
+ | 用电安全控制设备，面向远程开关与用电监测。
+Electrical-safety control device for remote switching and power monitoring.
+终端零售价 Retail：待定
+--- TABLE 78 ---
+【待提供图片】功能图标·核心监测
+[IMAGE NEEDED] Icon·Core | 【待提供图片】功能图标·预警
+[IMAGE NEEDED] Icon·Alert | 【待提供图片】功能图标·轨迹
+[IMAGE NEEDED] Icon·Track | 【待提供图片】功能图标·平台
+[IMAGE NEEDED] Icon·Platform
+--- TABLE 79 ---
+PRODUCT 10 · VISUALS & SPECS    智能开关 · 图示与参数
+--- TABLE 80 ---
+【待提供图片】安装示意图
+[IMAGE NEEDED] Installation diagram | 
+--- TABLE 81 ---
+【待提供图片】覆盖/检测范围图
+[IMAGE NEEDED] Coverage diagram | 【待提供图片】应用场景图 1
+[IMAGE NEEDED] Scene photo 1
+--- TABLE 82 ---
+【待提供图片】应用场景图 2
+[IMAGE NEEDED] Scene photo 2 | 【待提供图片】APP/平台截图
+[IMAGE NEEDED] APP/Platform UI
+--- TABLE 83 ---
+产品型号 Model   | 智能开关
+功能定位 Function   | 用电安全控制设备，面向远程开关与用电监测。  Smart Switch
+核心技术路线 Core Tech   | 〔待提供〕  TBD
+监测对象/参数 Parameters   | 〔待提供〕  TBD
+适用场景 Scenario   | 〔待提供〕  TBD
+雷达频率/调制方式 Radar freq./Mod.   | 〔待提供〕  TBD
+监测距离/范围 Range   | 〔待提供〕  TBD
+供电方式 Power   | 〔待提供〕  TBD
+通信方式 Connectivity   | 〔待提供〕  TBD
+尺寸/重量 Dimensions   | 〔待提供〕  TBD
+告警方式 Alerts   | 〔待提供〕  TBD
+接入平台 Platform   | 〔待提供〕  TBD
+资质认证 Certifications   | 〔待提供〕  TBD
+终端零售价 Retail   | 待定
+--- TABLE 84 ---
+APPENDIX · CHECKLIST    附录：待提供清单
+--- TABLE 85 ---
+图类 Type | 规格要求 Spec Requirement（本版状态）
+产品主图 Hero | 白底/透明底实拍 ≥3000×3000px，正/侧/45°　【本版：已用 products_front 透明底实图嵌入】
+安装示意图 Install | 壁挂/吸顶位置、高度、覆盖半径（俯视+侧视）　【待提供】
+覆盖/检测范围图 Coverage | 扇形覆盖角(水平/垂直)、最大半径、盲区　【待提供】
+场景图 Scene ×2 | 真实环境实拍，含已安装效果，≥2400px宽　【W100/SH100/A100/50 已嵌入，其余待提供】
+外形尺寸图 Dimension | 三视图+关键尺寸标注(mm)　【本版：已用透明底三视图实图嵌入】
+APP/平台截图 UI | 家属端/机构端界面，含告警/报告页，去敏感　【待提供】
+功能图标 Icon ×4 | 线性/扁平、透明底、48×48px 一组　【待提供】
+--- TABLE 86 ---
+参数项 Field | 示例/要求 Example（同行规范）
+雷达频率/调制方式 Radar freq./Mod. | 例：60 GHz / FMCW
+监测对象/参数 Parameters | 例：心率/呼吸/体温 或 姿态/轨迹
+适用场景 Scenario | 例：卧室床下 / 卫生间 / 社区站点
+监测距离/范围 Range | 例：顶装 4m×6m 或 20 m²
+视野角/分辨率 FOV/Resolution | 例：水平120°/垂直40°；距离8.4cm
+供电/通信 Power/Comms | 例：5V/1A；Wi-Fi / 4G / BLE
+告警方式 Alerts | 电话/APP/小程序/短信/本地声光
+资质认证 Certifications | 二类医疗器械注册证 / CE / FCC / RoHS

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title }}{% endblock %} - 中科安樵客户管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- ============ Navbar ============ -->
+    {% if user %}
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="/static/logo.png" alt="中科安樵" class="navbar-logo">
+            <span>中科安樵客户管理系统</span>
+        </div>
+        <div class="navbar-nav">
+            <a href="/dashboard" class="nav-link {% if active_nav == 'dashboard' %}active{% endif %}">仪表盘</a>
+            <a href="/institutions" class="nav-link {% if active_nav == 'institutions' %}active{% endif %}">客户列表</a>
+            {% if user.roles and ('business_user' in user.roles or 'administrator' in user.roles or 'shareholder' in user.roles) %}
+            <a href="/discovery" class="nav-link {% if active_nav == 'discovery' %}active{% endif %}">商机</a>
+            <a href="/pool" class="nav-link {% if active_nav == 'pool' %}active{% endif %}">公池</a>
+            {% endif %}
+            {% if user.roles and ('administrator' in user.roles or 'manager' in user.roles or 'shareholder' in user.roles) %}
+            <a href="/management" class="nav-link {% if active_nav == 'management' %}active{% endif %}">管理摘要</a>
+            {% endif %}
+            {% if user.roles and 'administrator' in user.roles %}
+            <a href="/admin" class="nav-link {% if active_nav == 'admin' %}active{% endif %}">系统管理</a>
+            <a href="/imports" class="nav-link {% if active_nav == 'imports' %}active{% endif %}">批量导入</a>
+            {% endif %}
+            {% if user.roles and ('administrator' in user.roles or 'shareholder' in user.roles) %}
+            <a href="/reporting" class="nav-link {% if active_nav == 'reporting' %}active{% endif %}">报表</a>
+            {% endif %}
+        </div>
+        <div class="navbar-right">
+            <a href="/account/settings" class="nav-link {% if active_nav == 'account' %}active{% endif %}">账号设置</a>
+            <div class="user-badge">
+                <span>{{ user.username }}</span>
+                {% if user.role %}
+                <span class="role-tag">{{ user.role }}</span>
+                {% endif %}
+            </div>
+            <button id="logout-btn" class="btn-logout" type="button">退出登录</button>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- ============ Content ============ -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ============ Footer ============ -->
+    <div class="footer">
+        © 2026 中科安樵 | Internal Use Only
+    </div>
+
+    <!-- ============ Logout Script ============ -->
+    <script>
+        (function() {
+            var logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async function() {
+                    try {
+                        await fetch('/api/auth/logout', { method: 'POST' });
+                    } catch (e) {
+                        // ignore network errors, still redirect
+                    }
+                    window.location.href = '/login';
+                });
+            }
+        })();
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

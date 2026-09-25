@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0011",
+  "spec_version": "0.2.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-07-26",
+  "approval_evidence": "DEC-0037; product owner replied 同意 and directed removal of legal/compliance content (刨除法务部分), approving the resulting v0.2.0",
+  "spec_file": "SPEC-0011-data-lifecycle.md",
+  "spec_sha256": "91fbf3270c5eba9d38b4e8dac78cba5c157cbb6deb1584f633c38f621a920fe8"
+}

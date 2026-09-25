@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}客户公池{% endblock %}
+
+{% block content %}
+{% set is_business = user.roles and 'business_user' in user.roles %}
+<div class="card">
+    <div class="card-header">
+        <h2>客户公池{% if pool_items %}（{{ pool_items|length }}）{% endif %}</h2>
+        {% if not is_business %}
+        <span class="hint">管理员只读；分配请使用「点名分配」功能</span>
+        {% endif %}
+    </div>
+
+    {% if pool_items %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>客户类型</th>
+                    <th>类别</th>
+                    <th>地区</th>
+                    <th>来源分类</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inst in pool_items %}
+                <tr>
+                    <td><a href="/institutions/{{ inst.id }}">{{ inst.name }}</a></td>
+                    <td>
+                        {% set type_labels = {'direct_purchase': '直接采购', 'individual': '个人', 'channel': '渠道'} %}
+                        {{ type_labels.get(inst.customer_type, inst.customer_type or '-') }}
+                    </td>
+                    <td>{{ inst.category or '-' }}</td>
+                    <td>{{ inst.region or '-' }}</td>
+                    <td>{{ inst.source_category or '-' }}</td>
+                    <td>
+                        <div class="action-group" style="margin-top:0;">
+                            <a href="/institutions/{{ inst.id }}" class="btn btn-sm btn-outline">查看详情</a>
+                            {% if is_business %}
+                            <button type="button" class="btn btn-sm btn-primary claim-btn"
+                                    data-url="/api/institutions/{{ inst.id }}/claim"
+                                    data-csrf="{{ csrf_token|default('') }}">认领</button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">🌊</div>
+        <p>公池暂无客户</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var result = document.getElementById('pool-action-result');
+    document.querySelectorAll('.claim-btn').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+            var csrf = btn.getAttribute('data-csrf');
+            var url = btn.getAttribute('data-url');
+            btn.disabled = true;
+            try {
+                var resp = await fetch(url, {
+                    method: 'POST',
+                    headers: {'X-CSRF-Token': csrf}
+                });
+                if (resp.ok) {
+                    window.location.href = '/pool?claimed=1';
+                } else {
+                    var data = await resp.json();
+                    alert('认领失败：' + (data.detail || resp.status));
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                alert('请求失败，请重试');
+                btn.disabled = false;
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 中科安樵客户管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .login-header p {
+            color: #888;
+            font-size: 14px;
+        }
+        .login-header .login-logo {
+            height: 56px;
+            margin-bottom: 12px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #bbb;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="/static/logo.png" alt="中科安樵" class="login-logo">
+            <h1>中科安樵客户管理系统</h1>
+            <p>内部业务管理系统</p>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+        
+        <form id="loginForm" method="POST" action="/api/auth/login">
+            <div class="form-group">
+                <label for="username">用户名/邮箱</label>
+                <input type="text" id="username" name="username" required autocomplete="username" autofocus placeholder="请输入用户名">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="请输入密码">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; font-size:16px;">登 录</button>
+        </form>
+        
+        <div class="footer">
+            © 2026 中科安樵 | Internal Use Only
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-error';
+                    errorDiv.textContent = result.message || result.detail || '登录失败，请检查用户名和密码';
+                    var container = document.querySelector('.login-container');
+                    container.insertBefore(errorDiv, container.querySelector('form'));
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-error';
+                errorDiv.textContent = '网络错误，请稍后重试';
+                var container = document.querySelector('.login-container');
+                container.insertBefore(errorDiv, container.querySelector('form'));
+            }
+        });
+    </script>
+</body>
+</html>

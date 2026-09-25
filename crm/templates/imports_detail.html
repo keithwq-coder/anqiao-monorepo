@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}导入批次详情{% endblock %}
+
+{% block content %}
+<!-- ====== Navigation Breadcrumb ====== -->
+<div style="margin-bottom:1rem; font-size:14px; color:#888;">
+    <a href="/imports">批量导入</a>
+    <span style="margin:0 0.5rem;">›</span>
+    <span style="color:#333;">{{ batch.source_file_name }}</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>批次 {{ batch.batch_id[:8] }}…</h2>
+        {% if batch.status == 'active' %}
+        <span class="status-tag status-pending">进行中</span>
+        {% else %}
+        <span class="status-tag status-ignored">已撤销</span>
+        {% endif %}
+    </div>
+    <div class="detail-section">
+        <div class="field-row">
+            <span class="field-label">源文件</span>
+            <span class="field-value">{{ batch.source_file_name }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">导入时间</span>
+            <span class="field-value">{{ batch.imported_at }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">总行数</span>
+            <span class="field-value">{{ batch.row_count }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">导入</span>
+            <span class="field-value">{{ batch.imported_count }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">重复标记</span>
+            <span class="field-value">{{ batch.duplicate_count }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">失败</span>
+            <span class="field-value">{{ batch.failed_count }}</span>
+        </div>
+        {% if batch.undone_at %}
+        <div class="field-row">
+            <span class="field-label">撤销时间</span>
+            <span class="field-value">{{ batch.undone_at }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">撤销理由</span>
+            <span class="field-value">{{ batch.undo_reason or '-' }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if batch.undo_eligible %}
+    <div class="action-group">
+        <form id="detail-undo-form" class="action-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+            <input type="text" name="undo_reason" placeholder="撤销理由（必填）" required>
+            <button type="submit" class="btn btn-danger">撤销该批次</button>
+        </form>
+    </div>
+    <div id="undo-result" class="alert-inline"></div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>行结果</h2>
+    </div>
+    {% if batch.rows %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>行号</th>
+                    <th>结果</th>
+                    <th>客户 ID</th>
+                    <th>重复对象 ID</th>
+                    <th>原因</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in batch.rows %}
+                <tr>
+                    <td>{{ r.line_number }}</td>
+                    <td>
+                        {% if r.outcome == 'imported' %}<span class="status-tag status-accepted">已导入</span>
+                        {% elif r.outcome == 'flagged_duplicate' %}<span class="status-tag status-pending">重复标记</span>
+                        {% elif r.outcome == 'failed' %}<span class="status-tag status-ignored">失败</span>
+                        {% else %}<span class="status-tag">{{ r.outcome }}</span>{% endif %}
+                    </td>
+                    <td>{{ r.institution_id or '-' }}</td>
+                    <td>{{ r.duplicate_of_institution_id or '-' }}</td>
+                    <td>{{ r.reason or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>无行结果</p></div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var form = document.getElementById('detail-undo-form');
+    if (!form) return;
+    var result = document.getElementById('undo-result');
+    form.addEventListener('submit', async function(ev) {
+        ev.preventDefault();
+        var csrf = form.querySelector('input[name="csrf_token"]').value;
+        var reason = form.querySelector('[name="undo_reason"]').value;
+        if (!window.confirm('确认撤销该导入批次？仅未被修改的导入记录会被移除。')) {
+            return;
+        }
+        var btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        result.className = 'alert-inline';
+        result.textContent = '撤销中…';
+        try {
+            var resp = await fetch('/api/imports/batches/{{ batch.batch_id }}/undo', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+                body: JSON.stringify({undo_reason: reason})
+            });
+            var data = await resp.json().catch(function() { return {}; });
+            if (resp.ok) {
+                result.className = 'alert-inline alert alert-success';
+                result.textContent = '已撤销：' + data.undone_count + ' 条移除，' + data.excluded_count + ' 条保留';
+                setTimeout(function(){ window.location.reload(); }, 800);
+            } else {
+                result.className = 'alert-inline alert alert-error';
+                result.textContent = '撤销失败：' + (data.detail || resp.status);
+                btn.disabled = false;
+            }
+        } catch (e) {
+            result.className = 'alert-inline alert alert-error';
+            result.textContent = '请求失败，请重试';
+            btn.disabled = false;
+        }
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0013",
+  "spec_version": "0.1.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-07-27",
+  "approval_evidence": "DEC-0039; product owner replied 同意 to approve SPEC-0013 v0.1.0",
+  "spec_file": "SPEC-0013-bulk-import.md",
+  "spec_sha256": "f801e80e0bb78ddbd6e8261b6d7702353cf775483f9dd187478da28ee50e723d"
+}

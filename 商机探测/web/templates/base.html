@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}<title>商机探测</title>{% endblock %}
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <span class="brand-gold">中科安樵</span>
+                <span class="brand-sep">·</span>
+                <span class="brand-blue">商机探测</span>
+            </div>
+            <nav>
+                <a href="/">商机列表</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>中科安樵（苏州）科技有限公司 · 商机探测系统</p>
+    </footer>
+</body>
+</html>

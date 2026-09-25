@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0001",
+  "spec_version": "0.9.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-08-27",
+  "approval_evidence": "DEC-0181 approved v0.9.0 (销售可见性完全隔离：business_user 仅见本人客户 + 公池，他人客户不可见，R-014 改写 + 新增 R-046). Supersedes v0.8.1 (DEC-0153/DEC-0172).",
+  "spec_file": "SPEC-0001-core-record-activity.md",
+  "spec_sha256": "1ba7342c7a3a0a5f8cd6dbf8d0eb5669e4633ff48d312c66fca4970a3d864ea2"
+}

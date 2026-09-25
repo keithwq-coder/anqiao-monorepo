@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘{% endblock %}
+
+{% block content %}
+<div class="welcome-card card">
+    <div class="card-header">
+        <div>
+            <h2 style="font-size:22px; margin-bottom:0.25rem;">欢迎回来，{{ user.username }}</h2>
+            <p style="color:#888; font-size:14px;">您可以管理客户信息、联系人和跟进记录</p>
+        </div>
+    </div>
+</div>
+
+<!-- ====== Stats Grid ====== -->
+<div class="stats-grid" id="stats-grid">
+    <div class="stat-card">
+        <div class="number" id="stat-total">--</div>
+        <div class="label">客户总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="number" id="stat-mine">--</div>
+        <div class="label">我的客户</div>
+    </div>
+    <div class="stat-card">
+        <div class="number" id="stat-recent">--</div>
+        <div class="label">本月跟进</div>
+    </div>
+</div>
+
+<!-- ====== Quick Actions ====== -->
+<div class="quick-actions">
+    {% if user.roles and ('business_user' in user.roles or 'administrator' in user.roles or 'shareholder' in user.roles) %}
+    <a href="/institutions/new" class="btn btn-primary">➕ 新建客户</a>
+    {% endif %}
+    <a href="/institutions" class="btn btn-outline">🔍 搜索客户</a>
+</div>
+
+<!-- ====== Recent Institutions ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>最近客户</h2>
+        <a href="/institutions" class="btn btn-sm btn-secondary">查看全部</a>
+    </div>
+    <div id="recent-list" style="min-height:80px;">
+        <div class="empty-state">
+            <p>加载中...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+var userCanWrite = {% if user.roles and ('business_user' in user.roles or 'administrator' in user.roles or 'shareholder' in user.roles) %}true{% else %}false{% endif %};
+(function() {
+    async function loadDashboard() {
+        try {
+            var resp = await fetch('/api/institutions?limit=5');
+            if (!resp.ok) {
+                document.getElementById('stats-grid').innerHTML = 
+                    '<div class="alert alert-error">无法加载统计数据，请稍后重试</div>';
+                return;
+            }
+            var data = await resp.json();
+            var items = data.items || [];
+            var total = data.total || items.length;
+
+            // Update stats
+            document.getElementById('stat-total').textContent = total;
+
+            // "我的客户" — for admin/shareholder: all customers; for business_user: use total
+            document.getElementById('stat-mine').textContent = total;
+
+            // "本月跟进" — check if any item has concise_progress
+            var recentCount = 0;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].concise_progress && items[i].concise_progress.latest_follow_up_date) {
+                    recentCount++;
+                }
+            }
+            document.getElementById('stat-recent').textContent = recentCount;
+
+            // Render recent institutions
+            var html = '';
+            if (items.length === 0) {
+                html = '<div class="empty-state"><div class="icon">📋</div><p>暂无可见客户记录</p>';
+                if (userCanWrite) {
+                    html += '<a href="/institutions/new" class="btn btn-primary btn-sm">新建客户</a>';
+                }
+                html += '</div>';
+            } else {
+                html = '<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类别</th><th>地区</th><th>来源分类</th><th>操作</th></tr></thead><tbody>';
+                for (var i = 0; i < items.length; i++) {
+                    var inst = items[i];
+                    html += '<tr>' +
+                        '<td><a href="/institutions/' + inst.id + '">' + escapeHtml(inst.name) + '</a></td>' +
+                        '<td>' + (inst.category || '-') + '</td>' +
+                        '<td>' + (inst.region || '-') + '</td>' +
+                        '<td>' + (inst.source_category || '-') + '</td>' +
+                        '<td><a href="/institutions/' + inst.id + '" class="btn btn-sm btn-outline">查看详情</a></td>' +
+                        '</tr>';
+                }
+                html += '</tbody></table></div>';
+            }
+            document.getElementById('recent-list').innerHTML = html;
+
+        } catch (e) {
+            document.getElementById('recent-list').innerHTML = 
+                '<div class="alert alert-error">加载失败，请刷新页面重试</div>';
+        }
+    }
+
+    function escapeHtml(text) {
+        var d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    loadDashboard();
+})();
+</script>
+{% endblock %}

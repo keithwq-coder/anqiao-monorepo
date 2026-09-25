@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0003",
+  "spec_version": "0.5.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-08-26",
+  "approval_evidence": "DEC-0177 (2026-08-26): product owner directly approved v0.5.0 (trigger-source separation: personal = own customers only per OD-012; crawler = scheduled tender crawl; scheduled task added; raw announcement != AI opportunity; zero-output root causes fixed), explicitly skipping independent review (risk accepted). Supersedes v0.4.0 (archived 90-deprecated).",
+  "spec_file": "SPEC-0003-opportunity-discovery.md",
+  "spec_sha256": "08656b5793bf3eb99f2f41d57629d05368ca9b6e43894a1ccca1d1fd25df1bff"
+}

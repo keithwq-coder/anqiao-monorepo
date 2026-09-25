@@ -1,0 +1,17 @@
+[Unit]
+Description=Anqiao CRM Scheduled Opportunity Discovery
+After=network.target postgresql.service anqiao-crm.service
+Wants=anqiao-crm.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/anqiao-crm
+ExecStart=/opt/anqiao-crm/venv/bin/python /opt/anqiao-crm/scripts/crawl_opportunities.py
+StandardOutput=journal
+StandardError=journal
+# Timeout: 10 minutes covers 40+ concurrent crawler fetches + AI reason calls
+TimeoutStartSec=600
+# Exit code 0 = success (or degraded — still a valid outcome)
+# Exit code non-zero = infrastructure failure

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}账号设置{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>账号设置</h2>
+        <p style="color:#888; font-size:14px;">修改您的登录密码或用户名</p>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:16px;">
+
+        <!-- ====== Password Change ====== -->
+        <div class="card" style="box-shadow:none; border:1px solid #e0e0e0;">
+            <div class="card-header">
+                <h3 style="margin:0;">修改密码</h3>
+            </div>
+            <form method="POST" action="/account/password" style="margin-top:12px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label for="current_password">当前密码</label>
+                    <input type="password" id="current_password" name="current_password"
+                           required maxlength="255" class="form-control"
+                           style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label for="new_password">新密码</label>
+                    <input type="password" id="new_password" name="new_password"
+                           required maxlength="255" class="form-control"
+                           style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <button type="submit" class="btn btn-primary">修改密码</button>
+            </form>
+            <p style="color:#999; font-size:12px; margin-top:8px;">
+                修改成功后需要用新密码重新登录。
+            </p>
+        </div>
+
+        <!-- ====== Username Change ====== -->
+        <div class="card" style="box-shadow:none; border:1px solid #e0e0e0;">
+            <div class="card-header">
+                <h3 style="margin:0;">修改用户名</h3>
+            </div>
+            <form method="POST" action="/account/username" style="margin-top:12px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label for="username_current_password">当前密码（用于二次确认）</label>
+                    <input type="password" id="username_current_password" name="current_password"
+                           required maxlength="255" class="form-control"
+                           style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label for="new_username">新用户名</label>
+                    <input type="text" id="new_username" name="new_username"
+                           required maxlength="64" class="form-control"
+                           style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <button type="submit" class="btn btn-primary">修改用户名</button>
+            </form>
+            <p style="color:#999; font-size:12px; margin-top:8px;">
+                以 sa、dl 开头的用户名受保护，不可修改。修改成功后需要用新用户名重新登录。
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

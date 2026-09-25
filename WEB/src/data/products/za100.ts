@@ -1,0 +1,123 @@
+import type { Product } from "./types";
+
+/** ZQ-A100 健康筛查一体机（slug: za100）。 */
+export const za100: Product = {
+  slug: "za100",
+  model: "ZQ-A100",
+  name: {
+    zh: "安守护 · 健康筛查一体机",
+    en: "An Shou Hu · Health Screening Kiosk",
+    fr: "An Shou Hu · Borne de dépistage de santé",
+    es: "An Shou Hu · Kiosco de cribado de salud",
+    ja: "安守護 · 健康スクリーニング一体機",
+    ru: "An Shou Hu · Киоск скрининга здоровья",
+  },
+  tagline: {
+    zh: "一站式自助健康筛查，社区与机构健康管理的入口级设备",
+    en: "One-stop self-service health screening — the entry-level device for community and institutional health management",
+    fr: "Dépistage santé en libre-service — l'équipement d'entrée pour les communautés et institutions",
+    es: "Cribado de salud autoservicio integral — el dispositivo de entrada para comunidades e instituciones",
+    ja: "ワンストップのセルフ健康スクリーニング — 地域と施設の健康管理エントリー機器",
+    ru: "Комплексный самостоятельный скрининг здоровья — устройство начального уровня для сообществ и учреждений",
+  },
+  features: {
+    zh: [
+      "多项体征一体检测，一次站立完成筛查",
+      "身份识别建档 + 语音引导，老人可独立操作",
+      "数据自动上传云平台，报告现场打印",
+      "落地式部署，适用于社区服务中心与养老机构大堂",
+    ],
+    en: [
+      "Multiple vitals in one test — screening completed in a single standing session",
+      "ID recognition and record creation + voice guidance, operable by seniors independently",
+      "Data auto-uploaded to the cloud, reports printed on site",
+      "Floor-standing deployment for community centers and institution lobbies",
+    ],
+    fr: [
+      "Plusieurs signes vitaux en un test — dépistage en une seule séance",
+      "Reconnaissance d'identité + guidage vocal, utilisable par les seniors seuls",
+      "Données téléversées dans le cloud, rapports imprimés sur place",
+      "Déploiement au sol pour centres communautaires et halls d'institutions",
+    ],
+    es: [
+      "Varios signos vitales en una prueba — cribado en una sola sesión",
+      "Reconocimiento de identidad + guía por voz, operable por mayores de forma autónoma",
+      "Datos subidos a la nube, informes impresos en el sitio",
+      "Despliegue de pie para centros comunitarios y vestíbulos de residencias",
+    ],
+    ja: [
+      "複数のバイタルを一括測定 — 1回の立位でスクリーニング完了",
+      "本人確認・カルテ作成+音声ガイド — 高齢者が単独で操作可能",
+      "データ自動クラウド送信、レポート現地プリント",
+      "床置き型 — コミュニティセンターや施設ロビー向け",
+    ],
+    ru: [
+      "Несколько показателей за один тест — скрининг за одну процедуру",
+      "Идентификация личности + голосовое сопровождение, доступно пожилым",
+      "Автоматическая загрузка в облако, печать отчётов на месте",
+      "Напольная установка для центров и холлов учреждений",
+    ],
+  },
+  scenes: {
+    zh: ['养老机构', '社区居家养老', '医疗卫生', '职场健康', '健康管理机构', '大健康·美业', '银行养老金融', '保险健康权益', '长护险监管', '装修·适老化改造', '运营商与政企集成', '儿少健康监测', '礼品采购', '劳保用品', '会员服务', '政府采购', '企业福利', '招投标项目', '健康筛查', '健康档案', '慢病管理', '体征监测', '高压力/亚健康人群', '慢病人群', '长者', '儿童青少年'],
+    en: ['Elderly-care institutions', 'Community home care', 'Medical & health', 'Workplace health', 'Health management organizations', 'Wellness & beauty', 'Banking & wealth management', 'Insurance health benefits', 'Long-term care insurance supervision', 'Aging-friendly retrofit', 'Carrier & digital-government integration', 'Child & adolescent health monitoring', 'Gifting & corporate benefits', 'Occupational health & welfare', 'Membership & rights services', 'Government procurement', 'Corporate benefits', 'Tender projects', 'Health screening', 'Health records', 'Chronic care', 'Vital-sign monitoring', 'High-stress & sub-health', 'Chronic-disease patients', 'Seniors', 'Children & adolescents'],
+    fr: ['Institutions pour personnes âgées', 'Soins à domicile', 'Médical et santé', 'Santé au travail', 'Organismes de gestion de la santé', 'Bien-être et beauté', 'Banque et gestion de patrimoine', 'Avantages santé pour assureurs', "Supervision de l'assurance dépendance", 'Rénovation adaptée au vieillissement', 'Intégration opérateurs et collectivités', 'Suivi de la santé des enfants et adolescents', "Cadeaux et avantages d'entreprise", 'Santé au travail et protection', "Services d'adhésion", 'Achats publics', 'Avantages salariés', "Appels d'offres", 'Dépistage santé', 'Dossiers de santé', 'Soins chroniques', 'Surveillance des signes', 'Stress et sous-santé', 'Patients chroniques', 'Personnes âgées', 'Enfants et adolescents'],
+    es: ['Residencias de ancianos', 'Cuidados en el hogar', 'Médico y salud', 'Salud laboral', 'Organizaciones de gestión de salud', 'Bienestar y estética', 'Banca y gestión patrimonial', 'Beneficios de salud para aseguradoras', 'Supervisión del seguro de larga duración', 'Reforma adaptada al envejecimiento', 'Integración con operadores y gobierno digital', 'Monitorización de la salud infantil y juvenil', 'Regalos y beneficios corporativos', 'Salud laboral y protección', 'Servicios de membresía', 'Compras públicas', 'Beneficios corporativos', 'Licitações / concursos', 'Cribado de salud', 'Historial de salud', 'Cuidados crónicos', 'Monitorización de signos', 'Estrés y subsalud', 'Pacientes crónicos', 'Mayores', 'Niños y adolescentes'],
+    ja: ['介護施設', '在宅介護', '医療衛生', '職場の健康', '健康管理機関', 'ウェルネス・美容', '銀行・ウェルスマネジメント', '保険健康特典', '介護保険監督', 'バリアフリー改修', '通信事業者・政企連携', '児童・青少年の健康モニタリング', 'ギフト・福利厚生', '労働保護用品', '会員サービス', '政府調達', '企業福利厚生', '入札プロジェクト', '健康スクリーニング', '健康カルテ', '慢性疾患管理', 'バイタルモニタリング', '高ストレス・亜健康層', '慢性疾患患者', '高齢者', '児童・青少年'],
+    ru: ['Учреждения для пожилых', 'Домашний уход', 'Медицина и здоровье', 'Здоровье на рабочем месте', 'Организации управления здоровьем', 'Велнес и красота', 'Банки и управление капиталом', 'Страховые медицинские бонусы', 'Надзор за страхованием долгосрочного ухода', 'Адаптация жилья для пожилых', 'Интеграция с операторами и цифровым госуправлением', 'Мониторинг здоровья детей и подростков', 'Подарки и корпоративные льготы', 'Охрана труда и благополучие', 'Членские сервисы и права', 'Госзакупки', 'Корпоративные льготы', 'Тендерные проекты', 'Скрининг здоровья', 'Медкарты', 'Управление хроническими заболеваниями', 'Мониторинг показателей', 'Стресс и субздоровье', 'Пациенты с хроническими заболеваниями', 'Пожилые', 'Дети и подростки'],
+  },
+  spec: {
+    zh: "操作方式：自助式 + 语音引导\n数据链路：本地建档 + 云端同步\n输出形式：屏幕展示 + 打印报告\n身份识别：支持\n部署形态：落地式",
+    en: "Operation: self-service + voice guidance\nData: local records + cloud sync\nOutput: screen display + printed report\nID recognition: supported\nForm factor: floor-standing",
+    fr: "Utilisation : libre-service + guidage vocal\nDonnées : enregistrement local + synchro cloud\nSortie : écran + rapport imprimé\nIdentification : prise en charge\nForme : sur pied",
+    es: "Uso: autoservicio + guía por voz\nDatos: registro local + sincronización en la nube\nSalida: pantalla + informe impreso\nIdentificación: compatible\nForma: de pie",
+    ja: "操作：セルフ+音声ガイド\nデータ：ローカル登録+クラウド同期\n出力：画面表示+プリントレポート\n本人確認：対応\n形態：床置き型",
+    ru: "Работа: самообслуживание + голосовое сопровождение\nДанные: локальные записи + облачная синхронизация\nВывод: экран + печатный отчёт\nИдентификация: поддерживается\nФорма: напольная",
+  },
+  customers: {
+    zh: "社区服务中心、养老机构大堂等需要入口级健康筛查的场所。",
+    en: "Community service centers and institution lobbies that need entry-level health screening.",
+    fr: "Centres communautaires et halls d'institutions ayant besoin d'un dépistage d'entrée.",
+    es: "Centros comunitarios y vestíbulos de residencias que necesitan cribado de nivel de entrada.",
+    ja: "コミュニティセンターや施設ロビーなど、入口級の健康スクリーニングが必要な場所。",
+    ru: "Центры обслуживания сообществ и холлы учреждений, которым нужен входной скрининг.",
+  },
+  warranty: {
+    zh: "12 个月保修，特殊情况另定",
+    en: "12-month warranty, special cases determined separately",
+    fr: "Garantie 12 mois, conditions particulières à convenir",
+    es: "Garantía de 12 meses, casos especiales a convenir",
+    ja: "12ヶ月保証、特殊な状況は別途協議",
+    ru: "Гарантия 12 месяцев, особые случаи оговариваются отдельно",
+  },
+  images: [
+    {
+      src: "/images/products/za100/three-view.webp",
+      alt: {
+        zh: "ZQ-A100 健康筛查一体机 三视图",
+        en: "ZQ-A100 Health Screening Kiosk — three views",
+        fr: "ZQ-A100 Borne de dépistage — trois vues",
+        es: "ZQ-A100 Kiosco de cribado — tres vistas",
+        ja: "ZQ-A100 健康スクリーニング一体機 三面図",
+        ru: "ZQ-A100 Киоск скрининга — три вида",
+      },
+      width: 1536,
+      height: 1024,
+    },
+    {
+      src: "/images/products/za100/scene.webp",
+      alt: {
+        zh: "ZQ-A100 健康筛查一体机 场景图",
+        en: "ZQ-A100 Health Screening Kiosk — scene",
+        fr: "ZQ-A100 Borne de dépistage — scène",
+        es: "ZQ-A100 Kiosco de cribado — escena",
+        ja: "ZQ-A100 健康スクリーニング一体機 シーン図",
+        ru: "ZQ-A100 Киоск скрининга — сцена",
+      },
+      width: 1536,
+      height: 1024,
+    },
+  ],
+  deployment: ["社区中心", "机构大堂"],
+  relatedSlugs: ["zq50"],
+};

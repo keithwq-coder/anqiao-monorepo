@@ -1,0 +1,304 @@
+{
+  "metadata": {
+    "title": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. | Monitorización precisa de la salud",
+    "description": "Zhongke Anqiao ofrece dispositivos de monitorización sin contacto para residencias de ancianos, sanidad y bienestar mediante percepción multimodal — sin contacto, cero cámaras, cero micrófonos, que cubren sueño, caídas y cuidados."
+  },
+  "nav": {
+    "products": "Productos",
+    "solutions": "Soluciones",
+    "dealers": "Programa de distribuidores",
+    "about": "Sobre nosotros",
+    "news": "Noticias",
+    "contact": "Contacto"
+  },
+  "header": {
+    "quote": "Solicitar presupuesto",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "footer": {
+    "positioning": "Empresa nacional de innovación tecnológica · Monitorización precisa de la salud",
+    "contact": "Contacto",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "follow": "Síguenos",
+    "icp": "Registro ICP",
+    "machineTranslated": "El contenido no chino de esta página es una traducción automática, solo como referencia; la versión en chino es la que prevalece. (Traducción automática pendiente de revisión)"
+  },
+  "common": {
+    "pending": "Pendiente"
+  },
+  "form": {
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "organization": "Organización / Empresa",
+    "inquiryType": "Tipo de consulta",
+    "customerType": "Tipo de cliente",
+    "product": "Producto de interés",
+    "message": "Requisitos",
+    "select": "Seleccione",
+    "selectOptional": "Seleccione (opcional)",
+    "submit": "Enviar",
+    "submitting": "Enviando…"
+  },
+  "productCard": {
+    "model": "Modelo",
+    "tagline": "Eslogan",
+    "details": "Ver detalles →"
+  },
+  "filter": {
+    "all": "Todos",
+    "aria": "Filtrar productos por escenario",
+    "dimApp": "Escenarios",
+    "dimPurchase": "Compra",
+    "dimTopic": "Temas",
+    "dimPerson": "Público"
+  },
+  "productDetail": {
+    "tabs": {
+      "overview": "Resumen",
+      "features": "Características",
+      "specs": "Especificaciones",
+      "video": "Vídeos",
+      "docs": "Descargas",
+      "faq": "FAQ",
+      "related": "Productos relacionados"
+    },
+    "officialName": "Nombre oficial",
+    "deployment": "Puntos de despliegue",
+    "sellingPoints": "Puntos clave",
+    "scenes": "Casos de uso",
+    "scenesTags": "Etiquetas de casos de uso",
+    "quote": "Solicitar presupuesto",
+    "videoType": {
+      "intro": "Presentación",
+      "installation": "Demo de instalación",
+      "scene": "Demo en sitio"
+    },
+    "docType": {
+      "manual": "Manual",
+      "brochure": "Folleto",
+      "certificate": "Informe de prueba"
+    },
+    "download": "Descargar",
+    "relatedTitle": "Productos relacionados",
+    "relatedEmpty": "Dispositivos conectados típicos",
+    "browseAll": "Ver todos los productos",
+    "platformTitle": "Hub · Plataforma cloud Anshouhu",
+    "platformBody": "Este dispositivo puede conectarse a la plataforma cloud Anshouhu para agregación de datos multi-dispositivo, cuidado remoto y gestión a nivel de organización.",
+    "platformCta": "Conocer la plataforma Anshouhu",
+    "dimApp": "Escenarios",
+    "dimPurchase": "Canales de compra",
+    "dimTopic": "Temas",
+    "dimPerson": "Para quién",
+    "privacyBadgeTitle": "Protección física de la privacidad",
+    "privacyBadgeDesc": "El sensor superior es una ventana infrarroja ambiental pasiva. El dispositivo no tiene cámaras, sensores ópticos ni micrófonos, impidiendo cualquier grabación de audio o vídeo."
+  },
+  "home": {
+    "heroBadge": "Tecnología de radar derivada de Tsinghua · Empresa incubada nacional",
+    "heroTitle": "Tecnología de Tsinghua · Monitorización precisa de la salud",
+    "heroTagline": "Soluciones de monitorización sin contacto multimodal mmWave de 60 GHz",
+    "heroBody": "Dedicado a residencias de ancianos, sanidad y viviendas adaptadas: detección sin contacto mediante radar puro, cero cámaras, cero micrófonos — cuidando la salud y la dignidad.",
+    "heroLiveStatus": "Monitorización en cama activa",
+    "heroLiveOnline": "En línea",
+    "heroVitalsRespiration": "Respiración",
+    "heroVitalsHeartRate": "Frecuencia cardíaca",
+    "heroVitalsStatus": "Durmiendo en cama",
+    "heroAlertNotification": "Alerta móvil en tiempo real para familiares / cuidadores",
+    "heroAlertText": "02:15 Levantamiento · 02:22 Regreso seguro (7 min, constantes estables)",
+    "heroPrivacyBadge": "Privacidad 100% física · 0 cámaras · 0 micrófonos",
+    "quote": "Solicitar presupuesto",
+    "dealer": "Ser socio de canal",
+    "advantagesTitle": "Cuatro pilares de confianza comercial y técnica",
+    "advantages": [
+      {
+        "title": "Algoritmos derivados de Tsinghua",
+        "body": "Investigación en radar mmWave validada mediante rigurosas pruebas clínicas."
+      },
+      {
+        "title": "Cualificación médica de clase II",
+        "body": "Certificado oficial de registro para dispositivos médicos, plena conformidad legal."
+      },
+      {
+        "title": "Privacidad 100% física",
+        "body": "Cero cámaras y cero micrófonos: protección absoluta garantizada a nivel de hardware."
+      },
+      {
+        "title": "Garantía de calidad de 12 meses",
+        "body": "Garantía de hardware de 12 meses (casos especiales a convenir)."
+      }
+    ],
+    "flagshipTitle": "Dos dispositivos insignia en producción en serie",
+    "flagshipSubtitle": "Centrados en las necesidades prioritarias del cuidado mayor, entrega en volumen y certificaciones",
+    "flagshipBedTag": "Guardián de cama en dormitorio",
+    "flagshipBedTitle": "ZQ-SH100 · Guardián de salud IA",
+    "flagshipBedDesc": "Diseñado para la monitorización sin contacto de camas individuales a 60 GHz. Registra respiración, pulso y calidad de sueño, con alarma inmediata en salidas de cama prolongadas.",
+    "flagshipBedPoint1": "Signos vitales nocturnos digitalizados sin contacto, sincronización con familia y cuidadores",
+    "flagshipBedPoint2": "Alerta activa por tiempo excesivo fuera de la cama para evitar caídas y desorientación",
+    "flagshipBedPoint3": "Ventana infrarroja ambiental superior, sin cámaras ni grabaciones para un descanso tranquilo",
+    "flagshipFallTag": "Guardián de caídas en baño",
+    "flagshipFallTitle": "ZQ-D100 · Detector de caídas milimétrico",
+    "flagshipFallDesc": "Protege las zonas más críticas y resbaladizas del baño. El radar penetra el vapor y la oscuridad para detectar caídas en milisegundos y emitir avisos acústicos y móviles.",
+    "flagshipFallPoint1": "Detección de caídas en milisegundos con funcionamiento fiable ante vapor de agua",
+    "flagshipFallPoint2": "Alarma acústica local de alta potencia + notificación urgente en dispositivos móviles",
+    "flagshipFallPoint3": "Sin dispositivos que llevar puestos, instalación ligera en techo o pared",
+    "viewProductDetail": "Ver detalles y especificaciones del producto",
+    "matrixTitle": "Matriz de ampliación y dispositivos complementarios",
+    "matrixLead": "Módulos adaptables según presupuesto y necesidades, integrados con la plataforma IoT Anshouhu",
+    "viewAllProducts": "Ver los 10 productos y especificaciones completas →",
+    "solutionsTitle": "Soluciones por escenario",
+    "solutionsLead": "Soluciones que resuelven los dolores críticos en residencias, comunidades y hogares",
+    "viewSolution": "Ver solución completa →",
+    "dealerBanner": "Programa nacional de socios de canal — Soporte con muestras · Protección territorial · Licitaciones",
+    "dealerCta": "Conocer política de distribuidores y márgenes",
+    "newsTitle": "Tendencias del sector y normativas",
+    "newsLead": "Seguimiento de directrices gubernamentales y avances en la estandarización del radar para mayores",
+    "viewAllNews": "Ver todas las noticias",
+    "ctaTitle": "¿Necesita una solución y presupuesto para su proyecto?",
+    "ctaBody": "Indíquenos su tipo de institución y número de camas, nuestros especialistas responderán en menos de 2 horas."
+  },
+  "productsPage": {
+    "title": "Productos",
+    "lead": "Una matriz completa de dispositivos que cubre monitorización de cama, alerta de caídas, cribado de salud y seguimiento"
+  },
+  "solutionsPage": {
+    "title": "Soluciones",
+    "lead": "Combinaciones de dispositivos adaptadas por escenario — instituciones, comunidades, sanidad, bienestar y renovación adaptada al envejecimiento.",
+    "navAria": "Navegación por escenario",
+    "buyer": "Decisor / Comprador",
+    "painPoints": "Puntos de dolor",
+    "devices": "Combinación recomendada",
+    "value": "Valor entregado",
+    "quote": "Solicitar presupuesto",
+    "back": "Volver a soluciones",
+    "browseProducts": "Ver todos los productos",
+    "scenarios": "escenarios",
+    "viewDetail": "Ver escenario completo",
+    "flagship": "Estrella y en producción: Guardian de salud IA y Detector de caídas (suministro en serie); demás por proyecto.",
+    "applicationTitle": "Cómo se aplica"
+  },
+  "aboutPage": {
+    "title": "Sobre nosotros",
+    "lead": "Tecnología de Tsinghua · Monitorización sin contacto multimodal · Monitorización precisa de la salud",
+    "introTitle": "Perfil de la empresa",
+    "introBody": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. integra I+D y venta de dispositivos médicos, inteligencia de oficina, gestión de salud, integración médica inteligente, rehabilitación de mayores, aplicaciones móviles y software de monitorización preventiva de salud. Fundada en 2023 y con sede en Suzhou (China), la empresa fue incubada en el Instituto de Investigación en Tecnologías Avanzadas de Suzhou.",
+    "techTitle": "Hoja de ruta tecnológica",
+    "techBody": "La empresa construye un centro digital de gestión de salud y un equipo profesional de I+D, desarrollando progresivamente dispositivos clave que cubren el acceso rápido de salud inteligente, el cribado rápido sin contacto, las unidades madre-hijo de salud y el acceso rápido microfluídico. En cooperación con el Instituto de Ingeniería Biomédica de Suzhou, desarrolla programas de monitorización de salud de niños y adolescentes, adopta la tecnología de radar mmWave del sueño de Tsinghua y lanza el desarrollo del monitor de sueño integrando medicina y geriatría — iniciando oficialmente el programa de I+D del dispositivo AI Health Guardian.",
+    "qualityTitle": "Garantía de calidad",
+    "qualityTableCaption": "Etapas y compromisos de garantía de calidad",
+    "qualityStage": "Etapa",
+    "qualityTime": "Periodo",
+    "qualityPromise": "Compromiso",
+    "qualityStages": [
+      {
+        "stage": "Recepción e inspección",
+        "time": "En 7 días",
+        "promise": "Problema de calidad / dañado / artículo equivocado → reemplazo gratuito"
+      },
+      {
+        "stage": "Garantía de reemplazo",
+        "time": "En 15 días",
+        "promise": "Avería no causada por el uso → reemplazo gratuito"
+      },
+      {
+        "stage": "Periodo de garantía",
+        "time": "12 meses",
+        "promise": "Política de garantía de 12 meses, casos especiales a convenir"
+      }
+    ],
+    "certTitle": "Cualificaciones",
+    "certBody": "La empresa posee un certificado de registro de dispositivos médicos (cualificada para vender dispositivos médicos de clase II).",
+    "teamTitle": "Equipo de I+D",
+    "teamBody": "El equipo central de I+D de Zhongke Anqiao procede de destacadas instituciones como la Universidad de Tsinghua y el Instituto de Suzhou de la Academia China de Ciencias, con amplia experiencia en radiofrecuencia, procesamiento de señales de bioradar y algoritmos de salud.",
+    "historyTitle": "Hitos",
+    "history": [
+      {
+        "year": "2023",
+        "title": "Fundación",
+        "body": "Fundada en el Instituto de Investigación en Tecnologías Avanzadas de Suzhou, creación de un centro de gestión de salud y un equipo de I+D, desarrollo del acceso rápido de salud, el cribado rápido sin contacto y el acceso rápido microfluídico."
+      },
+      {
+        "year": "2024",
+        "title": "Proyecto principal iniciado",
+        "body": "Lanzamiento de la serie Elderly Health Guardian; cooperación con el Instituto de Ingeniería Biomédica de Suzhou; adopción del radar mmWave del sueño de Tsinghua; inicio oficial del proyecto AI Health Guardian."
+      },
+      {
+        "year": "2025–actualidad",
+        "title": "Gama completa",
+        "body": "Con los resultados del Instituto de Investigación de Shenzhen, desarrollo autónomo del analizador microfluídico de glóbulos blancos y de la cama de cuidados inteligente; integración modular de funciones de monitorización; cooperación con la Universidad del Sureste."
+      }
+    ]
+  },
+  "dealersPage": {
+    "title": "Programa de socios de canal a nivel nacional",
+    "lead": "Zhongke Anqiao convoca a socios distribuidores en todo el país. Proporcionamos muestras de prueba, registro de proyectos, protección territorial, licencias para licitaciones y soporte técnico integral.",
+    "reasonsTitle": "Cuatro garantías de colaboración",
+    "reasons": [
+      {
+        "title": "Respaldo tecnológico de Tsinghua",
+        "body": "Respaldado por la investigación en mmWave de la Universidad de Tsinghua, algoritmos sólidos y estabilidad demostrada."
+      },
+      {
+        "title": "Soporte de muestras y pruebas in situ",
+        "body": "Facilitamos unidades de demostración a socios acreditados para agilizar la validación con clientes e instituciones locales."
+      },
+      {
+        "title": "Registro de proyectos y protección de precios",
+        "body": "Un riguroso registro de proyectos y política de precios territoriales previene la competencia desleal y preserva sus márgenes."
+      },
+      {
+        "title": "Apoyo en licitaciones y garantía de calidad",
+        "body": "Documentación técnica exhaustiva para licitaciones y política de garantía de 12 meses en hardware (casos especiales a convenir)."
+      }
+    ],
+    "stepsTitle": "Cómo funciona",
+    "steps": [
+      {
+        "step": "01",
+        "title": "Enviar intención",
+        "body": "Rellene el formulario de registro de intención."
+      },
+      {
+        "step": "02",
+        "title": "Conversar",
+        "body": "Hablamos de región, escenarios y modelo de cooperación."
+      },
+      {
+        "step": "03",
+        "title": "Formación y certificación",
+        "body": "Participe en las formaciones de producto y ventas."
+      },
+      {
+        "step": "04",
+        "title": "Firmar y autorizar",
+        "body": "Complete el contrato y la autorización de canal."
+      }
+    ],
+    "stepsNote": "Las políticas detalladas se facilitan en la fase de comunicación de intención.",
+    "formTitle": "Registro de intención",
+    "formLead": "Le contactaremos pronto tras el envío."
+  },
+  "contactPage": {
+    "title": "Contacto",
+    "infoTitle": "Información de contacto",
+    "fullName": "Razón social",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "followTitle": "Seguir nuestra cuenta oficial",
+    "inquiryTitle": "Presupuestos y consultas",
+    "inquiryLead": "Rellene el formulario y le contactaremos pronto.",
+    "description": "Presupuestos y consultas: compra de dispositivos, soluciones y solicitudes de distribuidores."
+  },
+  "newsPage": {
+    "title": "Noticias",
+    "date": "Publicado",
+    "body": "Artículo",
+    "back": "← Volver a noticias",
+    "description": "Noticias de Zhongke Anqiao: normas (MZ/T 238-2025), catálogos de políticas y avances de proyectos."
+  },
+  "notFound": {
+    "product": "Producto no encontrado",
+    "news": "Artículo no encontrado"
+  }
+}

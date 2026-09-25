@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}新建客户{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:720px; margin:0 auto;">
+    <div class="card-header">
+        <h2>新建客户</h2>
+        <a href="/institutions" class="btn btn-sm btn-secondary">返回列表</a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/institutions/new">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-group">
+            <label for="name">客户名称 <span style="color:#e74c3c;">*</span></label>
+            <input type="text" id="name" name="name" required maxlength="500" value="{{ form.name if form else '' }}" placeholder="请输入客户全称">
+        </div>
+
+        <div class="form-group">
+            <label for="customer_type">客户类型 <span style="color:#e74c3c;">*</span></label>
+            <select id="customer_type" name="customer_type" required>
+                <option value="direct_purchase" {% if (form.customer_type if form else '') == 'direct_purchase' %}selected{% endif %}>直接采购</option>
+                <option value="individual" {% if (form.customer_type if form else '') == 'individual' %}selected{% endif %}>个人</option>
+                <option value="channel" {% if (form.customer_type if form else '') == 'channel' %}selected{% endif %}>渠道</option>
+            </select>
+            <span class="hint">纯分类标签（直接采购 / 个人 / 渠道），不改变任何功能</span>
+        </div>
+
+        <div class="form-group">
+            <label for="source_description">来源说明 <span style="color:#e74c3c;">*</span></label>
+            <textarea id="source_description" name="source_description" required rows="3" placeholder="请说明此客户的获取来源、渠道或背景信息">{{ form.source_description if form else '' }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="category">类别</label>
+                <input type="text" id="category" name="category" maxlength="120" value="{{ form.category if form else '' }}" placeholder="如：养老院、社区服务中心">
+            </div>
+            <div class="form-group">
+                <label for="region">地区</label>
+                <input type="text" id="region" name="region" maxlength="160" value="{{ form.region if form else '' }}" placeholder="如：北京市海淀区">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="source_kind">来源方式</label>
+                <input type="text" id="source_kind" name="source_kind" maxlength="64" value="{{ form.source_kind if form else '' }}" placeholder="如：主动联系、转介绍、展会">
+            </div>
+            <div class="form-group">
+                <label for="source_evidence_reference">来源证据</label>
+                <input type="text" id="source_evidence_reference" name="source_evidence_reference" value="{{ form.source_evidence_reference if form else '' }}" placeholder="可引用相关文件或记录编号">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="confirm_duplicate" value="true">
+                我确认已核对可能重复的候选，仍要创建
+            </label>
+            <span class="hint">如系统提示可能存在重复客户，勾选后可继续创建</span>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+            <button type="submit" class="btn btn-primary">创建客户</button>
+            <a href="/institutions" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

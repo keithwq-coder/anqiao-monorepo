@@ -1,0 +1,53 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Tool-local state and caches
+.claude/settings.local.json
+.codex/
+.qoder/
+.zcode/
+.cursor/workspaceStorage/
+
+# Runtime/build output
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+coverage/
+dist/
+build/
+tmp/
+*.log
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+!.vscode/extensions.json
+
+# First-commit housekeeping (2026-08-10, DEC-0119 baseline)
+.claude/
+.cursor/
+.mimosa/
+.playwright-mcp/
+.reasonix/
+.workbuddy/
+reasonix.toml
+*.tar.gz
+gov_out.txt
+test_output*.txt
+w4_log.txt
+tmp_*
+debug_*.py
+detailed_debug.py
+check_state.py
+deploy_and_start.py
+deploy_fix_step1.ps1
+verify_production.py
+opt/
+backup/

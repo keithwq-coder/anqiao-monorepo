@@ -1,0 +1,25 @@
+{
+  "name": "anqiao-console",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "backup:sqlite": "node server/backup-sqlite.mjs",
+    "test": "node --test server/test-ltc.mjs server/test-account-matrix.mjs server/test-device-ltc.mjs server/test-phase-c.mjs server/test-phase-d.mjs server/test-real-devices-seed.mjs server/test-workbench.mjs server/test-home-care.mjs server/test-medical-supervision.mjs server/test-insurer-operations.mjs"
+  },
+  "dependencies": {
+    "argon2": "^0.45.1",
+    "echarts": "^5.6.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.7",
+    "vue-tsc": "^2.2.0"
+  }
+}

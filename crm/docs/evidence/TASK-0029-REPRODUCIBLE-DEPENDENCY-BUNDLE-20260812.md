@@ -1,0 +1,183 @@
+# TASK-0029A: Reproducible dependency bundle — evidence (2026-08-12/13)
+
+- Status: **COMPLETED (part A) — awaiting Codex independent review (NOT
+  self-accepted)**
+- Authority: `DEC-0135` (product-owner authorization, 2026-08-12)
+- Approved SPEC: `SPEC-0012 v0.2.0` (hash matches approval metadata, see §1)
+- Execution owner: DeepSeek in PI through `opencode-go/deepseek-v4-flash`
+  (gateway selector only, upstream identity not asserted)
+- Review/acceptance owner: Codex architecture/review owner
+- Repository state: `main`, intentionally dirty; all pre-existing work
+  preserved. HEAD is exactly commit
+  `59101b80b6420155bf8aec26b14ea7800979db86`.
+- Scope: local-only resolution and artifact manifest for the fixed release
+  input. **No production/SSH action; no repository dependency change; no
+  source/application/migration/test/configuration write; no commit/push.**
+
+## 1. Precondition checks
+
+| Check | Command | Exit | Result |
+|---|---|---|---|
+| Git state | `git status --short` | 0 | Pre-existing dirty worktree preserved (68 lines; nothing altered, staged, reverted, or cleaned by this task) |
+| Approved SPEC hash | `powershell -NoProfile -Command "(Get-FileHash docs/specs/30-approved/SPEC-0012-deployment-operations.md -Algorithm SHA256).Hash.ToLowerInvariant()"` | 0 | `621131c01f85ab9186e0f14d913e20c82ea2016267ec9b4cf0dd867a0dac1192` — matches approval JSON `spec_sha256` |
+| Fixed commit exists | `git cat-file -t 59101b80b6420155bf8aec26b14ea7800979db86`; `git rev-parse HEAD` | 0 | Type `commit`; HEAD = `59101b80b6420155bf8aec26b14ea7800979db86` |
+| Python 3.12 interpreter | `py -3.12 --version` | 0 | `Python 3.12.8` |
+
+## 2. External task-owned workspace
+
+- Absolute path:
+  `C:\Users\K\AppData\Local\Temp\task-0029-20260813-001225`
+  (outside `D:\Project\中科安樵\crm`; no package binary or scratch artifact
+  was placed inside the repository).
+- Fresh venv: `py -3.12 -m venv <ws>\venv-a` → exit 0;
+  `venv-a\Scripts\python.exe --version` → `Python 3.12.8`;
+  `python -m pip --version` → `pip 24.3.1`.
+
+## 3. Isolated pip configuration
+
+Environment variables set for every pip invocation in this package:
+
+- `PIP_CONFIG_FILE=<ws>\pip-empty.conf` (empty `[global]` file, so no user or
+  system pip config, no extra index, no credentialed source)
+- `PIP_INDEX_URL=https://pypi.org/simple`
+- `PIP_NO_CACHE_DIR=true` (no cache reuse or write to any existing cache)
+- `PIP_DISABLE_PIP_VERSION_CHECK=1`
+- `PIP_NO_INPUT=1` (non-interactive)
+
+## 4. Fixed-commit extraction (byte-faithful, LF)
+
+- Command: `git -c core.autocrlf=false -c core.eol=lf archive
+  59101b80b6420155bf8aec26b14ea7800979db86 | tar -x -C <ws>/src` → exit 0.
+- 355 files extracted.
+- Extracted `pyproject.toml` SHA-256 (exactly the raw committed blob):
+  `93b3f4bf0589c1175dbcf82b650d138ff30cd003f580a1fcbdfd6cf130d09195` —
+  **matches** the fixed-input hash. (Note: without `core.autocrlf=false
+  core.eol=lf`, `git archive` on this Windows host applied `.gitattributes`
+  `* text=auto` CRLF conversion, which changed the hash; the LF-faithful
+  extraction above was used and verified.)
+
+## 5. Dependency resolution (network: `https://pypi.org/simple` only)
+
+- Input: `requirements.txt` containing exactly the fixed source's runtime
+  plus `test` extras (from the fixed `pyproject.toml`):
+  `alembic==1.18.4, argon2-cffi==25.1.0, fastapi==0.136.3,
+  itsdangerous>=2.1.2, jinja2>=3.1.2,<3.1.5, psycopg[binary]==3.3.4,
+  pydantic==2.12.5, pydantic-settings==2.14.2, python-multipart==0.0.22,
+  sqlalchemy==2.0.51, uvicorn==0.43.0, httpx==0.28.1, pytest==9.0.2`.
+- Command:
+  `<venv-a>\Scripts\python.exe -m pip install --dry-run --ignore-installed
+  --report <ws>\resolve.json -r <ws>\requirements.txt` → **exit 0**.
+- Result: **39 packages resolved** (direct + transitive).
+  Notable: `fastapi==0.136.3` resolves with **`starlette==1.6.0`** today
+  (the production runtime was observed at `starlette 0.44.0` in the separate,
+  still-unaccepted TASK-0028B inventory; that remote assertion is NOT a
+  prerequisite here — `[VERIFIED]` here only that today's public-index
+  resolution yields starlette 1.6.0, which is exactly the reproducibility
+  drift the missing lock causes).
+
+## 6. Artifact download and local wheel build
+
+- Command: `python -m pip download -r requirements.txt -d <ws>\wheelhouse`
+  → **exit 0**; **39 files** downloaded (all wheels; no sdist required).
+  Download was slow (peaks ~19 kB/s) but completed; the harness timeout was a
+  tool-side limit, not a task failure.
+- Command: `python -m pip wheel <ws>\src --no-deps -w <ws>\wheelhouse`
+  → **exit 0**; local project wheel
+  `anqiao_crm-0.1.0-py3-none-any.whl` (96,651 bytes,
+  sha256 `32d63bdd874dfb6792f39aaa18bb83ff5061f411f78b3a0c70ae86b3104a465e`)
+  built from the extracted fixed-commit tree (build isolation fetched
+  `setuptools==82.0.1` from `pypi.org/simple`).
+- Wheelhouse now contains **40 artifacts** (39 PyPI + 1 local).
+
+## 7. Lock and wheel manifest (artifacts stay in the workspace)
+
+Generated by a workspace-only script from `resolve.json` + downloaded files:
+- `requirements.lock` — **40 fully version-pinned lines, each with
+  `--hash=sha256:<hex>`**; `--require-hashes` compatible. Hash of each file
+  was computed with SHA-256 and matches the PyPI `download_info` hash from the
+  pip resolution report (cross-validated, e.g. alembic
+  `a5ed4adc…bfe19a`, argon2-cffi `fdc8b074…5741`, anqiao-crm
+  `32d63bdd…a465e`).
+- `wheel-manifest.txt` — 40 rows, columns
+  `canonical_name|version|wheel_filename|sha256|size_bytes|source`.
+  Source domain for all PyPI artifacts: `files.pythonhosted.org`; the local
+  wheel source is `local-build-from-fixed-commit-tree`.
+- Fixed-input hash recorded in both artifacts:
+  `93b3f4bf0589c1175dbcf82b650d138ff30cd003f580a1fcbdfd6cf130d09195`.
+
+## 8. Completion-gate self-checks
+
+| Check | Command | Exit | Result |
+|---|---|---|---|
+| Offline lock resolution | `python -m pip install --dry-run --ignore-installed --no-index --find-links <ws>\wheelhouse --require-hashes -r <ws>\requirements.lock` | 0 | "Would install" all 40 packages from the wheelhouse only |
+| Hash enforcement (negative) | same command with one hash tampered to `00000000…` | 1 | pip rejected the tampered hash (hash verification is enforced) |
+
+## 9. Full wheel manifest (record)
+
+Exact content of the workspace manifest `wheel-manifest.txt` (40 artifacts; PyPI source domain `files.pythonhosted.org`; local wheel `local-build` from the fixed-commit tree):
+
+| canonical_name | version | wheel_filename | sha256 | size_bytes | source |
+|---|---|---|---|---|---|
+| alembic | 1.18.4 | alembic-1.18.4-py3-none-any.whl | a5ed4adcf6d8a4cb575f3d759f071b03cd6e5c7618eb796cb52497be25bfe19a | 263893 | files.pythonhosted.org |
+| annotated-doc | 0.0.5 | annotated_doc-0.0.5-py3-none-any.whl | 117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101 | 5302 | files.pythonhosted.org |
+| annotated-types | 0.8.0 | annotated_types-0.8.0-py3-none-any.whl | f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0 | 13427 | files.pythonhosted.org |
+| anqiao-crm | 0.1.0 | anqiao_crm-0.1.0-py3-none-any.whl | 32d63bdd874dfb6792f39aaa18bb83ff5061f411f78b3a0c70ae86b3104a465e | 96651 | local-build |
+| anyio | 4.14.2 | anyio-4.14.2-py3-none-any.whl | 9f505dda5ac9f0c8309b5e8bd445a8c2bf7246f3ce950121e45ea15bc41d1494 | 125813 | files.pythonhosted.org |
+| argon2-cffi | 25.1.0 | argon2_cffi-25.1.0-py3-none-any.whl | fdc8b074db390fccb6eb4a3604ae7231f219aa669a2652e0f20e16ba513d5741 | 14657 | files.pythonhosted.org |
+| argon2-cffi-bindings | 25.1.0 | argon2_cffi_bindings-25.1.0-cp39-abi3-win_amd64.whl | a98cd7d17e9f7ce244c0803cad3c23a7d379c301ba618a5fa76a67d116618b98 | 31715 | files.pythonhosted.org |
+| certifi | 2026.7.22 | certifi-2026.7.22-py3-none-any.whl | 62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775 | 136983 | files.pythonhosted.org |
+| cffi | 2.1.1 | cffi-2.1.1-cp312-cp312-win_amd64.whl | f53e442b08449d42821fa4a4fba000095af9f62742a500f978a9f557ec44339a | 185919 | files.pythonhosted.org |
+| click | 8.4.2 | click-8.4.2-py3-none-any.whl | e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76 | 119243 | files.pythonhosted.org |
+| colorama | 0.4.6 | colorama-0.4.6-py2.py3-none-any.whl | 4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6 | 25335 | files.pythonhosted.org |
+| fastapi | 0.136.3 | fastapi-0.136.3-py3-none-any.whl | 3d2a69bdf04b7e9f3afa292c3bc7a98816bbfafa10bc9b45f3f3700d2f761620 | 117481 | files.pythonhosted.org |
+| greenlet | 3.5.5 | greenlet-3.5.5-cp312-cp312-win_amd64.whl | 49ddacd36af37735fab103846f4ee4d18a492dde72730d1699c0c8ebe30d9f18 | 324171 | files.pythonhosted.org |
+| h11 | 0.16.0 | h11-0.16.0-py3-none-any.whl | 63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86 | 37515 | files.pythonhosted.org |
+| httpcore | 1.0.9 | httpcore-1.0.9-py3-none-any.whl | 2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55 | 78784 | files.pythonhosted.org |
+| httpx | 0.28.1 | httpx-0.28.1-py3-none-any.whl | d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad | 73517 | files.pythonhosted.org |
+| idna | 3.18 | idna-3.18-py3-none-any.whl | 7f952cbe720b688055e3f87de14f5c3e5fdaa8bc3928985c4077ca689de849a2 | 65455 | files.pythonhosted.org |
+| iniconfig | 2.3.0 | iniconfig-2.3.0-py3-none-any.whl | f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12 | 7484 | files.pythonhosted.org |
+| itsdangerous | 2.2.0 | itsdangerous-2.2.0-py3-none-any.whl | c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef | 16234 | files.pythonhosted.org |
+| Jinja2 | 3.1.4 | jinja2-3.1.4-py3-none-any.whl | bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d | 133271 | files.pythonhosted.org |
+| Mako | 1.4.1 | mako-1.4.1-py3-none-any.whl | a359d9a94a541213958742b2698d0a7757bb83551767bc468a74b9905aba9617 | 80010 | files.pythonhosted.org |
+| MarkupSafe | 3.0.3 | markupsafe-3.0.3-cp312-cp312-win_amd64.whl | 26a5784ded40c9e318cfc2bdb30fe164bdb8665ded9cd64d500a34fb42067b1c | 15105 | files.pythonhosted.org |
+| packaging | 26.3 | packaging-26.3-py3-none-any.whl | d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c | 129956 | files.pythonhosted.org |
+| pluggy | 1.6.0 | pluggy-1.6.0-py3-none-any.whl | e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746 | 20538 | files.pythonhosted.org |
+| psycopg | 3.3.4 | psycopg-3.3.4-py3-none-any.whl | b6bbc25ccf05c8fad3b061d9db2ef0909a555171b84b07f29458a447253d679a | 213001 | files.pythonhosted.org |
+| psycopg-binary | 3.3.4 | psycopg_binary-3.3.4-cp312-cp312-win_amd64.whl | 494ca54901be8cf9eb7e02c25b731f2317c378efa44f43e8f9bd0e1184ae7be4 | 3560782 | files.pythonhosted.org |
+| pycparser | 3.0 | pycparser-3.0-py3-none-any.whl | b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992 | 48172 | files.pythonhosted.org |
+| pydantic | 2.12.5 | pydantic-2.12.5-py3-none-any.whl | e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d | 463580 | files.pythonhosted.org |
+| pydantic_core | 2.41.5 | pydantic_core-2.41.5-cp312-cp312-win_amd64.whl | 1962293292865bca8e54702b08a4f26da73adc83dd1fcf26fbc875b35d81c815 | 2020145 | files.pythonhosted.org |
+| pydantic-settings | 2.14.2 | pydantic_settings-2.14.2-py3-none-any.whl | a20c97b37910b6550d5ea50fbcc2d4187defe58cd57070b73863d069419c9440 | 61715 | files.pythonhosted.org |
+| Pygments | 2.20.0 | pygments-2.20.0-py3-none-any.whl | 81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176 | 1231151 | files.pythonhosted.org |
+| pytest | 9.0.2 | pytest-9.0.2-py3-none-any.whl | 711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b | 374801 | files.pythonhosted.org |
+| python-dotenv | 1.2.2 | python_dotenv-1.2.2-py3-none-any.whl | 1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a | 22101 | files.pythonhosted.org |
+| python-multipart | 0.0.22 | python_multipart-0.0.22-py3-none-any.whl | 2b2cd894c83d21bf49d702499531c7bafd057d730c201782048f7945d82de155 | 24579 | files.pythonhosted.org |
+| SQLAlchemy | 2.0.51 | sqlalchemy-2.0.51-cp312-cp312-win_amd64.whl | 2cf39aabdf48e87c1c2c2ed6d20d33ffa0733b3071ce9c5f66357947dd009080 | 2146670 | files.pythonhosted.org |
+| starlette | 1.6.0 | starlette-1.6.0-py3-none-any.whl | a86dd39d14bb45f85a3d18525215a9ef0cfd1f192ac793220e72598c90335f0c | 75969 | files.pythonhosted.org |
+| typing_extensions | 4.16.0 | typing_extensions-4.16.0-py3-none-any.whl | 481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 | 45571 | files.pythonhosted.org |
+| typing-inspection | 0.4.4 | typing_inspection-0.4.4-py3-none-any.whl | 65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147 | 14750 | files.pythonhosted.org |
+| tzdata | 2026.3 | tzdata-2026.3-py2.py3-none-any.whl | dc096730c87af6cab1b171c9d532be840741ff5d459015e7f6947bd7d7e54931 | 348168 | files.pythonhosted.org |
+| uvicorn | 0.43.0 | uvicorn-0.43.0-py3-none-any.whl | 46fac64f487fd968cd999e5e49efbbe64bd231b5bd8b4a0b482a23ebce499620 | 68591 | files.pythonhosted.org |
+
+## 10. No-log / no-secret / no-mutation attestation
+
+- **NO LOG COMMAND RAN** — no `journalctl`, `systemctl status`, `tail`,
+  `/var/log`, log file/query, or substitute.
+- **NO SECRET WAS READ, PRINTED, COPIED, OR STORED** — no credential, private
+  key, runtime-environment value, cookie, session, business row, database
+  value, or HTTP body was accessed. `requirements.lock` and the manifests
+  contain only package names, versions, filenames, SHA-256 hashes, sizes, and
+  source domains.
+- **NO MUTATION** — no production/SSH action; no source, application,
+  migration, test, or configuration write; no repository dependency change;
+  no commit, push, reset, clean, or checkout. All package binaries, venvs,
+  extracted source, and scratch scripts remain in the external workspace.
+- No package-cache contents were read or reused (`PIP_NO_CACHE_DIR=true`).
+
+## 11. Not verified / boundaries
+
+- Part B (two offline reconstructions) and Part C (Linux artifact check) are
+  separate sequential parts and are not started here.
+- This part does not self-accept; it does not claim a production build,
+  production repair, production-compatible runtime, or release-ready proof.
+- Codex independent review is pending for the whole package.

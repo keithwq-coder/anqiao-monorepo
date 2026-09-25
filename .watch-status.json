@@ -1,0 +1,11 @@
+{
+  "status": "running",
+  "started_at": "2026-09-24T09:00:35.7689099+08:00",
+  "last_check": "2026-09-24T09:12:39.2184285+08:00",
+  "newest_path": "D:\\Project\\中科安樵\\suqian-dashboard\\pnpm-workspace.yaml",
+  "newest_mtime": "2026-09-24T09:03:55.5732260+08:00",
+  "alive_pids": [],
+  "stall_streak": 8,
+  "dead_streak": 1,
+  "alert": null
+}

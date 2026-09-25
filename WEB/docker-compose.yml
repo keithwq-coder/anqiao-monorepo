@@ -1,0 +1,13 @@
+services:
+  web:
+    build:
+      context: .
+    container_name: anqiao-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:2828:3000"
+    volumes:
+      # 线索数据持久化（含个人信息，目录权限 700）
+      - ./data:/app/data
+    env_file:
+      - .env

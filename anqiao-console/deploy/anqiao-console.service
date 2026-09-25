@@ -1,0 +1,31 @@
+# anqiao-console.service（阶段一影子上线，INTEGRATION-SPEC §2.2）
+# 监听 127.0.0.1:2831，刻意避开旧 anqiao-saas.service:2830 以支持影子并行。
+# 安装位置：/etc/systemd/system/anqiao-console.service
+# 密钥文件：/etc/anqiao-console/env（chmod 600，root:root），见 anqiao-console.env.example
+#
+# 安装（夜间窗口 A，步骤见 WINDOW-A-runbook.md）：
+#   sudo cp anqiao-console.service /etc/systemd/system/
+#   sudo cp anqiao-console.env.example /etc/anqiao-console/env   # 然后填入真实密钥
+#   sudo chmod 600 /etc/anqiao-console/env
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now anqiao-console.service
+[Unit]
+Description=Anqiao Console Server (unique business backend, shadow :2831)
+After=network.target
+# 不依赖旧 anqiao-saas.service；旧服务在阶段三验收前保持运行
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/anqiao-console
+ExecStart=/usr/bin/node /opt/anqiao-console/server/index.js
+Restart=always
+RestartSec=3
+Environment=PORT=2831
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/anqiao-console/env
+# 硬性红线：TOKEN_SECRET / SEED_ACCOUNT_PASSWORD 由 EnvironmentFile 注入，缺失进程拒绝启动
+# 日志走 journald：journalctl -u anqiao-console.service -f
+
+[Install]
+WantedBy=multi-user.target

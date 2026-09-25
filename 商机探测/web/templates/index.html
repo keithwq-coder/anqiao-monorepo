@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}<title>商机探测 - 列表</title>{% endblock %}
+{% block content %}
+<div class="toolbar">
+    <form method="get" action="/" class="filter-form">
+        <select name="source_type">
+            <option value="">全部类型</option>
+            <option value="招标" {% if source_type == "招标" %}selected{% endif %}>招标 ({{ type_counts.get("招标", 0) }})</option>
+            <option value="资讯" {% if source_type == "资讯" %}selected{% endif %}>资讯 ({{ type_counts.get("资讯", 0) }})</option>
+            <option value="政策" {% if source_type == "政策" %}selected{% endif %}>政策 ({{ type_counts.get("政策", 0) }})</option>
+        </select>
+        <input type="text" name="region" placeholder="地区筛选" value="{{ region }}">
+        <select name="grade">
+            <option value="0">全部档位</option>
+            <option value="1" {% if grade == 1 %}selected{% endif %}>一档·安樵相关 ({{ grade_counts.get("1", 0) }})</option>
+            <option value="2" {% if grade == 2 %}selected{% endif %}>二档·行业/政策 ({{ grade_counts.get("2", 0) }})</option>
+            <option value="3" {% if grade == 3 %}selected{% endif %}>三档·不合格 ({{ grade_counts.get("3", 0) }})</option>
+            <option value="-1" {% if grade == -1 %}selected{% endif %}>未分类 ({{ grade_counts.get("未分类", 0) }})</option>
+        </select>
+        <label class="show-all-label">
+            <input type="checkbox" name="show_all" value="1" {% if show_all %}checked{% endif %} onchange="this.form.submit()">
+            显示三档不合格
+        </label>
+        <button type="submit">筛选</button>
+        <a href="/" class="btn-reset">重置</a>
+    </form>
+    <div class="toolbar-right">
+        <span class="total-count">共 {{ total }} 条</span>
+        <select id="crawlerSelect" class="status-select">
+            <option value="ccgp_list">政府采购网</option>
+            <option value="bing_search">Bing搜索</option>
+            <option value="cnsf99">中国养老网</option>
+            <option value="yanglao">养老网</option>
+            <option value="mca">民政部</option>
+            <option value="cncaprc">中国老龄协会</option>
+        </select>
+        <button onclick="runCrawler(document.getElementById('crawlerSelect').value)" class="btn-crawl">立即抓取</button>
+    </div>
+</div>
+
+<table class="opp-table">
+    <thead>
+        <tr>
+            <th class="col-score">档位</th>
+            <th class="col-title">标题</th>
+            <th class="col-type">类型</th>
+            <th class="col-region">地区</th>
+            <th class="col-amount">金额</th>
+            <th class="col-date">发布日期</th>
+            <th class="col-status">状态</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+        <tr>
+            <td class="col-score">
+                {% if item.grade == 1 %}
+                <span class="grade-badge grade-1">一档</span>
+                {% elif item.grade == 2 %}
+                <span class="grade-badge grade-2">二档</span>
+                {% elif item.grade == 3 %}
+                <span class="grade-badge grade-3">三档</span>
+                {% else %}
+                <span class="grade-badge grade-none">未分类</span>
+                {% endif %}
+            </td>
+            <td class="col-title">
+                <a href="/detail/{{ item.id }}">{{ item.title }}</a>
+            </td>
+            <td class="col-type">
+                <span class="type-tag type-{{ item.source_type }}">{{ item.source_type }}</span>
+            </td>
+            <td>{{ item.region or "-" }}</td>
+            <td>{{ item.amount or "-" }}</td>
+            <td>{{ item.publish_date or "-" }}</td>
+            <td>
+                <select onchange="updateStatus({{ item.id }}, this.value)" class="status-select">
+                    <option value="新发现" {% if item.status == "新发现" %}selected{% endif %}>新发现</option>
+                    <option value="已跟进" {% if item.status == "已跟进" %}selected{% endif %}>已跟进</option>
+                    <option value="已关闭" {% if item.status == "已关闭" %}selected{% endif %}>已关闭</option>
+                </select>
+            </td>
+        </tr>
+    {% endfor %}
+    {% if not items %}
+        <tr><td colspan="7" class="empty">暂无数据，选择爬虫点击"立即抓取"开始</td></tr>
+    {% endif %}
+    </tbody>
+</table>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}&source_type={{ source_type }}&region={{ region }}&grade={{ grade }}&show_all={{ '1' if show_all else '' }}" class="page-btn">上一页</a>
+    {% endif %}
+    <span class="page-info">第 {{ page }} / {{ total_pages }} 页</span>
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}&source_type={{ source_type }}&region={{ region }}&grade={{ grade }}&show_all={{ '1' if show_all else '' }}" class="page-btn">下一页</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<script>
+async function updateStatus(id, status) {
+    await fetch(`/api/opportunities/${id}/status?status=${encodeURIComponent(status)}`, {method: 'PATCH'});
+}
+
+async function runCrawler(name) {
+    const btn = document.querySelector('.btn-crawl');
+    const origText = btn.textContent;
+    btn.textContent = '抓取中...';
+    btn.disabled = true;
+    const res = await fetch(`/api/crawler/run/${name}`, {method: 'POST'});
+    const data = await res.json();
+    if (data.ok) {
+        btn.textContent = '已启动，30秒后刷新';
+        setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 5000);
+        setTimeout(() => location.reload(), 30000);
+    } else {
+        alert(data.error || '启动失败');
+        btn.textContent = origText;
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

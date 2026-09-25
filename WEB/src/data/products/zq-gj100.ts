@@ -1,0 +1,110 @@
+import type { Product } from "./types";
+
+/** ZQ-GJ100 人体轨迹监测仪。 */
+export const zqGj100: Product = {
+  slug: "zq-gj100",
+  model: "ZQ-GJ100",
+  name: {
+    zh: "安守护 · 人体轨迹监测仪",
+    en: "An Shou Hu · Human Trajectory Monitor",
+    fr: "An Shou Hu · Moniteur de trajectoire",
+    es: "An Shou Hu · Monitor de trayectoria",
+    ja: "安守護 · 人体軌跡モニター",
+    ru: "An Shou Hu · Монитор траектории человека",
+  },
+  tagline: {
+    zh: "覆盖客厅活动区域，绘制日常活动画像",
+    en: "Covers living-room activity zones and maps the daily activity profile",
+    fr: "Couvre les zones d'activité du salon et dresse le profil d'activité quotidien",
+    es: "Cubre las zonas de actividad del salón y traza el perfil de actividad diario",
+    ja: "リビングの活動エリアをカバーし、日常の活動像を描く",
+    ru: "Покрывает зоны активности в гостиной и строит профиль повседневной активности",
+  },
+  features: {
+    zh: [
+      "轨迹分析，活动轨迹追踪，生成活动热力分布",
+      "滞留检测与异常行为识别",
+      "活动量统计，掌握日常起居规律",
+      "轨迹数据不采集图像，隐私安全",
+    ],
+    en: [
+      "Trajectory analysis and tracking with activity heat maps",
+      "Lingering detection and abnormal-behavior recognition",
+      "Activity-volume statistics to understand daily routines",
+      "No image capture — trajectory data stays privacy-safe",
+    ],
+    fr: [
+      "Analyse de trajectoire avec cartes de chaleur d'activité",
+      "Détection de présence prolongée et comportements anormaux",
+      "Statistiques d'activité pour comprendre les routines",
+      "Pas de capture d'image — confidentialité garantie",
+    ],
+    es: [
+      "Análisis de trayectoria con mapas de calor de actividad",
+      "Detección de permanencia y comportamientos anómalos",
+      "Estadísticas de actividad para conocer las rutinas",
+      "Sin captura de imágenes — datos de trayectoria privados",
+    ],
+    ja: [
+      "軌跡分析・追跡で活動ヒートマップを生成",
+      "滞留検知と異常行動の認識",
+      "活動量統計で日常の生活リズムを把握",
+      "軌跡データは画像を取得せず、プライバシー安全",
+    ],
+    ru: [
+      "Анализ траекторий с тепловыми картами активности",
+      "Детекция задержек и аномального поведения",
+      "Статистика активности для понимания распорядка",
+      "Без захвата изображений — конфиденциальность",
+    ],
+  },
+  scenes: {
+    zh: ['养老机构', '社区居家养老', '居家服务', '居家安防', '旅游与景区', '智慧酒店', '运营商与政企集成', '长护险监管', '礼品采购', '会员服务', '劳保用品', '招投标项目', '健康档案', '长者', '独居空巢老人'],
+    en: ['Elderly-care institutions', 'Community home care', 'Home services', 'Home safety & security', 'Tourism & scenic areas', 'Smart hospitality', 'Carrier & digital-government integration', 'Long-term care insurance supervision', 'Gifting & corporate benefits', 'Membership & rights services', 'Occupational health & welfare', 'Tender projects', 'Health records', 'Seniors', 'Seniors living alone'],
+    fr: ['Institutions pour personnes âgées', 'Soins à domicile', 'Services à domicile', 'Sécurité à domicile', 'Tourisme et espaces naturels', 'Hôtellerie intelligente', 'Intégration opérateurs et collectivités', "Supervision de l'assurance dépendance", "Cadeaux et avantages d'entreprise", "Services d'adhésion", 'Santé au travail et protection', "Appels d'offres", 'Dossiers de santé', 'Personnes âgées', 'Seniors vivant seuls'],
+    es: ['Residencias de ancianos', 'Cuidados en el hogar', 'Servicios en el hogar', 'Seguridad en el hogar', 'Turismo y espacios naturales', 'Hotelería inteligente', 'Integración con operadores y gobierno digital', 'Supervisión del seguro de larga duración', 'Regalos y beneficios corporativos', 'Servicios de membresía', 'Salud laboral y protección', 'Licitações / concursos', 'Historial de salud', 'Mayores', 'Mayores que viven solos'],
+    ja: ['介護施設', '在宅介護', '在宅サービス', '在宅セキュリティ', '観光・景区', 'スマートホテル', '通信事業者・政企連携', '介護保険監督', 'ギフト・福利厚生', '会員サービス', '労働保護用品', '入札プロジェクト', '健康カルテ', '高齢者', '独居・空巣の高齢者'],
+    ru: ['Учреждения для пожилых', 'Домашний уход', 'Домашние услуги', 'Безопасность дома', 'Туризм и курортные зоны', 'Умные отели', 'Интеграция с операторами и цифровым госуправлением', 'Надзор за страхованием долгосрочного ухода', 'Подарки и корпоративные льготы', 'Членские сервисы и права', 'Охрана труда и благополучие', 'Тендерные проекты', 'Медкарты', 'Пожилые', 'Одинокие пожилые'],
+  },
+  spec: {
+    zh: '探测原理：轨迹分析\n识别对象：活动轨迹、滞留、异常行为\n监测内容：活动量、轨迹热力分布\n安装方式：壁挂\n通信方式：WiFi',
+    en: 'Detection: trajectory analysis\nRecognizes: activity trajectory, lingering, abnormal behavior\nMonitors: activity volume, trajectory heat map\nInstallation: wall-mounted\nConnectivity: WiFi',
+    fr: "Détection : analyse de trajectoire\nReconnaît : trajectoire, présence prolongée, comportements anormaux\nSurveille : volume d'activité, carte de chaleur\nInstallation : mural\nConnectivité : WiFi",
+    es: 'Detección: análisis de trayectoria\nReconoce: trayectoria, permanencia, comportamiento anómalo\nMonitoriza: volumen de actividad, mapa de calor\nInstalación: de pared\nConectividad: WiFi',
+    ja: '検知原理：軌跡分析\n認識対象：活動軌跡、滞留、異常行動\nモニタリング：活動量、軌跡ヒートマップ\n設置：壁掛け\n通信：WiFi',
+    ru: 'Детекция: анализ траектории\nРаспознаёт: траекторию, задержку, аномальное поведение\nМониторинг: объём активности, тепловая карта\nУстановка: настенная\nСвязь: WiFi',
+  },
+  customers: {
+    zh: "关注独居老人活动状态的社区居家养老服务场景。",
+    en: "Community home-care scenarios focused on the activity of seniors living alone.",
+    fr: "Scénarios de soins à domicile pour seniors vivant seuls.",
+    es: "Escenarios de cuidados en el hogar centrados en mayores que viven solos.",
+    ja: "独居高齢者の活動状態を見守る在宅介護サービスシーン。",
+    ru: "Сценарии домашнего ухода, где важно следить за активностью одиноких пожилых.",
+  },
+  warranty: {
+    zh: "12 个月保修，特殊情况另定",
+    en: "12-month warranty, special cases determined separately",
+    fr: "Garantie 12 mois, conditions particulières à convenir",
+    es: "Garantía de 12 meses, casos especiales a convenir",
+    ja: "12ヶ月保証、特殊な状況は別途協議",
+    ru: "Гарантия 12 месяцев, особые случаи оговариваются отдельно",
+  },
+  images: [
+    {
+      src: "/images/products/zq-gj100/three-view.webp",
+      alt: {
+        zh: "ZQ-GJ100 人体轨迹监测仪 三视图",
+        en: "ZQ-GJ100 Human Trajectory Monitor — three views",
+        fr: "ZQ-GJ100 Moniteur de trajectoire — trois vues",
+        es: "ZQ-GJ100 Monitor de trayectoria — tres vistas",
+        ja: "ZQ-GJ100 人体軌跡モニター 三面図",
+        ru: "ZQ-GJ100 Монитор траектории — три вида",
+      },
+      width: 1600,
+      height: 800,
+    },
+  ],
+  deployment: ["客厅"],
+  relatedSlugs: [],
+};

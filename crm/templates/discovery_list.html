@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}AI 商机{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>AI 商机候选</h2>
+        {% if is_admin %}
+        <div class="action-group" style="margin-top:0;">
+            <button id="trigger-run-btn" class="btn btn-primary" type="button">🔄 触发商机生成</button>
+            <span id="run-result" class="hint"></span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if candidates %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>候选标题</th>
+                    <th>来源</th>
+                    <th>发现时间</th>
+                    <th>AI 理由摘要</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in candidates %}
+                <tr>
+                    <td><a href="/discovery/candidates/{{ c.id }}">{{ c.candidate_text }}</a></td>
+                    <td>{{ '现有客户信号' if c.source == 'existing_customer' else '外部公告' }}</td>
+                    <td>{{ c.discovered_at }}</td>
+                    <td>{{ c.supporting_reason[:120] }}{% if c.supporting_reason|length > 120 %}…{% endif %}</td>
+                    <td>
+                        {% if c.status == '待处理' %}<span class="status-tag status-pending">待处理</span>
+                        {% elif c.status == '采纳' %}<span class="status-tag status-accepted">已采纳</span>
+                        {% elif c.status == '忽略' %}<span class="status-tag status-ignored">已忽略</span>
+                        {% else %}<span class="status-tag">{{ c.status }}</span>{% endif %}
+                    </td>
+                    <td><a href="/discovery/candidates/{{ c.id }}" class="btn btn-sm btn-outline">查看详情</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">🧭</div>
+        <p>暂无商机候选{% if is_admin %}，点击右上角「触发商机生成」创建{% else %}，管理员生成后您将在此看到{% endif %}</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if management_candidates is not none %}
+<!-- ====== Admin-only: desensitized management view (SPEC-0003 R-009) ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>管理视图（脱敏）</h2>
+        <span class="hint">仅管理员可见：全部候选的脱敏摘要</span>
+    </div>
+    {% if management_candidates %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>候选文本</th>
+                    <th>来源</th>
+                    <th>状态</th>
+                    <th>发现时间</th>
+                    <th>过期时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in management_candidates %}
+                <tr>
+                    <td>{{ m.candidate_text }}</td>
+                    <td>{{ '现有客户信号' if m.source == 'existing_customer' else '外部公告' }}</td>
+                    <td>
+                        {% if m.status == '待处理' %}<span class="status-tag status-pending">待处理</span>
+                        {% elif m.status == '采纳' %}<span class="status-tag status-accepted">已采纳</span>
+                        {% elif m.status == '忽略' %}<span class="status-tag status-ignored">已忽略</span>
+                        {% else %}<span class="status-tag">{{ m.status }}</span>{% endif %}
+                    </td>
+                    <td>{{ m.discovered_at }}</td>
+                    <td>{{ m.expires_at or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>暂无候选</p></div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if is_admin %}
+<script>
+(function() {
+    var btn = document.getElementById('trigger-run-btn');
+    if (!btn) return;
+    var csrf = '{{ csrf_token|default("") }}';
+    var result = document.getElementById('run-result');
+
+    // On page load, check if a crawl is already running
+    checkStatus();
+
+    btn.addEventListener('click', async function() {
+        btn.disabled = true;
+        result.textContent = '触发中…';
+        try {
+            var resp = await fetch('/api/discovery/candidates/run', {
+                method: 'POST',
+                headers: {'X-CSRF-Token': csrf}
+            });
+            var data = await resp.json();
+            if (resp.ok && data.status === 'started') {
+                result.textContent = '已触发，后台采集中…';
+                pollUntilDone();
+            } else if (resp.ok && data.status === 'already_running') {
+                result.textContent = '已有采集任务在运行中，请等待完成';
+                pollUntilDone();
+            } else {
+                result.textContent = '失败：' + (data.detail || resp.status);
+                btn.disabled = false;
+            }
+        } catch (e) {
+            result.textContent = '请求失败，请重试';
+            btn.disabled = false;
+        }
+    });
+
+    function checkStatus() {
+        fetch('/api/discovery/candidates/status')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.running) {
+                    btn.disabled = true;
+                    result.textContent = '后台采集中…';
+                    pollUntilDone();
+                } else if (data.last_result) {
+                    var res = data.last_result;
+                    if (res.error) {
+                        result.textContent = '上次采集失败';
+                    } else {
+                        result.textContent = '上次采集：' + (res.generated || 0) + ' 条候选';
+                    }
+                }
+            });
+    }
+
+    function pollUntilDone() {
+        var attempts = 0;
+        var maxAttempts = 120; // ~10 minutes at 5s intervals
+        var interval = setInterval(function() {
+            attempts++;
+            fetch('/api/discovery/candidates/status')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.running) {
+                        clearInterval(interval);
+                        btn.disabled = false;
+                        var res = data.last_result;
+                        if (res && !res.error) {
+                            result.textContent = '已完成：' + (res.generated || 0) + ' 条候选，正在刷新…';
+                            setTimeout(function(){ window.location.reload(); }, 800);
+                        } else if (res && res.error) {
+                            result.textContent = '采集失败，请重试';
+                        } else {
+                            window.location.reload();
+                        }
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        result.textContent = '采集超时，请稍后刷新页面查看';
+                        btn.disabled = false;
+                    } else {
+                        result.textContent = '后台采集中…（' + (attempts * 5) + 's）';
+                    }
+                });
+        }, 5000);
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}

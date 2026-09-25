@@ -1,0 +1,1340 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin2026",
+      "role": "admin",
+      "name": "管理员",
+      "realname": "管理员",
+      "idcard": "110101199001010001",
+      "phone": "13800000000"
+    },
+    {
+      "username": "sales01",
+      "password": "2026",
+      "role": "internal_sales",
+      "name": "内部销售",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "why",
+      "password": "123123",
+      "role": "internal_sales",
+      "name": "王海燕",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "tech01",
+      "password": "2026",
+      "role": "internal_tech",
+      "name": "内部技术",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "ops01",
+      "password": "2026",
+      "role": "internal_ops",
+      "name": "内部仓管/财务",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "wj",
+      "password": "2026",
+      "role": "admin",
+      "name": "王健",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "wq",
+      "password": "2026",
+      "role": "admin",
+      "name": "王强",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "gj",
+      "password": "2026",
+      "role": "admin",
+      "name": "郭军",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "zqt",
+      "password": "2026",
+      "role": "admin",
+      "name": "赵启涛",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "yq",
+      "password": "2026",
+      "role": "admin",
+      "name": "杨青",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "zq",
+      "password": "2026",
+      "role": "admin",
+      "name": "张强",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "kj",
+      "password": "2026",
+      "role": "admin",
+      "name": "孔杰",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dhg",
+      "password": "2026",
+      "role": "admin",
+      "name": "董红刚",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "gsy",
+      "password": "2026",
+      "role": "admin",
+      "name": "葛松岩",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "zjj",
+      "password": "2026",
+      "role": "admin",
+      "name": "张建军",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0001",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0001",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0002",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0002",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0003",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0003",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0004",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0004",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0005",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0005",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0006",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0006",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0007",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0007",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0008",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0008",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0009",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0009",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0010",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0010",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0011",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0011",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0012",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0012",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0013",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0013",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0014",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0014",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0015",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0015",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0016",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0016",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0017",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0017",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0018",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0018",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0019",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0019",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0020",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0020",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0021",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0021",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0022",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0022",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0023",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0023",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0024",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0024",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0025",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0025",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0026",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0026",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0027",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0027",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0028",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0028",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0029",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0029",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0030",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0030",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0031",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0031",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0032",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0032",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0033",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0033",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0034",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0034",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0035",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0035",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0036",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0036",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0037",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0037",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0038",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0038",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0039",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0039",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0040",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0040",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0041",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0041",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0042",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0042",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0043",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0043",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0044",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0044",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0045",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0045",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0046",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0046",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0047",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0047",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0048",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0048",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0049",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0049",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0050",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0050",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0051",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0051",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0052",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0052",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0053",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0053",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0054",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0054",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0055",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0055",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0056",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0056",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0057",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0057",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0058",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0058",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0059",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0059",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0060",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0060",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0061",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0061",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0062",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0062",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0063",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0063",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0064",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0064",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0065",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0065",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0066",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0066",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0067",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0067",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0068",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0068",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0069",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0069",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0070",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0070",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0071",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0071",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0072",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0072",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0073",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0073",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0074",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0074",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0075",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0075",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0076",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0076",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0077",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0077",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0078",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0078",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0079",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0079",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0080",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0080",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0081",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0081",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0082",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0082",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0083",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0083",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0084",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0084",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0085",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0085",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0086",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0086",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0087",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0087",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0088",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0088",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0089",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0089",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0090",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0090",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0091",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0091",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0092",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0092",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0093",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0093",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0094",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0094",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0095",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0095",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0096",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0096",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0097",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0097",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0098",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0098",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    },
+    {
+      "username": "dl_0099",
+      "password": "2026",
+      "role": "dealer",
+      "name": "经销商0099",
+      "realname": "",
+      "idcard": "",
+      "phone": ""
+    }
+  ],
+  "roles": {
+    "admin": {
+      "label": "管理员",
+      "color": "#E8A33D",
+      "sees_all": true
+    },
+    "internal_sales": {
+      "label": "内部销售",
+      "color": "#1C7C74"
+    },
+    "internal_tech": {
+      "label": "内部技术",
+      "color": "#534AB7"
+    },
+    "internal_ops": {
+      "label": "内部仓管/财务",
+      "color": "#0E3B43"
+    },
+    "dealer": {
+      "label": "经销商",
+      "color": "#C0492F"
+    },
+    "agent": {
+      "label": "代理商",
+      "color": "#BA7517"
+    },
+    "reseller": {
+      "label": "代销商",
+      "color": "#888780"
+    }
+  },
+  "module_access": {
+    "M01": {
+      "internal_sales": "req",
+      "internal_tech": "req",
+      "internal_ops": "req",
+      "dealer": "opt",
+      "agent": "opt",
+      "reseller": "opt"
+    },
+    "M02": {
+      "internal_sales": "req",
+      "internal_tech": "req",
+      "internal_ops": "req",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "req"
+    },
+    "M03": {
+      "internal_sales": "req",
+      "internal_tech": "req",
+      "internal_ops": "req",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "req"
+    },
+    "M04": {
+      "internal_sales": "req",
+      "internal_tech": "req",
+      "internal_ops": "na",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "req"
+    },
+    "M05": {
+      "internal_sales": "req",
+      "internal_tech": "opt",
+      "internal_ops": "na",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "req"
+    },
+    "M06": {
+      "internal_sales": "req",
+      "internal_tech": "opt",
+      "internal_ops": "na",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "req"
+    },
+    "M07": {
+      "internal_sales": "req",
+      "internal_tech": "na",
+      "internal_ops": "opt",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "req"
+    },
+    "M08": {
+      "internal_sales": "req",
+      "internal_tech": "na",
+      "internal_ops": "req",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "opt"
+    },
+    "M09": {
+      "internal_sales": "opt",
+      "internal_tech": "req",
+      "internal_ops": "na",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "opt"
+    },
+    "M10": {
+      "internal_sales": "req",
+      "internal_tech": "na",
+      "internal_ops": "na",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "req"
+    },
+    "M11": {
+      "internal_sales": "req",
+      "internal_tech": "na",
+      "internal_ops": "na",
+      "dealer": "req",
+      "agent": "req",
+      "reseller": "opt"
+    },
+    "M12": {
+      "internal_sales": "opt",
+      "internal_tech": "opt",
+      "internal_ops": "na",
+      "dealer": "opt",
+      "agent": "opt",
+      "reseller": "na"
+    },
+    "M13": {
+      "internal_sales": "opt",
+      "internal_tech": "na",
+      "internal_ops": "na",
+      "dealer": "opt",
+      "agent": "opt",
+      "reseller": "opt"
+    },
+    "M14": {
+      "internal_sales": "opt",
+      "internal_tech": "opt",
+      "internal_ops": "na",
+      "dealer": "opt",
+      "agent": "opt",
+      "reseller": "opt"
+    },
+    "M15": {
+      "internal_sales": "na",
+      "internal_tech": "opt",
+      "internal_ops": "na",
+      "dealer": "na",
+      "agent": "na",
+      "reseller": "na"
+    },
+    "M16": {
+      "internal_sales": "opt",
+      "internal_tech": "opt",
+      "internal_ops": "na",
+      "dealer": "na",
+      "agent": "na",
+      "reseller": "na"
+    }
+  },
+  "quiz_roles": {
+    "M01": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": true,
+      "dealer": false,
+      "agent": false,
+      "reseller": false
+    },
+    "M02": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": true,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M03": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": true,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M04": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M05": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M06": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M07": {
+      "internal_sales": true,
+      "internal_tech": false,
+      "internal_ops": true,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M08": {
+      "internal_sales": true,
+      "internal_tech": false,
+      "internal_ops": true,
+      "dealer": true,
+      "agent": true,
+      "reseller": false
+    },
+    "M09": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": false
+    },
+    "M10": {
+      "internal_sales": true,
+      "internal_tech": false,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M11": {
+      "internal_sales": true,
+      "internal_tech": false,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": false
+    },
+    "M12": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": false
+    },
+    "M13": {
+      "internal_sales": true,
+      "internal_tech": false,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M14": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    },
+    "M15": {
+      "internal_sales": false,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": false,
+      "agent": false,
+      "reseller": false
+    },
+    "M16": {
+      "internal_sales": true,
+      "internal_tech": true,
+      "internal_ops": false,
+      "dealer": false,
+      "agent": false,
+      "reseller": false
+    }
+  },
+  "tools": [
+    {
+      "id": "T01",
+      "icon": "💡",
+      "name": "锦囊妙计",
+      "desc": "粘贴客户微信消息，一键生成 3-4 条可直接发送的销售回复话术，支持 AI 大模型优化。",
+      "url": "工具/锦囊妙计.html"
+    }
+  ],
+  "tool_access": {
+    "T01": {
+      "internal_sales": true,
+      "internal_tech": false,
+      "internal_ops": false,
+      "dealer": true,
+      "agent": true,
+      "reseller": true
+    }
+  }
+}

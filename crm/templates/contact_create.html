@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}添加联系人{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:720px; margin:0 auto;">
+    <div class="card-header">
+        <h2>添加联系人</h2>
+        <a href="/institutions/{{ institution_id }}" class="btn btn-sm btn-secondary">返回详情</a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/institutions/{{ institution_id }}/contacts/new">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">姓名</label>
+                <input type="text" id="name" name="name" maxlength="120" value="{{ form.name if form else '' }}" placeholder="联系人姓名">
+            </div>
+            <div class="form-group">
+                <label for="role_label">身份/角色</label>
+                <input type="text" id="role_label" name="role_label" maxlength="120" value="{{ form.role_label if form else '' }}" placeholder="如：院长、采购负责人">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="job_title">职位</label>
+            <input type="text" id="job_title" name="job_title" maxlength="120" value="{{ form.job_title if form else '' }}" placeholder="如：后勤部主任">
+        </div>
+
+        <div class="form-group">
+            <label for="contactability_status">联系渠道状态 <span style="color:#e74c3c;">*</span></label>
+            <select id="contactability_status" name="contactability_status">
+                <option value="available">available（已有可留存渠道）</option>
+                <option value="not_yet_obtained">not_yet_obtained（尚未取得）</option>
+                <option value="not_provided_or_not_storable">not_provided_or_not_storable（未提供/不可留存）</option>
+            </select>
+            <span class="hint">选择"available"后可在下方填写具体的联系方式</span>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="phone">电话</label>
+                <input type="text" id="phone" name="phone" maxlength="64" value="{{ form.phone if form else '' }}" placeholder="手机号或座机">
+            </div>
+            <div class="form-group">
+                <label for="email">邮箱</label>
+                <input type="text" id="email" name="email" maxlength="254" value="{{ form.email if form else '' }}" placeholder="邮箱地址">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="wechat">微信</label>
+                <input type="text" id="wechat" name="wechat" maxlength="120" value="{{ form.wechat if form else '' }}" placeholder="微信号或手机号">
+            </div>
+            <div class="form-group">
+                <label for="other_channel">其他渠道</label>
+                <input type="text" id="other_channel" name="other_channel" maxlength="120" value="{{ form.other_channel if form else '' }}" placeholder="如：钉钉、WhatsApp">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="channel_notes">渠道备注</label>
+            <input type="text" id="channel_notes" name="channel_notes" maxlength="1000" value="{{ form.channel_notes if form else '' }}" placeholder="关于联系方式的补充说明">
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="confirm_duplicate" value="true">
+                我确认已核对可能重复的候选，仍要创建
+            </label>
+            <span class="hint">如系统提示可能存在重复联系人，勾选后可继续创建</span>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+            <button type="submit" class="btn btn-primary">添加联系人</button>
+            <a href="/institutions/{{ institution_id }}" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

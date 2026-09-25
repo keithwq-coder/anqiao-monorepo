@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0012",
+  "spec_version": "0.2.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-07-27",
+  "approval_evidence": "DEC-0042; product owner replied 同意 to approve SPEC-0012 v0.2.0 (Tencent Lightweight + crm.aibrain.wiki + nginx/HTTPS + SSH)",
+  "spec_file": "SPEC-0012-deployment-operations.md",
+  "spec_sha256": "7364b4bfe7e323bc60e2809eb4904b45a96ef2612c33fa112be08f27e7bec400"
+}

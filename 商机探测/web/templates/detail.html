@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}<title>商机探测 - {{ item.title[:30] }}</title>{% endblock %}
+{% block content %}
+<div class="detail-page">
+    <a href="/" class="back-link">← 返回列表</a>
+
+    <div class="detail-header">
+        <h1>{{ item.title }}</h1>
+        <div class="detail-meta">
+            <span class="type-tag type-{{ item.source_type }}">{{ item.source_type }}</span>
+            {% if item.grade == 1 %}
+            <span class="grade-badge grade-1">一档·安樵产品相关</span>
+            {% elif item.grade == 2 %}
+            <span class="grade-badge grade-2">二档·行业/政策</span>
+            {% elif item.grade == 3 %}
+            <span class="grade-badge grade-3">三档·不合格</span>
+            {% else %}
+            <span class="grade-badge grade-none">未分类</span>
+            {% endif %}
+            <span class="status-current">{{ item.status }}</span>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-field">
+            <label>来源网站</label>
+            <span>{{ item.source_site or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>地区</label>
+            <span>{{ item.region or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>发布日期</label>
+            <span>{{ item.publish_date or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>截止日期</label>
+            <span>{{ item.deadline or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>金额</label>
+            <span>{{ item.amount or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>采购人</label>
+            <span>{{ item.purchaser or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>代理机构</label>
+            <span>{{ item.agency or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>联系方式</label>
+            <span>{{ item.contact or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>抓取时间</label>
+            <span>{{ item.crawl_time or "-" }}</span>
+        </div>
+        <div class="detail-field">
+            <label>原文链接</label>
+            <a href="{{ item.source_url }}" target="_blank" rel="noopener">{{ item.source_url[:60] }}...</a>
+        </div>
+    </div>
+
+    {% if item.grade_reason %}
+    <div class="detail-section">
+        <h2>AI 分类理由</h2>
+        <p class="summary-text">{{ item.grade_reason }}</p>
+    </div>
+    {% endif %}
+
+    {% if item.summary %}
+    <div class="detail-section">
+        <h2>AI 摘要</h2>
+        <p class="summary-text">{{ item.summary }}</p>
+    </div>
+    {% endif %}
+
+    {% if item.content %}
+    <div class="detail-section">
+        <h2>正文内容</h2>
+        <div class="content-text">{{ item.content }}</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

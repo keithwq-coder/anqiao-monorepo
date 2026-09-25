@@ -1,0 +1,79 @@
+# ============================================================
+# 中科安樵 全仓统一 .gitignore（根目录）
+# 覆盖：anqiao-dashboard / suqian-dashboard / anqiao-console / WEB / wiki / crm
+# ============================================================
+
+# ---- 依赖与构建产物 ----
+node_modules/
+.next/
+out/
+build/
+dist/
+.nuxt/
+.vite/
+*.tsbuildinfo
+
+# ---- Python ----
+__pycache__/
+*.pyc
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- 环境变量与密钥（.env.example 允许提交）----
+.env*
+*.env.local
+!.env.example
+
+# ---- 数据库文件 ----
+*.sqlite
+*.sqlite3
+*.db
+
+# ---- 日志与临时输出 ----
+*.log
+logs/
+test_output*
+.playwright-mcp/
+playwright-report/
+.nyc_output/
+coverage/
+
+# ---- 归档包 ----
+*.tar.gz
+
+# ---- 操作系统与误建文件 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+nul
+
+# ---- IDE ----
+.idea/
+*.swp
+
+# ---- AI 工具状态与本地技能（.agents 部署技能内含服务器凭据，严禁入库）----
+.agents/
+.codex/
+.zcode/
+.mimosa/
+.reasonix/
+.claude/
+.cursor/
+.qoder/
+
+# ---- 含服务器明文口令的部署脚本（待阶段四重构为环境变量读取后移出本清单）----
+anqiao-console/deploy_huaweicloud.py
+anqiao-console/deploy/deploy_huawei_aqkj.py
+anqiao-console/deploy/preflight_huawei.py
+anqiao-console/deploy/smoke_huawei.py
+
+# ---- 浏览器会话档案（Cookies/登录态）----
+crawler/video/browser_profile/
+
+# ---- 大文件保护区：经销商赋能培训体系（GB 级教学视频与大附件，防止单文件超 GitHub 100MB 限制）----
+经销商赋能培训体系/

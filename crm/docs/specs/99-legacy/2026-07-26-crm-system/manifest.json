@@ -1,0 +1,64 @@
+{
+  "manifest_version": 1,
+  "snapshot_id": "2026-07-26-crm-system",
+  "classification": "untrusted-legacy",
+  "source": "D:\\Project\\中科安樵\\CRM 系统",
+  "captured_at": "2026-07-26",
+  "files": [
+    {
+      "path": "source/AGENTS.md",
+      "size": 13080,
+      "sha256": "0f382b38f6d0583b1db259e88839331827dab516bd7c5f4febac2f51425a54a0"
+    },
+    {
+      "path": "source/CLAUDE.md",
+      "size": 13078,
+      "sha256": "6a09714211bfd1e1bcb076a165a1c2147a5042c4beaf425f751bf05d70e67ca8"
+    },
+    {
+      "path": "source/docs/PLAN.md",
+      "size": 10235,
+      "sha256": "417b73be807b35b9a095e2ce5cccd4790a771e82a3d541eda94711a671a93603"
+    },
+    {
+      "path": "source/docs/SPEC/04-lead-detection/algorithms/01-meddic-scoring.py",
+      "size": 16874,
+      "sha256": "5ea13f3e207c3c1012dfbb748a59aa76dd08ff984abe393c1381a841fd74aa3c"
+    },
+    {
+      "path": "source/docs/SPEC/04-lead-detection/error-handling/01-error-handling.md",
+      "size": 16033,
+      "sha256": "778881f83ab22b10725c2c90e600cb25c5254bd5cdee4dd9cd36f648939ebcaa"
+    },
+    {
+      "path": "source/docs/SPEC/04-lead-detection/README.md",
+      "size": 4791,
+      "sha256": "f386faf3c1b2b03c06938ddbf52553b192043f81a55eef843f48cff087d2b0c4"
+    },
+    {
+      "path": "source/docs/SPEC/04-lead-detection/schema/01-lead-signals.sql",
+      "size": 5911,
+      "sha256": "6e1f479d88a1fefc234cc788724223f7188e48f40b2d6a3c078c588e9bca6c48"
+    },
+    {
+      "path": "source/docs/SPEC/04-lead-detection/subagents/00-subagents-overview.md",
+      "size": 4325,
+      "sha256": "c7623e1249f376c536762f97a4450e083f107b4e5248b7e93a5de5e00a56c9f7"
+    },
+    {
+      "path": "source/docs/SPEC/README.md",
+      "size": 3830,
+      "sha256": "e7cbb1bb314437ae04f3f0c66c87c7427b31990a986b3addfed42ab746c88dce"
+    },
+    {
+      "path": "source/docs/SPEC/README_temp.md",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "source/docs/TASKS.md",
+      "size": 4180,
+      "sha256": "ded7a394460dca551f549e8dc89a2112ad511228278e7d4207fa521499bdc0b2"
+    }
+  ]
+}

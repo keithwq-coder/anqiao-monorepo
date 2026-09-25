@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-GOV-0001",
+  "spec_version": "0.4.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-08-24",
+  "approval_evidence": "DEC-0167; product owner replied 批准。授权 and selected SPEC-GOV-0001 v0.4.0 promotion to 30-approved in the 2026-08-24 conversation. Governance SPEC (cross-tool dispatch and acceptance evidence); approval does not authorize application implementation.",
+  "spec_file": "SPEC-GOV-0001-cross-tool-dispatch-and-acceptance.md",
+  "spec_sha256": "b9101b8d962c4ef6cff9f514407e6bbdb425b39f21b95fe8fb9b4257a813fbb4"
+}

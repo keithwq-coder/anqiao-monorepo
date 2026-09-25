@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}数据擦除{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>数据擦除</h2>
+        <a href="/admin" class="btn btn-sm btn-secondary">返回系统管理</a>
+    </div>
+
+    <div class="alert alert-error" style="margin-bottom:1rem;">
+        <strong>不可逆操作警告：</strong>数据擦除将永久清除该客户的个人信息（SPEC-0011），
+        原值销毁后无法恢复。请确认已履行必要的手续并填写理由。
+    </div>
+
+    <form id="erase-form" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+        <div class="form-group">
+            <label for="erase-institution-id">客户 ID</label>
+            <input type="text" id="erase-institution-id" name="institution_id" required placeholder="客户 UUID">
+        </div>
+        <div class="form-group">
+            <label for="erase-reason">擦除理由（必填）</label>
+            <input type="text" id="erase-reason" name="reason" required placeholder="请填写擦除理由">
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="erase-confirm" required>
+                我确认此操作<strong>不可逆</strong>，将永久删除该客户的个人信息。
+            </label>
+        </div>
+        <button type="submit" class="btn btn-danger" id="erase-submit">永久擦除该客户</button>
+    </form>
+    <div id="erase-result" class="alert-inline"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var form = document.getElementById('erase-form');
+    var result = document.getElementById('erase-result');
+    form.addEventListener('submit', async function(ev) {
+        ev.preventDefault();
+        var csrf = form.querySelector('input[name="csrf_token"]').value;
+        var iid = form.querySelector('[name="institution_id"]').value.trim();
+        var reason = form.querySelector('[name="reason"]').value;
+        var confirm = form.querySelector('#erase-confirm').checked;
+        if (!confirm) {
+            result.className = 'alert-inline alert alert-error';
+            result.textContent = '请先勾选不可逆确认';
+            return;
+        }
+        if (!window.confirm('再次确认：该客户数据将被永久擦除且无法恢复，是否继续？')) {
+            return;
+        }
+        var btn = document.getElementById('erase-submit');
+        btn.disabled = true;
+        result.className = 'alert-inline';
+        result.textContent = '提交中…';
+        try {
+            var resp = await fetch('/api/admin/institutions/' + encodeURIComponent(iid) + '/erase', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+                body: JSON.stringify({reason: reason, confirm: true})
+            });
+            var data = await resp.json().catch(function() { return {}; });
+            if (resp.ok) {
+                result.className = 'alert-inline alert alert-success';
+                result.textContent = '擦除完成';
+            } else {
+                result.className = 'alert-inline alert alert-error';
+                result.textContent = '擦除失败：' + (data.detail || resp.status);
+                btn.disabled = false;
+            }
+        } catch (e) {
+            result.className = 'alert-inline alert alert-error';
+            result.textContent = '请求失败，请重试';
+            btn.disabled = false;
+        }
+    });
+})();
+</script>
+{% endblock %}

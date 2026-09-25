@@ -1,0 +1,110 @@
+import type { Product } from "./types";
+
+/** ZQ-D100 跌倒监测仪。 */
+export const zqD100: Product = {
+  slug: "zq-d100",
+  model: "ZQ-D100",
+  name: {
+    zh: "安守护 · 跌倒监测仪",
+    en: "An Shou Hu · Fall Detection Monitor",
+    fr: "An Shou Hu · Détecteur de chute",
+    es: "An Shou Hu · Monitor de detección de caídas",
+    ja: "安守護 · 転倒検知モニター",
+    ru: "An Shou Hu · Детектор падений",
+  },
+  tagline: {
+    zh: "守在最危险的地方，跌倒即报",
+    en: "Guards the most dangerous spots — alerts the moment a fall happens",
+    fr: "Veille aux endroits les plus dangereux, alerte immédiate en cas de chute",
+    es: "Protege los lugares más peligrosos, alerta inmediata ante una caída",
+    ja: "最も危険な場所を守り、転倒を即時に通知",
+    ru: "Охраняет самые опасные места — мгновенный сигнал при падении",
+  },
+  features: {
+    zh: [
+      "跌倒即报 —— 毫米波识别跌倒姿态，声光 + APP 推送 + 呼叫",
+      "守在最危险的地方 —— 卫生间/淋浴间是跌倒最高发场景",
+      "离床告警 + 温湿度 —— 夜间防走失、防二次跌倒",
+      "部署轻、见效快 —— 适合逐间覆盖与规模化铺设",
+    ],
+    en: [
+      "Immediate fall alert — mmWave posture recognition with sound/light + APP push + call",
+      "Guards the riskiest places — bathrooms and showers are where falls happen most",
+      "Bed-exit alert + temperature/humidity — prevents wandering and secondary falls at night",
+      "Light deployment, fast results — ideal for room-by-room and large-scale rollout",
+    ],
+    fr: [
+      "Alerte de chute immédiate — reconnaissance mmWave, son/lumière + APP + appel",
+      "Veille aux endroits à risque — salles de bain, lieux de chute les plus fréquents",
+      "Alerte de sortie de lit + température/humidité — anti-errance nocturne",
+      "Déploiement léger, résultats rapides — idéal pièce par pièce",
+    ],
+    es: [
+      "Alerta inmediata de caída — reconocimiento mmWave, sonido/luz + APP + llamada",
+      "Protege los lugares de mayor riesgo — baños y duchas, donde más caídas ocurren",
+      "Alerta de salida de cama + temperatura/humedad — evita deambulación y segundas caídas",
+      "Despliegue ligero, resultados rápidos — ideal por habitación y a gran escala",
+    ],
+    ja: [
+      "転倒即通知 — ミリ波で転倒姿勢を認識、音・光+アプリ通知+コール",
+      "最も危険な場所を守る — トイレ・浴室は転倒多発シーン",
+      "離床アラート+温湿度 — 夜間の徘徊防止・二次転倒防止",
+      "軽量導入・即効果 — 部屋単位や大規模展開に最適",
+    ],
+    ru: [
+      "Мгновенный сигнал при падении — распознавание позы радаром, звук/свет + APP + вызов",
+      "Охраняет самые опасные места — ванные комнаты, где падения случаются чаще всего",
+      "Сигнал выхода из кровати + температура/влажность — защита от ночного блуждания",
+      "Лёгкое развёртывание, быстрые результаты — поэтапно и в масштабе",
+    ],
+  },
+  scenes: {
+    zh: ['养老机构', '社区居家养老', '医疗卫生', '大健康·美业', '装修·适老化改造', '长护险监管', '居家安防', '智慧酒店', '母婴照护', '居家服务', '旅居康养', '职场健康', '保险健康权益', '银行养老金融', '健康管理机构', '运营商与政企集成', '旅游与景区', '儿少健康监测', '礼品采购', '劳保用品', '会员服务', '政府采购', '企业福利', '招投标项目', '跌倒安全', '体征监测', '长者', '独居空巢老人', '术后康复人群', '慢病人群'],
+    en: ['Elderly-care institutions', 'Community home care', 'Medical & health', 'Wellness & beauty', 'Aging-friendly retrofit', 'Long-term care insurance supervision', 'Home safety & security', 'Smart hospitality', 'Maternal & infant care', 'Home services', 'Relocation & vacation care', 'Workplace health', 'Insurance health benefits', 'Banking & wealth management', 'Health management organizations', 'Carrier & digital-government integration', 'Tourism & scenic areas', 'Child & adolescent health monitoring', 'Gifting & corporate benefits', 'Occupational health & welfare', 'Membership & rights services', 'Government procurement', 'Corporate benefits', 'Tender projects', 'Fall safety', 'Vital-sign monitoring', 'Seniors', 'Seniors living alone', 'Post-operative patients', 'Chronic-disease patients'],
+    fr: ['Institutions pour personnes âgées', 'Soins à domicile', 'Médical et santé', 'Bien-être et beauté', 'Rénovation adaptée au vieillissement', "Supervision de l'assurance dépendance", 'Sécurité à domicile', 'Hôtellerie intelligente', 'Soins mère-enfant', 'Services à domicile', 'Séjours de santé', 'Santé au travail', 'Avantages santé pour assureurs', 'Banque et gestion de patrimoine', 'Organismes de gestion de la santé', 'Intégration opérateurs et collectivités', 'Tourisme et espaces naturels', 'Suivi de la santé des enfants et adolescents', "Cadeaux et avantages d'entreprise", 'Santé au travail et protection', "Services d'adhésion", 'Achats publics', 'Avantages salariés', "Appels d'offres", 'Prévention des chutes', 'Surveillance des signes', 'Personnes âgées', 'Seniors vivant seuls', 'Patients en convalescence', 'Patients chroniques'],
+    es: ['Residencias de ancianos', 'Cuidados en el hogar', 'Médico y salud', 'Bienestar y estética', 'Reforma adaptada al envejecimiento', 'Supervisión del seguro de larga duración', 'Seguridad en el hogar', 'Hotelería inteligente', 'Cuidados materno-infantiles', 'Servicios en el hogar', 'Cuidados en estancias', 'Salud laboral', 'Beneficios de salud para aseguradoras', 'Banca y gestión patrimonial', 'Organizaciones de gestión de salud', 'Integración con operadores y gobierno digital', 'Turismo y espacios naturales', 'Monitorización de la salud infantil y juvenil', 'Regalos y beneficios corporativos', 'Salud laboral y protección', 'Servicios de membresía', 'Compras públicas', 'Beneficios corporativos', 'Licitações / concursos', 'Seguridad anti-caídas', 'Monitorización de signos', 'Mayores', 'Mayores que viven solos', 'Pacientes postoperatorios', 'Pacientes crónicos'],
+    ja: ['介護施設', '在宅介護', '医療衛生', 'ウェルネス・美容', 'バリアフリー改修', '介護保険監督', '在宅セキュリティ', 'スマートホテル', '母子ケア', '在宅サービス', '旅居康養', '職場の健康', '保険健康特典', '銀行・ウェルスマネジメント', '健康管理機関', '通信事業者・政企連携', '観光・景区', '児童・青少年の健康モニタリング', 'ギフト・福利厚生', '労働保護用品', '会員サービス', '政府調達', '企業福利厚生', '入札プロジェクト', '転倒安全', 'バイタルモニタリング', '高齢者', '独居・空巣の高齢者', '術後リハビリ層', '慢性疾患患者'],
+    ru: ['Учреждения для пожилых', 'Домашний уход', 'Медицина и здоровье', 'Велнес и красота', 'Адаптация жилья для пожилых', 'Надзор за страхованием долгосрочного ухода', 'Безопасность дома', 'Умные отели', 'Уход за матерью и ребёнком', 'Домашние услуги', 'Оздоровительные поездки', 'Здоровье на рабочем месте', 'Страховые медицинские бонусы', 'Банки и управление капиталом', 'Организации управления здоровьем', 'Интеграция с операторами и цифровым госуправлением', 'Туризм и курортные зоны', 'Мониторинг здоровья детей и подростков', 'Подарки и корпоративные льготы', 'Охрана труда и благополучие', 'Членские сервисы и права', 'Госзакупки', 'Корпоративные льготы', 'Тендерные проекты', 'Защита от падений', 'Мониторинг показателей', 'Пожилые', 'Одинокие пожилые', 'Послеоперационные пациенты', 'Пациенты с хроническими заболеваниями'],
+  },
+  spec: {
+    zh: "探测原理：毫米波雷达\n识别对象：人体姿态突变（跌倒 / 滞留）\n告警链路：本地识别 + 云端推送\n适用空间：卫生间 / 浴室\n安装方式：壁挂 / 吸顶\n通信方式：WiFi",
+    en: "Detection: mmWave radar\nRecognition: sudden posture change (fall / lingering)\nAlert chain: local recognition + cloud push\nSpace: bathroom / shower\nMounting: wall / ceiling\nConnectivity: WiFi",
+    fr: "Détection : radar mmWave\nReconnaissance : changement soudain de posture (chute / présence prolongée)\nChaîne d'alerte : reconnaissance locale + push cloud\nEspace : salle de bain / douche\nMontage : mural / plafond\nConnectivité : WiFi",
+    es: "Detección: radar mmWave\nReconocimiento: cambio brusco de postura (caída / permanencia)\nCadena de alerta: reconocimiento local + push en la nube\nEspacio: baño / ducha\nMontaje: pared / techo\nConectividad: WiFi",
+    ja: "検知原理：ミリ波レーダー\n認識対象：体勢の急変（転倒/滞留）\nアラート経路：ローカル認識+クラウド通知\n適用空間：トイレ/浴室\n設置：壁掛け/天井\n通信：WiFi",
+    ru: "Детекция: радар ммWave\nРаспознавание: резкое изменение позы (падение / задержка)\nЦепочка: локальное распознавание + облачный push\nПространство: ванная / душ\nУстановка: настенная / потолочная\nСвязь: WiFi",
+  },
+  customers: {
+    zh: "卫生间、浴室等跌倒高发区域的守护需求，适用于养老机构与居家场景。",
+    en: "Fall-prone areas such as bathrooms and showers, for institutions and home settings.",
+    fr: "Zones à risque de chute (salles de bain), pour institutions et domicile.",
+    es: "Zonas de alto riesgo de caídas como baños y duchas, para residencias y hogares.",
+    ja: "トイレ・浴室など転倒多発エリアの見守り、介護施設と在宅向け。",
+    ru: "Зоны высокого риска падений (ванные, душевые) для учреждений и дома.",
+  },
+  warranty: {
+    zh: "12 个月保修，特殊情况另定",
+    en: "12-month warranty, special cases determined separately",
+    fr: "Garantie 12 mois, conditions particulières à convenir",
+    es: "Garantía de 12 meses, casos especiales a convenir",
+    ja: "12ヶ月保証、特殊な状況は別途協議",
+    ru: "Гарантия 12 месяцев, особые случаи оговариваются отдельно",
+  },
+  images: [
+    {
+      src: "/images/products/zq-d100/three-view.webp",
+      alt: {
+        zh: "ZQ-D100 跌倒监测仪 三视图",
+        en: "ZQ-D100 Fall Detection Monitor — three views",
+        fr: "ZQ-D100 Détecteur de chute — trois vues",
+        es: "ZQ-D100 Monitor de detección de caídas — tres vistas",
+        ja: "ZQ-D100 転倒検知モニター 三面図",
+        ru: "ZQ-D100 Детектор падений — три вида",
+      },
+      width: 1600,
+      height: 800,
+    },
+  ],
+  deployment: ["卫生间", "浴室"],
+  relatedSlugs: [],
+};

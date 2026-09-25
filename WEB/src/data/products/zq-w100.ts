@@ -1,0 +1,130 @@
+import type { Product } from "./types";
+
+/** ZQ-W100 白细胞检测仪。 */
+export const zqW100: Product = {
+  slug: "zq-w100",
+  model: "ZQ-W100",
+  name: {
+    zh: "安守护 · 白细胞检测仪",
+    en: "An Shou Hu · White Blood Cell Analyzer",
+    fr: "An Shou Hu · Analyseur de globules blancs",
+    es: "An Shou Hu · Analizador de glóbulos blancos",
+    ja: "安守護 · 白血球測定器",
+    ru: "An Shou Hu · Анализатор лейкоцитов",
+  },
+  tagline: {
+    zh: "便携式白细胞快速检测，感染风险早发现",
+    en: "Portable rapid white-blood-cell testing — early detection of infection risk",
+    fr: "Test rapide portable des globules blancs — détection précoce des risques d'infection",
+    es: "Prueba rápida y portátil de glóbulos blancos — detección precoz del riesgo de infección",
+    ja: "携帯型の白血球迅速検査 — 感染リスクを早期発見",
+    ru: "Портативный быстрый анализ лейкоцитов — раннее выявление риска инфекций",
+  },
+  features: {
+    zh: [
+      "白细胞计数，快速出结果",
+      "便携设计，居家与机构巡诊均可使用",
+      "检测数据上传健康档案，支持趋势跟踪",
+    ],
+    en: [
+      "White-blood-cell count with fast results",
+      "Portable design for home use and institutional rounds",
+      "Results uploaded to health records with trend tracking",
+    ],
+    fr: [
+      "Numération des globules blancs, résultats rapides",
+      "Conception portable pour domicile et tournées en institution",
+      "Résultats téléversés dans le dossier santé avec suivi des tendances",
+    ],
+    es: [
+      "Recuento de glóbulos blancos con resultados rápidos",
+      "Diseño portátil para uso doméstico y rondas en residencias",
+      "Resultados subidos al historial con seguimiento de tendencias",
+    ],
+    ja: [
+      "白血球数測定、迅速に結果出力",
+      "携帯設計 — 在宅と施設回診の両方で使用可能",
+      "測定データを健康カルテにアップロード、トレンド追跡対応",
+    ],
+    ru: [
+      "Подсчёт лейкоцитов с быстрым результатом",
+      "Портативный — для дома и обходов в учреждениях",
+      "Загрузка результатов в медкарту с отслеживанием трендов",
+    ],
+  },
+  scenes: {
+    zh: ['医疗卫生', '健康管理机构', '母婴照护', '职场健康', '运营商与政企集成', '会员服务', '政府采购', '招投标项目', '健康筛查', '慢病管理', '健康档案', '高压力/亚健康人群', '慢病人群', '母婴/产后人群'],
+    en: ['Medical & health', 'Health management organizations', 'Maternal & infant care', 'Workplace health', 'Carrier & digital-government integration', 'Membership & rights services', 'Government procurement', 'Tender projects', 'Health screening', 'Chronic care', 'Health records', 'High-stress & sub-health', 'Chronic-disease patients', 'Mothers & newborns'],
+    fr: ['Médical et santé', 'Organismes de gestion de la santé', 'Soins mère-enfant', 'Santé au travail', 'Intégration opérateurs et collectivités', "Services d'adhésion", 'Achats publics', "Appels d'offres", 'Dépistage santé', 'Soins chroniques', 'Dossiers de santé', 'Stress et sous-santé', 'Patients chroniques', 'Mères et nouveau-nés'],
+    es: ['Médico y salud', 'Organizaciones de gestión de salud', 'Cuidados materno-infantiles', 'Salud laboral', 'Integración con operadores y gobierno digital', 'Servicios de membresía', 'Compras públicas', 'Licitações / concursos', 'Cribado de salud', 'Cuidados crónicos', 'Historial de salud', 'Estrés y subsalud', 'Pacientes crónicos', 'Madres y recién nacidos'],
+    ja: ['医療衛生', '健康管理機関', '母子ケア', '職場の健康', '通信事業者・政企連携', '会員サービス', '政府調達', '入札プロジェクト', '健康スクリーニング', '慢性疾患管理', '健康カルテ', '高ストレス・亜健康層', '慢性疾患患者', '母子・産後'],
+    ru: ['Медицина и здоровье', 'Организации управления здоровьем', 'Уход за матерью и ребёнком', 'Здоровье на рабочем месте', 'Интеграция с операторами и цифровым госуправлением', 'Членские сервисы и права', 'Госзакупки', 'Тендерные проекты', 'Скрининг здоровья', 'Управление хроническими заболеваниями', 'Медкарты', 'Стресс и субздоровье', 'Пациенты с хроническими заболеваниями', 'Матери и новорождённые'],
+  },
+  spec: {
+    zh: "检测对象：白细胞计数\n使用形态：便携式\n数据链路：检测数据上传健康档案\n适用场景：居家 / 机构巡诊",
+    en: "Test: white-blood-cell count\nForm: portable\nData: uploaded to health records\nScenarios: home / institutional rounds",
+    fr: "Test : numération des globules blancs\nForme : portable\nDonnées : dossier santé\nScénarios : domicile / tournées",
+    es: "Prueba: recuento de glóbulos blancos\nForma: portátil\nDatos: historial de salud\nEscenarios: hogar / rondas",
+    ja: "測定対象：白血球数\n形態：携帯型\nデータ：健康カルテへアップロード\n適用：在宅/施設回診",
+    ru: "Тест: подсчёт лейкоцитов\nФорма: портативная\nДанные: загрузка в медкарту\nСценарии: дома / обходы",
+  },
+  customers: {
+    zh: "基层卫生服务机构巡诊、居家健康管理等需要便携检测的场景。",
+    en: "Community health institutions doing rounds and home health management needing portable testing.",
+    fr: "Structures de santé de proximité et gestion de la santé à domicile.",
+    es: "Instituciones de salud de base y gestión de salud en el hogar.",
+    ja: "基层衛生サービス機関の巡診、在宅健康管理など携帯検査が必要なシーン。",
+    ru: "Медицинские учреждения первичного звена и домашнее управление здоровьем.",
+  },
+  warranty: {
+    zh: "12 个月保修，特殊情况另定",
+    en: "12-month warranty, special cases determined separately",
+    fr: "Garantie 12 mois, conditions particulières à convenir",
+    es: "Garantía de 12 meses, casos especiales a convenir",
+    ja: "12ヶ月保証、特殊な状況は別途協議",
+    ru: "Гарантия 12 месяцев, особые случаи оговариваются отдельно",
+  },
+  images: [
+    {
+      src: "/images/products/zq-w100/three-view.webp",
+      alt: {
+        zh: "ZQ-W100 白细胞检测仪 三视图",
+        en: "ZQ-W100 White Blood Cell Analyzer — three views",
+        fr: "ZQ-W100 Analyseur de globules blancs — trois vues",
+        es: "ZQ-W100 Analizador de glóbulos blancos — tres vistas",
+        ja: "ZQ-W100 白血球測定器 三面図",
+        ru: "ZQ-W100 Анализатор лейкоцитов — три вида",
+      },
+      width: 1600,
+      height: 682,
+    },
+    {
+      src: "/images/products/zq-w100/usage.webp",
+      alt: {
+        zh: "ZQ-W100 白细胞检测仪 使用示意图",
+        en: "ZQ-W100 White Blood Cell Analyzer — usage",
+        fr: "ZQ-W100 Analyseur de globules blancs — utilisation",
+        es: "ZQ-W100 Analizador de glóbulos blancos — uso",
+        ja: "ZQ-W100 白血球測定器 使用イメージ",
+        ru: "ZQ-W100 Анализатор лейкоцитов — применение",
+      },
+      width: 1536,
+      height: 1024,
+    },
+    {
+      src: "/images/products/zq-w100/open.webp",
+      alt: {
+        zh: "ZQ-W100 白细胞检测仪 打开示意图",
+        en: "ZQ-W100 White Blood Cell Analyzer — opened",
+        fr: "ZQ-W100 Analyseur de globules blancs — ouvert",
+        es: "ZQ-W100 Analizador de glóbulos blancos — abierto",
+        ja: "ZQ-W100 白血球測定器 開いた状態",
+        ru: "ZQ-W100 Анализатор лейкоцитов — открытый",
+      },
+      width: 1536,
+      height: 1024,
+    },
+  ],
+  deployment: ["便携", "巡诊"],
+  relatedSlugs: [],
+};

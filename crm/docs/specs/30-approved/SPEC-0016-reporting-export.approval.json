@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-0016",
+  "spec_version": "0.1.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "2026-08-26",
+  "approval_evidence": "DEC-0177 (2026-08-26): product owner directly approved v0.1.0 (reporting for administrator and shareholder+business_user 赵/武: customer stats, sales performance incl. amount totals per OD-008, follow-up activity, pool dynamics; Excel export; permission/masking hard boundaries), explicitly skipping independent review (risk accepted). New SPEC (SPEC-0010 remains retired tombstone).",
+  "spec_file": "SPEC-0016-reporting-export.md",
+  "spec_sha256": "18b5c0bfa795885dd7698da7597c9e27082568317a97b5789c161af157b3bd59"
+}

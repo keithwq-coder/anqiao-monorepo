@@ -1,0 +1,14 @@
+node_modules/
+dist/
+dist-*/
+__pycache__/
+*.pyc
+.env.local
+.env.production
+*.tsbuildinfo
+server/anqiao.sqlite
+server/anqiao.sqlite-*
+server/store.json
+server/ltc-store.json
+server/backups/
+*.sqlite.gz

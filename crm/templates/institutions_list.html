@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}客户列表{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>客户列表{% if total is defined %}（{{ total }}）{% endif %}</h2>
+        {% if user.roles and ('business_user' in user.roles or 'administrator' in user.roles or 'shareholder' in user.roles) %}
+        <a href="/institutions/new" class="btn btn-primary">➕ 新建客户</a>
+        {% endif %}
+    </div>
+
+    <!-- Search Bar -->
+    <form class="search-bar" method="get" action="/institutions">
+        <input type="text" name="q" placeholder="搜索客户名称..." value="{{ q or '' }}" aria-label="搜索客户">
+        <button type="submit" class="btn btn-primary">🔍 搜索</button>
+        {% if q %}
+        <a href="/institutions" class="btn btn-secondary">清除</a>
+        {% endif %}
+    </form>
+
+    {% if user.roles and ('administrator' in user.roles or 'shareholder' in user.roles) %}
+    <form class="filter-bar" method="get" action="/institutions" style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-top:0.5rem;">
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        <select name="owner" onchange="this.form.submit()">
+            <option value="">归属人：全部</option>
+            {% for uid, uname in user_map.items() %}
+            <option value="{{ uname }}" {% if filter_owner == uname %}selected{% endif %}>{{ uname }}</option>
+            {% endfor %}
+        </select>
+        <select name="custodian" onchange="this.form.submit()">
+            <option value="">管理人：全部</option>
+            {% for uid, uname in user_map.items() %}
+            <option value="{{ uname }}" {% if filter_custodian == uname %}selected{% endif %}>{{ uname }}</option>
+            {% endfor %}
+        </select>
+        <select name="customer_type" onchange="this.form.submit()">
+            <option value="">类型：全部</option>
+            <option value="direct_purchase" {% if filter_customer_type == 'direct_purchase' %}selected{% endif %}>直接采购</option>
+            <option value="individual" {% if filter_customer_type == 'individual' %}selected{% endif %}>个人</option>
+            <option value="channel" {% if filter_customer_type == 'channel' %}selected{% endif %}>渠道</option>
+        </select>
+        <input type="text" name="region" placeholder="地区筛选..." value="{{ filter_region }}" style="width:120px;">
+        <button type="submit" class="btn btn-sm btn-primary">筛选</button>
+        {% if filter_owner or filter_custodian or filter_customer_type or filter_region %}
+        <a href="/institutions{% if q %}?q={{ q }}{% endif %}" class="btn btn-sm btn-secondary">清除筛选</a>
+        {% endif %}
+    </form>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if institutions %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>类别</th>
+                    <th>地区</th>
+                    {% if user.roles and ('administrator' in user.roles or 'shareholder' in user.roles) %}
+                    <th>归属人</th>
+                    <th>管理人</th>
+                    {% endif %}
+                    <th>来源分类</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inst in institutions %}
+                <tr>
+                    <td><a href="/institutions/{{ inst.id }}">{{ inst.name }}</a></td>
+                    <td>{{ inst.category or '-' }}</td>
+                    <td>{{ inst.region or '-' }}</td>
+                    {% if user.roles and ('administrator' in user.roles or 'shareholder' in user.roles) %}
+                    <td>{% if inst.owner_user_id %}{{ user_map.get(inst.owner_user_id|string, inst.owner_user_id|string|truncate(8, True)) }}{% else %}-{% endif %}</td>
+                    <td>{% if inst.custodian_user_id %}{{ user_map.get(inst.custodian_user_id|string, inst.custodian_user_id|string|truncate(8, True)) }}{% else %}-{% endif %}</td>
+                    {% endif %}
+                    <td>{{ inst.source_category or '-' }}</td>
+                    <td><a href="/institutions/{{ inst.id }}" class="btn btn-sm btn-outline">查看详情</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages is defined and total_pages > 1 %}
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="/institutions?{% if q %}q={{ q|urlencode }}&{% endif %}page={{ page - 1 }}" class="btn btn-sm btn-secondary">← 上一页</a>
+        {% else %}
+        <span class="btn btn-sm btn-secondary" style="opacity:0.5; cursor:default;">← 上一页</span>
+        {% endif %}
+        <span class="page-info">第 {{ page }} / {{ total_pages }} 页</span>
+        {% if page < total_pages %}
+        <a href="/institutions?{% if q %}q={{ q|urlencode }}&{% endif %}page={{ page + 1 }}" class="btn btn-sm btn-secondary">下一页 →</a>
+        {% else %}
+        <span class="btn btn-sm btn-secondary" style="opacity:0.5; cursor:default;">下一页 →</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">📋</div>
+        <p>暂无可见客户记录</p>
+        {% if user.roles and ('business_user' in user.roles or 'administrator' in user.roles or 'shareholder' in user.roles) %}
+        <a href="/institutions/new" class="btn btn-primary">点击新建客户添加</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

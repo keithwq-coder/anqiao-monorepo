@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}客户转移{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>客户转移</h2>
+        <a href="/admin" class="btn btn-sm btn-secondary">返回系统管理</a>
+    </div>
+    <p class="hint" style="margin-bottom:1rem;">管理员点名分配客户归属（R-026）；转移会写入审计日志。</p>
+
+    <!-- ====== Single transfer ====== -->
+    <div class="card" style="box-shadow:none; border:1px solid #e0e0e0;">
+        <div class="card-header"><h3 style="margin:0;">单个转移</h3></div>
+        <form id="single-transfer-form" class="admin-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+            <div class="form-group">
+                <label for="single-institution-id">客户 ID</label>
+                <input type="text" id="single-institution-id" name="institution_id" required placeholder="客户 UUID">
+            </div>
+            <div class="form-group">
+                <label for="single-new-owner">新负责人</label>
+                <select id="single-new-owner" name="new_owner_user_id" required>
+                    {% for u in users %}<option value="{{ u.id }}">{{ u.display_name }}（{{ u.username }}）</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="single-reason">转移理由（必填）</label>
+                <input type="text" id="single-reason" name="reason" required placeholder="请填写转移理由">
+            </div>
+            <button type="submit" class="btn btn-primary">提交单个转移</button>
+        </form>
+    </div>
+
+    <!-- ====== Batch transfer ====== -->
+    <div class="card" style="box-shadow:none; border:1px solid #e0e0e0; margin-top:1rem;">
+        <div class="card-header"><h3 style="margin:0;">批量转移</h3></div>
+        <form id="batch-transfer-form" class="admin-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+            <div class="form-group">
+                <label for="batch-institution-ids">客户 ID 列表（每行一个 UUID）</label>
+                <textarea id="batch-institution-ids" name="institution_ids" rows="5" required placeholder="客户 UUID，每行一个"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="batch-new-owner">新负责人</label>
+                <select id="batch-new-owner" name="new_owner_user_id" required>
+                    {% for u in users %}<option value="{{ u.id }}">{{ u.display_name }}（{{ u.username }}）</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="batch-reason">转移理由（必填）</label>
+                <input type="text" id="batch-reason" name="reason" required placeholder="请填写转移理由">
+            </div>
+            <button type="submit" class="btn btn-primary">提交批量转移</button>
+        </form>
+    </div>
+
+    <div id="transfer-result" class="alert-inline"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var result = document.getElementById('transfer-result');
+    function showResult(ok, text) {
+        result.className = 'alert-inline alert ' + (ok ? 'alert-success' : 'alert-error');
+        result.textContent = text;
+    }
+    var single = document.getElementById('single-transfer-form');
+    single.addEventListener('submit', async function(ev) {
+        ev.preventDefault();
+        var csrf = single.querySelector('input[name="csrf_token"]').value;
+        var iid = single.querySelector('[name="institution_id"]').value.trim();
+        var payload = {
+            new_owner_user_id: single.querySelector('[name="new_owner_user_id"]').value,
+            reason: single.querySelector('[name="reason"]').value
+        };
+        showResult(false, '提交中…');
+        try {
+            var resp = await fetch('/api/admin/institutions/' + encodeURIComponent(iid) + '/transfer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+                body: JSON.stringify(payload)
+            });
+            var data = await resp.json().catch(function() { return {}; });
+            showResult(resp.ok, resp.ok ? '转移成功' : ('转移失败：' + (data.detail || resp.status)));
+        } catch (e) {
+            showResult(false, '请求失败，请重试');
+        }
+    });
+
+    var batch = document.getElementById('batch-transfer-form');
+    batch.addEventListener('submit', async function(ev) {
+        ev.preventDefault();
+        var csrf = batch.querySelector('input[name="csrf_token"]').value;
+        var ids = batch.querySelector('[name="institution_ids"]').value.split('\n')
+            .map(function(s) { return s.trim(); }).filter(Boolean);
+        var payload = {
+            institution_ids: ids,
+            new_owner_user_id: batch.querySelector('[name="new_owner_user_id"]').value,
+            reason: batch.querySelector('[name="reason"]').value
+        };
+        showResult(false, '提交中…');
+        try {
+            var resp = await fetch('/api/admin/institutions/transfer-batch', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+                body: JSON.stringify(payload)
+            });
+            var data = await resp.json().catch(function() { return {}; });
+            if (resp.ok) {
+                var ok = data.succeeded || 0, tot = data.total || ids.length;
+                showResult(true, '批量转移完成：' + ok + '/' + tot + ' 成功');
+            } else {
+                showResult(false, '批量转移失败：' + (data.detail || resp.status));
+            }
+        } catch (e) {
+            showResult(false, '请求失败，请重试');
+        }
+    });
+})();
+</script>
+{% endblock %}

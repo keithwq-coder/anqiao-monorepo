@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}商机详情{% endblock %}
+
+{% block content %}
+<!-- ====== Navigation Breadcrumb ====== -->
+<div style="margin-bottom:1rem; font-size:14px; color:#888;">
+    <a href="/discovery">AI 商机</a>
+    <span style="margin:0 0.5rem;">›</span>
+    <span style="color:#333;">商机详情</span>
+</div>
+
+<!-- ====== Candidate Detail ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>{{ candidate.candidate_text }}</h2>
+        {% if candidate.status == '待处理' %}<span class="status-tag status-pending">待处理</span>
+        {% elif candidate.status == '采纳' %}<span class="status-tag status-accepted">已采纳</span>
+        {% elif candidate.status == '忽略' %}<span class="status-tag status-ignored">已忽略</span>
+        {% else %}<span class="status-tag">{{ candidate.status }}</span>{% endif %}
+    </div>
+    <div class="detail-section">
+        <div class="field-row">
+            <span class="field-label">来源</span>
+            <span class="field-value">{{ '现有客户信号' if candidate.source == 'existing_customer' else '外部公告' }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">发现时间</span>
+            <span class="field-value">{{ candidate.discovered_at }}</span>
+        </div>
+        {% if candidate.expires_at %}
+        <div class="field-row">
+            <span class="field-label">过期时间</span>
+            <span class="field-value">{{ candidate.expires_at }}</span>
+        </div>
+        {% endif %}
+        <div class="field-row">
+            <span class="field-label">AI 支持理由</span>
+            <span class="field-value">{{ candidate.supporting_reason }}</span>
+        </div>
+        {% if candidate.key_uncertainties %}
+        <div class="field-row">
+            <span class="field-label">关键不确定点</span>
+            <span class="field-value">{{ candidate.key_uncertainties }}</span>
+        </div>
+        {% endif %}
+        {% if candidate.involved_records %}
+        <div class="field-row">
+            <span class="field-label">涉及记录（脱敏）</span>
+            <span class="field-value">
+                {% for r in candidate.involved_records %}{{ r.name_masked or r.name }}{% if not loop.last %}、{% endif %}{% endfor %}
+            </span>
+        </div>
+        {% endif %}
+        {% if candidate.external_subject %}
+        <div class="field-row">
+            <span class="field-label">外部公告主体</span>
+            <span class="field-value">
+                {{ candidate.external_subject.get('name', '') }}{% if candidate.external_subject.get('region') %}（{{ candidate.external_subject.get('region') }}）{% endif %}
+            </span>
+        </div>
+        {% endif %}
+        {% if candidate.adjudicated_at %}
+        <div class="field-row">
+            <span class="field-label">裁决时间</span>
+            <span class="field-value">{{ candidate.adjudicated_at }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if candidate.status == '待处理' %}
+<!-- ====== Human adjudication (SPEC-0003 R-003: the AI has no final judgment) ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>人工裁决</h2>
+    </div>
+    <form id="adjudicate-form" class="action-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+        <input type="hidden" name="candidate_id" value="{{ candidate.id }}">
+        <button type="submit" name="decision" value="采纳" class="btn btn-primary">✅ 采纳</button>
+        <button type="submit" name="decision" value="忽略" class="btn btn-secondary">⏭ 忽略</button>
+    </form>
+    <div id="adjudicate-result" class="alert-inline"></div>
+    <p class="hint" style="margin-top:0.5rem;">采纳外部公告候选会将其作为公池客户释放；采纳现有客户信号候选仅作为对该记录负责人的提示。裁决不可撤销。</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var form = document.getElementById('adjudicate-form');
+    if (!form) return;
+    var result = document.getElementById('adjudicate-result');
+    form.addEventListener('submit', async function(ev) {
+        ev.preventDefault();
+        var decision = ev.submitter ? ev.submitter.value : '';
+        if (!decision) return;
+        var csrf = form.querySelector('input[name="csrf_token"]').value;
+        var candidateId = form.querySelector('input[name="candidate_id"]').value;
+        result.className = 'alert-inline';
+        result.textContent = '提交中…';
+        try {
+            var resp = await fetch('/api/discovery/candidates/' + encodeURIComponent(candidateId) + '/adjudicate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrf
+                },
+                body: JSON.stringify({decision: decision})
+            });
+            var data = await resp.json();
+            if (resp.ok) {
+                result.className = 'alert-inline alert alert-success';
+                result.textContent = '裁决成功：' + (data.status || '') + '，正在刷新…';
+                setTimeout(function(){ window.location.href = '/discovery'; }, 800);
+            } else {
+                result.className = 'alert-inline alert alert-error';
+                result.textContent = '失败：' + (data.detail || resp.status);
+            }
+        } catch (e) {
+            result.className = 'alert-inline alert alert-error';
+            result.textContent = '请求失败，请重试';
+        }
+    });
+})();
+</script>
+{% endblock %}

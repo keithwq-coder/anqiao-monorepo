@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}{{ institution.name }}{% endblock %}
+
+{% block content %}
+{% set is_owner = user.id == (institution.owner_user_id|string) %}
+{% set is_admin = user.roles and 'administrator' in user.roles %}
+{% set is_business = user.roles and 'business_user' in user.roles %}
+{% set is_shareholder = user.roles and 'shareholder' in user.roles %}
+{% set type_labels = {'direct_purchase': '直接采购', 'individual': '个人', 'channel': '渠道'} %}
+
+<!-- ====== Navigation Breadcrumb ====== -->
+<div style="margin-bottom:1rem; font-size:14px; color:#888;">
+    <a href="/institutions">客户列表</a>
+    <span style="margin:0 0.5rem;">›</span>
+    <span style="color:#333;">{{ institution.name }}</span>
+</div>
+
+<!-- ====== Institution Basic Info ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>{{ institution.name }}</h2>
+        <div style="display:flex; gap:0.5rem;">
+            {% if is_business or is_admin or is_shareholder %}
+            <a href="/institutions/{{ institution.id }}/contacts/new" class="btn btn-sm btn-primary">➕ 添加联系人</a>
+            <a href="/institutions/{{ institution.id }}/activities/new" class="btn btn-sm btn-primary">➕ 添加跟进</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="detail-section">
+        <div class="field-row">
+            <span class="field-label">客户类型</span>
+            <span class="field-value">
+                {{ type_labels.get(institution.customer_type, institution.customer_type or '-') }}
+                {% if institution.in_pool %}<span class="method-tag" style="color:#e67e22;">公池</span>{% endif %}
+            </span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">类别</span>
+            <span class="field-value">{{ institution.category or '-' }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">地区</span>
+            <span class="field-value">{{ institution.region or '-' }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">来源说明</span>
+            <span class="field-value">{{ institution.source_description or '-' }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">来源方式</span>
+            <span class="field-value">{{ institution.source_kind or '-' }}</span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">来源证据</span>
+            <span class="field-value">{{ institution.source_evidence_reference or '-' }}</span>
+        </div>
+        {% if institution.concise_progress %}
+        <div class="field-row">
+            <span class="field-label">精简进度</span>
+            <span class="field-value">
+                {% set cp = institution.concise_progress %}
+                {% if cp.latest_follow_up_date %}
+                    最近跟进：{{ cp.latest_follow_up_date }}
+                    {% if cp.latest_follow_up_method_category %}（{{ cp.latest_follow_up_method_category }}）{% endif %}
+                    {% if cp.has_next_action %} · 有下一步计划{% endif %}
+                {% else %}
+                    暂无跟进
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ====== Record Actions (TASK-0044; role-conditional, posts to existing APIs) ====== -->
+{% if (is_business and institution.in_pool) or is_admin or is_owner %}
+<div class="card">
+    <div class="card-header">
+        <h2>客户操作</h2>
+        <span class="hint">所有操作均写入审计日志</span>
+    </div>
+    <div class="action-group">
+        {% if is_business and institution.in_pool %}
+        <form class="action-form" data-action="claim" data-url="/api/institutions/{{ institution.id }}/claim">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+            <button type="submit" class="btn btn-sm btn-primary">🤝 认领该客户</button>
+        </form>
+        {% endif %}
+        {% if is_admin and not institution.in_pool %}
+        <form class="action-form" data-action="release" data-url="/api/institutions/{{ institution.id }}/release-to-pool">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+            <input type="text" name="reason" placeholder="释放理由（必填）" required>
+            <button type="submit" class="btn btn-sm btn-outline">释放进公池</button>
+        </form>
+        {% endif %}
+        {% if is_admin %}
+        <form class="action-form" data-action="archive" data-url="/api/institutions/{{ institution.id }}/archive">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+            <input type="text" name="archive_reason" placeholder="归档理由（可选）">
+            <button type="submit" class="btn btn-sm btn-secondary">归档</button>
+        </form>
+        {% endif %}
+        {% if is_owner or is_admin %}
+        <form class="action-form" data-action="customer-type" data-url="/api/institutions/{{ institution.id }}/customer-type">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+            <select name="customer_type">
+                <option value="direct_purchase" {% if institution.customer_type == 'direct_purchase' %}selected{% endif %}>直接采购</option>
+                <option value="individual" {% if institution.customer_type == 'individual' %}selected{% endif %}>个人</option>
+                <option value="channel" {% if institution.customer_type == 'channel' %}selected{% endif %}>渠道</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline">变更客户类型</button>
+        </form>
+        {% endif %}
+    </div>
+    <div id="action-result" class="alert-inline"></div>
+</div>
+{% endif %}
+
+<!-- ====== Contacts ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>联系人</h2>
+        {% if is_business or is_admin or is_shareholder %}
+        <a href="/institutions/{{ institution.id }}/contacts/new" class="btn btn-sm btn-primary">添加联系人</a>
+        {% endif %}
+    </div>
+    {% if institution.contacts %}
+    <div class="contact-grid">
+        {% for c in institution.contacts %}
+        <div class="contact-card">
+            <div class="contact-name">{{ c.name or c.name_masked or '（未命名）' }}</div>
+            <div class="contact-role">
+                {% if c.role_label %}{{ c.role_label }}{% endif %}
+                {% if c.job_title %} · {{ c.job_title }}{% endif %}
+            </div>
+            <div class="contact-channels">
+                {% if c.phone %}<span>📞 {{ c.phone }}</span>{% endif %}
+                {% if c.email %}<span>📧 {{ c.email }}</span>{% endif %}
+                {% if c.wechat %}<span>💬 微信 {{ c.wechat }}</span>{% endif %}
+                {% if c.other_channel %}<span>📎 {{ c.other_channel }}</span>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>暂无联系人</p>
+        {% if is_business or is_admin or is_shareholder %}
+        <a href="/institutions/{{ institution.id }}/contacts/new" class="btn btn-primary btn-sm">添加联系人</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- ====== Follow-up History ====== -->
+<div class="card">
+    <div class="card-header">
+        <h2>跟进历史</h2>
+        {% if is_business or is_admin or is_shareholder %}
+        <a href="/institutions/{{ institution.id }}/activities/new" class="btn btn-sm btn-primary">添加跟进</a>
+        {% endif %}
+    </div>
+    {% if activities %}
+    <div class="timeline">
+        {% for a in activities %}
+        <div class="timeline-item">
+            <div class="timeline-meta">
+                {{ a.occurred_at }}
+                {% if a.interaction_method %} · {{ a.interaction_method }}{% endif %}
+                {% if a.communication_method_category %}
+                <span class="method-tag">{{ a.communication_method_category }}</span>
+                {% endif %}
+                {% if a.next_action %}<span style="color:#e67e22; font-weight:500;"> · 有下一步</span>{% endif %}
+            </div>
+            <div class="timeline-body">
+                {{ a.factual_body or '（无正文）' }}
+                {% if a.shared_summary %}
+                <div class="summary">📌 {{ a.shared_summary }}</div>
+                {% endif %}
+                {% if a.next_action %}
+                <div class="next-action">📋 下一步：{{ a.next_action }}{% if a.next_action_target_date %}（截止：{{ a.next_action_target_date }}）{% endif %}</div>
+                {% endif %}
+            </div>
+            {% if is_owner %}
+            <!-- Owner-only follow-up corrections / withdrawal (R-031) -->
+            <div class="action-group">
+                <form class="action-form" data-action="withdraw"
+                      data-url="/api/institutions/{{ institution.id }}/activities/{{ a.id }}/withdraw">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+                    <input type="text" name="withdrawal_reason" placeholder="撤回理由（必填）" required>
+                    <button type="submit" class="btn btn-sm btn-danger">撤回</button>
+                </form>
+                <details class="action-details">
+                    <summary class="btn btn-sm btn-secondary" style="list-style:none; cursor:pointer;">更正</summary>
+                    <form class="action-form" data-action="correct"
+                          data-url="/api/institutions/{{ institution.id }}/activities/{{ a.id }}/correct">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token|default('') }}">
+                        <input type="text" name="change_reason" placeholder="更正理由（必填）" required>
+                        <textarea name="factual_body" rows="2" placeholder="更正后的跟进正文（必填）" required>{{ a.factual_body or '' }}</textarea>
+                        <button type="submit" class="btn btn-sm btn-outline">提交更正</button>
+                    </form>
+                </details>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>暂无跟进记录</p>
+        {% if is_business or is_admin or is_shareholder %}
+        <a href="/institutions/{{ institution.id }}/activities/new" class="btn btn-primary btn-sm">添加跟进</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var result = document.getElementById('action-result');
+    function showResult(ok, text) {
+        if (!result) return;
+        result.className = 'alert-inline alert ' + (ok ? 'alert-success' : 'alert-error');
+        result.textContent = text;
+    }
+
+    function payloadFor(form) {
+        var action = form.getAttribute('data-action');
+        if (action === 'claim') return null;
+        var data = {};
+        if (action === 'archive') data.archive_reason = form.querySelector('[name="archive_reason"]').value;
+        if (action === 'release') data.reason = form.querySelector('[name="reason"]').value;
+        if (action === 'customer-type') data.customer_type = form.querySelector('[name="customer_type"]').value;
+        if (action === 'withdraw') data.withdrawal_reason = form.querySelector('[name="withdrawal_reason"]').value;
+        if (action === 'correct') {
+            data.change_reason = form.querySelector('[name="change_reason"]').value;
+            data.factual_body = form.querySelector('[name="factual_body"]').value;
+        }
+        return data;
+    }
+
+    document.querySelectorAll('form.action-form[data-action]').forEach(function(form) {
+        form.addEventListener('submit', async function(ev) {
+            ev.preventDefault();
+            var action = form.getAttribute('data-action');
+            var url = form.getAttribute('data-url');
+            var csrf = form.querySelector('input[name="csrf_token"]').value;
+            var btn = form.querySelector('button[type="submit"]');
+            var payload = payloadFor(form);
+            var opts = {
+                method: 'POST',
+                headers: {'X-CSRF-Token': csrf}
+            };
+            if (payload !== null) {
+                opts.headers['Content-Type'] = 'application/json';
+                opts.body = JSON.stringify(payload);
+            }
+            if (btn) btn.disabled = true;
+            showResult(false, '提交中…');
+            try {
+                var resp = await fetch(url, opts);
+                var data = await resp.json().catch(function() { return {}; });
+                if (resp.ok) {
+                    showResult(true, '操作成功，正在刷新…');
+                    setTimeout(function(){ window.location.reload(); }, 600);
+                } else {
+                    showResult(false, '操作失败：' + (data.detail || resp.status));
+                    if (btn) btn.disabled = false;
+                }
+            } catch (e) {
+                showResult(false, '请求失败，请重试');
+                if (btn) btn.disabled = false;
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

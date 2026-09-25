@@ -1,0 +1,10 @@
+{
+  "spec_id": "SPEC-000",
+  "spec_version": "1.0.0",
+  "status": "approved",
+  "approved_by": "product-owner",
+  "approved_at": "YYYY-MM-DD",
+  "approval_evidence": "DEC-XXXX and the explicit user approval naming this SPEC and version",
+  "spec_file": "SPEC-000-example.md",
+  "spec_sha256": "replace-with-64-lowercase-hex-characters"
+}

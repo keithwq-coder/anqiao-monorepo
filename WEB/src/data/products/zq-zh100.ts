@@ -1,0 +1,110 @@
+import type { Product } from "./types";
+
+/** ZQ-ZH100 照护采集仪。 */
+export const zqZh100: Product = {
+  slug: "zq-zh100",
+  model: "ZQ-ZH100",
+  name: {
+    zh: "安守护 · 照护采集仪",
+    en: "An Shou Hu · Care Data Hub",
+    fr: "An Shou Hu · Terminal de soins",
+    es: "An Shou Hu · Terminal de cuidados",
+    ja: "安守護 · ケアデータ採集端末",
+    ru: "An Shou Hu · Терминал сбора данных ухода",
+  },
+  tagline: {
+    zh: "照护现场的数据与交互枢纽，让护理过程可记录、可追溯",
+    en: "The data and interaction hub at the point of care — every care step recorded and traceable",
+    fr: "Le hub de données et d'interaction sur le lieu de soins — soins traçables",
+    es: "El centro de datos e interacción en el punto de cuidados — pasos registrados y trazables",
+    ja: "ケア現場のデータ・対話ハブ、ケア過程を記録・追跡可能に",
+    ru: "Центр данных и взаимодействия в точке ухода — фиксация и прослеживаемость",
+  },
+  features: {
+    zh: [
+      "多源数据采集，对接各类监测设备",
+      "语音交互 + 远程视频协助 + 紧急呼叫（通知家属 / 护理员）",
+      "护理记录电子化，照护过程留痕可查",
+      "桌面式部署，适用于照护现场与护理站",
+    ],
+    en: [
+      "Multi-source data collection, connecting to various monitoring devices",
+      "Voice interaction + remote video assistance + emergency call (family / caregivers)",
+      "Digital care records — every step leaves a trace",
+      "Desktop form factor for care sites and nursing stations",
+    ],
+    fr: [
+      "Collecte multi-sources, connexion à divers dispositifs",
+      "Interaction vocale + assistance vidéo à distance + appel d'urgence",
+      "Enregistrements de soins numériques, traçabilité complète",
+      "Format de bureau pour les sites de soins et postes de soins",
+    ],
+    es: [
+      "Recopilación multifuente, conexión a varios dispositivos",
+      "Interacción por voz + asistencia por vídeo remota + llamada de emergencia",
+      "Registros de cuidados digitales, totalmente trazables",
+      "Formato de sobremesa para puntos de cuidados y estaciones de enfermería",
+    ],
+    ja: [
+      "多源データ収集、各種モニタリングデバイスと接続",
+      "音声対話+遠隔ビデオ支援+緊急コール（家族/介護者へ通知）",
+      "ケア記録の電子化、ケア過程の証跡を確認可能",
+      "卓上型 — ケア現場とナースステーション向け",
+    ],
+    ru: [
+      "Многоисточниковый сбор данных, подключение к устройствам",
+      "Голосовое взаимодействие + удалённая видео-помощь + экстренный вызов",
+      "Электронные записи ухода — полная прослеживаемость",
+      "Настольный формат для мест ухода и медпостов",
+    ],
+  },
+  scenes: {
+    zh: ['养老机构', '居家服务', '母婴照护', '运营商与政企集成', '长护险监管', '旅居康养', '政府采购', '企业福利', '招投标项目', '健康档案', '长者', '母婴/产后人群'],
+    en: ['Elderly-care institutions', 'Home services', 'Maternal & infant care', 'Carrier & digital-government integration', 'Long-term care insurance supervision', 'Relocation & vacation care', 'Government procurement', 'Corporate benefits', 'Tender projects', 'Health records', 'Seniors', 'Mothers & newborns'],
+    fr: ['Institutions pour personnes âgées', 'Services à domicile', 'Soins mère-enfant', 'Intégration opérateurs et collectivités', "Supervision de l'assurance dépendance", 'Séjours de santé', 'Achats publics', 'Avantages salariés', "Appels d'offres", 'Dossiers de santé', 'Personnes âgées', 'Mères et nouveau-nés'],
+    es: ['Residencias de ancianos', 'Servicios en el hogar', 'Cuidados materno-infantiles', 'Integración con operadores y gobierno digital', 'Supervisión del seguro de larga duración', 'Cuidados en estancias', 'Compras públicas', 'Beneficios corporativos', 'Licitações / concursos', 'Historial de salud', 'Mayores', 'Madres y recién nacidos'],
+    ja: ['介護施設', '在宅サービス', '母子ケア', '通信事業者・政企連携', '介護保険監督', '旅居康養', '政府調達', '企業福利厚生', '入札プロジェクト', '健康カルテ', '高齢者', '母子・産後'],
+    ru: ['Учреждения для пожилых', 'Домашние услуги', 'Уход за матерью и ребёнком', 'Интеграция с операторами и цифровым госуправлением', 'Надзор за страхованием долгосрочного ухода', 'Оздоровительные поездки', 'Госзакупки', 'Корпоративные льготы', 'Тендерные проекты', 'Медкарты', 'Пожилые', 'Матери и новорождённые'],
+  },
+  spec: {
+    zh: "交互方式：触屏 + 语音\n连接能力：对接多类监测设备\n数据链路：照护数据实时上云\n紧急呼叫：通知家属 / 护理员\n部署形态：桌面式",
+    en: "Interaction: touchscreen + voice\nConnectivity: multiple monitoring devices\nData: real-time cloud upload of care data\nEmergency call: family / caregivers\nForm factor: desktop",
+    fr: "Interaction : écran tactile + voix\nConnexion : divers dispositifs\nDonnées : soins téléversés en temps réel\nAppel d'urgence : famille / soignants\nForme : bureau",
+    es: "Interacción: pantalla táctil + voz\nConexión: varios dispositivos\nDatos: carga en la nube en tiempo real\nLlamada de emergencia: familia / cuidadores\nForma: sobremesa",
+    ja: "操作：タッチ+音声\n接続：多種のモニタリングデバイス\nデータ：ケアデータをリアルタイムにクラウドへ\n緊急コール：家族/介護者へ通知\n形態：卓上型",
+    ru: "Взаимодействие: сенсорный экран + голос\nПодключение: несколько устройств\nДанные: загрузка в облако в реальном времени\nЭкстренный вызов: семья / персонал\nФорма: настольная",
+  },
+  customers: {
+    zh: "养老机构护理站、照护现场。",
+    en: "Nursing stations and care sites in elderly-care institutions.",
+    fr: "Postes de soins et sites de soins en institution.",
+    es: "Estaciones de enfermería y puntos de cuidados en residencias.",
+    ja: "介護施設のナースステーション、ケア現場。",
+    ru: "Медпосты и места ухода в учреждениях для пожилых.",
+  },
+  warranty: {
+    zh: "12 个月保修，特殊情况另定",
+    en: "12-month warranty, special cases determined separately",
+    fr: "Garantie 12 mois, conditions particulières à convenir",
+    es: "Garantía de 12 meses, casos especiales a convenir",
+    ja: "12ヶ月保証、特殊な状況は別途協議",
+    ru: "Гарантия 12 месяцев, особые случаи оговариваются отдельно",
+  },
+  images: [
+    {
+      src: "/images/products/zq-zh100/three-view.webp",
+      alt: {
+        zh: "ZQ-ZH100 照护采集仪 三视图",
+        en: "ZQ-ZH100 Care Data Hub — three views",
+        fr: "ZQ-ZH100 Terminal de soins — trois vues",
+        es: "ZQ-ZH100 Terminal de cuidados — tres vistas",
+        ja: "ZQ-ZH100 ケアデータ採集端末 三面図",
+        ru: "ZQ-ZH100 Терминал сбора данных — три вида",
+      },
+      width: 1600,
+      height: 852,
+    },
+  ],
+  deployment: ["护理站", "照护现场"],
+  relatedSlugs: ["platform"],
+};

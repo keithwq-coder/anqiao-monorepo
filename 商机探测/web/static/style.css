@@ -1,0 +1,328 @@
+/* 安樵品牌色 */
+:root {
+    --blue: #009FE3;
+    --blue-dark: #0077B3;
+    --gold: #E8A33D;
+    --gold-dark: #C4872A;
+    --bg: #F6F3EC;
+    --card: #FFFFFF;
+    --text: #243B3A;
+    --text-light: #6B7B79;
+    --border: #E4DED2;
+    --success: #1C7C74;
+    --danger: #C0492F;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* Header */
+header {
+    background: var(--card);
+    border-bottom: 3px solid var(--blue);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.brand { font-size: 20px; font-weight: 700; }
+.brand-gold { color: var(--gold); }
+.brand-sep { color: var(--border); margin: 0 6px; }
+.brand-blue { color: var(--blue); }
+nav a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+nav a:hover { background: var(--bg); color: var(--text); }
+
+/* Main */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 24px;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.filter-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.filter-form select,
+.filter-form input {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    background: var(--card);
+}
+.filter-form input { width: 120px; }
+.filter-form button,
+.btn-reset {
+    padding: 7px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.filter-form button { background: var(--blue); color: #fff; }
+.filter-form button:hover { background: var(--blue-dark); }
+.btn-reset {
+    background: none;
+    color: var(--text-light);
+    text-decoration: none;
+    border: 1px solid var(--border);
+}
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.total-count { font-size: 13px; color: var(--text-light); }
+.btn-crawl {
+    padding: 7px 20px;
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn-crawl:hover { background: var(--gold-dark); }
+.btn-crawl:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Table */
+.opp-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.opp-table th {
+    background: #F0EDE6;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+.opp-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid #F0EDE6;
+    vertical-align: middle;
+}
+.opp-table tr:hover { background: #FAFAF5; }
+.col-score { width: 60px; text-align: center; }
+.col-title { min-width: 300px; }
+.col-type { width: 60px; }
+.col-region { width: 80px; }
+.col-amount { width: 120px; }
+.col-date { width: 100px; }
+.col-status { width: 90px; }
+
+.col-title a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+}
+.col-title a:hover { color: var(--blue); }
+
+/* Score badges */
+.score-badge {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+}
+.score-none { background: #CCC; }
+.score-1, .score-2, .score-3 { background: #E57373; }
+.score-4, .score-5 { background: var(--gold); }
+.score-6, .score-7 { background: #81C784; }
+.score-8, .score-9, .score-10 { background: var(--success); }
+
+/* Grade badges (AI 三档分类) */
+.grade-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.grade-1 { background: #FFEBEE; color: #C62828; border: 1px solid #EF9A9A; } /* 一档·安樵相关（红，突出直接商机）*/
+.grade-2 { background: #E3F2FD; color: #1565C0; border: 1px solid #90CAF9; } /* 二档·行业/政策（蓝）*/
+.grade-3 { background: #ECEFF1; color: #607D8B; border: 1px solid #B0BEC5; } /* 三档·不合格（灰）*/
+.grade-none { background: #F0EDE6; color: var(--text-light); border: 1px solid var(--border); }
+
+/* Type tags */
+.type-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.type-招标 { background: #E3F2FD; color: #1565C0; }
+.type-资讯 { background: #FFF3E0; color: #E65100; }
+.type-政策 { background: #E8F5E9; color: #2E7D32; }
+
+/* Status select */
+.status-select {
+    padding: 3px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    background: var(--card);
+    cursor: pointer;
+}
+
+/* Empty */
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+.page-btn {
+    padding: 6px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+}
+.page-btn:hover { border-color: var(--blue); color: var(--blue); }
+.page-info { font-size: 13px; color: var(--text-light); }
+
+/* Detail page */
+.detail-page { max-width: 900px; }
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 14px;
+}
+.back-link:hover { text-decoration: underline; }
+
+.detail-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.detail-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.status-current {
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    background: #E3F2FD;
+    color: #1565C0;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+    background: var(--card);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+.detail-field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 2px;
+}
+.detail-field span,
+.detail-field a {
+    font-size: 14px;
+}
+.detail-field a { color: var(--blue); word-break: break-all; }
+
+.detail-section {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    margin-bottom: 16px;
+}
+.detail-section h2 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: var(--blue);
+}
+.summary-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+    background: #F0FAF9;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border-left: 3px solid var(--success);
+}
+.content-text {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 40px;
+}

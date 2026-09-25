@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}报表{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>报表</h2>
+    </div>
+    <div class="report-filters" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+        <label>时间范围：
+            <select id="time-range">
+                <option value="">全部</option>
+                <option value="7">近7天</option>
+                <option value="30" selected>近30天</option>
+                <option value="90">近90天</option>
+            </select>
+        </label>
+        <label id="by-label" style="display:none;">口径：
+            <select id="by-select">
+                <option value="owner">归属人</option>
+                <option value="custodian">管理人</option>
+            </select>
+        </label>
+    </div>
+</div>
+
+<div class="card">
+    <div class="tabs" style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+        <button class="btn btn-sm tab-btn active" data-tab="customer">客户统计</button>
+        <button class="btn btn-sm tab-btn" data-tab="sales">销售业绩</button>
+        <button class="btn btn-sm tab-btn" data-tab="followup">跟进活动</button>
+        <button class="btn btn-sm tab-btn" data-tab="pool">公池动态</button>
+    </div>
+    <div id="report-content" style="min-height:200px;">
+        <div class="empty-state"><p>选择报表类型查看</p></div>
+    </div>
+    <div style="margin-top:1rem;">
+        <button id="export-btn" class="btn btn-primary" style="display:none;">📥 导出 Excel</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var csrf = '{{ csrf_token|default("") }}';
+    var currentTab = null;
+    var currentData = null;
+
+    function showLoading() {
+        document.getElementById('report-content').innerHTML = '<div class="empty-state"><p>加载中...</p></div>';
+    }
+
+    function showError(msg) {
+        document.getElementById('report-content').innerHTML = '<div class="alert alert-error">' + msg + '</div>';
+    }
+
+    function renderTable(data, columns) {
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            return '<div class="empty-state"><p>暂无数据</p></div>';
+        }
+        var html = '<div class="table-wrapper"><table><thead><tr>';
+        columns.forEach(function(c) { html += '<th>' + c + '</th>'; });
+        html += '</tr></thead><tbody>';
+        var rows = Array.isArray(data) ? data : [data];
+        rows.forEach(function(row) {
+            html += '<tr>';
+            columns.forEach(function(c) {
+                var val = row[c] !== undefined ? row[c] : '';
+                html += '<td>' + val + '</td>';
+            });
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        return html;
+    }
+
+    async function loadReport(tab) {
+        currentTab = tab;
+        showLoading();
+        var timeRange = document.getElementById('time-range').value;
+        var url = '';
+        var isSales = false;
+
+        if (tab === 'customer') {
+            url = '/api/reporting/customer-stats';
+            if (timeRange) url += '?time_range_days=' + timeRange;
+        } else if (tab === 'sales') {
+            isSales = true;
+            var by = document.getElementById('by-select').value;
+            url = '/api/reporting/sales-performance?by=' + by;
+            if (timeRange) url += '&time_range_days=' + timeRange;
+        } else if (tab === 'followup') {
+            url = '/api/reporting/followup-stats';
+            if (timeRange) url += '?time_range_days=' + timeRange;
+        } else if (tab === 'pool') {
+            url = '/api/reporting/pool-stats';
+            if (timeRange) url += '?time_range_days=' + timeRange;
+        }
+
+        try {
+            var resp = await fetch(url);
+            if (!resp.ok) {
+                showError('加载失败：' + resp.status);
+                return;
+            }
+            var data = await resp.json();
+            currentData = {tab: tab, data: data, timeRange: timeRange, isSales: isSales};
+
+            var html = '';
+            if (tab === 'customer') {
+                html = '<div class="stats-grid" style="margin-bottom:1rem;">' +
+                    '<div class="stat-card"><div class="number">' + data.total + '</div><div class="label">客户总数</div></div>' +
+                    '<div class="stat-card"><div class="number">' + data.in_pool + '</div><div class="label">公池数</div></div>' +
+                    '<div class="stat-card"><div class="number">' + (data.new_count || 0) + '</div><div class="label">新增</div></div>' +
+                    '</div>';
+                html += '<h3>按类型</h3>' + renderTable(Object.entries(data.by_type||{}).map(function(e){return {类型:e[0],数量:e[1]};}), ['类型','数量']);
+                html += '<h3>按地区</h3>' + renderTable(Object.entries(data.by_region||{}).map(function(e){return {地区:e[0],数量:e[1]};}), ['地区','数量']);
+            } else if (tab === 'sales') {
+                html = renderTable(data, ['username','customer_count','new_count','amount_total']);
+            } else if (tab === 'followup') {
+                html = '<div class="stat-card"><div class="number">' + data.total + '</div><div class="label">跟进总数</div></div>';
+                html += '<h3>按方式</h3>' + renderTable(Object.entries(data.by_method||{}).map(function(e){return {方式:e[0],次数:e[1]};}), ['方式','次数']);
+            } else if (tab === 'pool') {
+                html = '<div class="stats-grid" style="margin-bottom:1rem;">' +
+                    '<div class="stat-card"><div class="number">' + data.total + '</div><div class="label">公池总数</div></div>' +
+                    '<div class="stat-card"><div class="number">' + (data.new_count || 0) + '</div><div class="label">新增入池</div></div>' +
+                    '</div>';
+                html += '<h3>按类型</h3>' + renderTable(Object.entries(data.by_type||{}).map(function(e){return {类型:e[0],数量:e[1]};}), ['类型','数量']);
+            }
+            document.getElementById('report-content').innerHTML = html;
+            document.getElementById('export-btn').style.display = 'inline-block';
+        } catch (e) {
+            showError('请求失败，请重试');
+        }
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            var tab = btn.getAttribute('data-tab');
+            var isSales = tab === 'sales';
+            document.getElementById('by-label').style.display = isSales ? 'inline' : 'none';
+            loadReport(tab);
+        });
+    });
+
+    // Time range change
+    document.getElementById('time-range').addEventListener('change', function() {
+        if (currentTab) loadReport(currentTab);
+    });
+    document.getElementById('by-select').addEventListener('change', function() {
+        if (currentTab === 'sales') loadReport('sales');
+    });
+
+    // Export
+    document.getElementById('export-btn').addEventListener('click', async function() {
+        if (!currentData) return;
+        var timeRange = currentData.timeRange;
+        var url = '/api/reporting/export?report=' + currentData.tab + '-stats';
+        if (timeRange) url += '&time_range_days=' + timeRange;
+        if (currentData.isSales) url += '&by=' + document.getElementById('by-select').value;
+        window.open(url, '_blank');
+    });
+
+    // Load customer stats by default
+    loadReport('customer');
+})();
+</script>
+{% endblock %}

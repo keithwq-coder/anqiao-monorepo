@@ -1,0 +1,52 @@
+[
+ {
+  "anmimeId": "6144710",
+  "title": "《是王者啊？第五季》",
+  "photoUrl": "https://www.acfun.cn/bangumi/aa6144710_36199_2155104",
+  "type": "1",
+  "likeCount": "0",
+  "poster": "https://p2-plat.wskwai.com/kimg/bs2/zt-image-host/ChgwOGE4OGNmOGU1MDYxMGE1YzU5ZjkzMDQQ3svXLw.jpg",
+  "animatedCoverUrl": null,
+  "__typename": "AcFeed"
+ },
+ {
+  "anmimeId": "6144546",
+  "title": "睡衣小英雄 第六季 超级联盟 国语版",
+  "photoUrl": "https://www.acfun.cn/bangumi/aa6144546_36199_2151743",
+  "type": "1",
+  "likeCount": "0",
+  "poster": "https://p2-plat.wskwai.com/kimg/bs2/zt-image-host/ChgwODhkZjg4YWNjMDYxMGNjODFkNmIyMDQQ3svXLw.jpg",
+  "animatedCoverUrl": null,
+  "__typename": "AcFeed"
+ },
+ {
+  "anmimeId": "6144513",
+  "title": "霸旋陀螺 极限突破 2",
+  "photoUrl": "https://www.acfun.cn/bangumi/aa6144513_36199_2150810",
+  "type": "1",
+  "likeCount": "0",
+  "poster": "https://p4-plat.wskwai.com/kimg/bs2/zt-image-host/ChgwODhkYmFmNWNiMDYxMGRhYzVhY2ZlMDUQ3svXLw.jpg",
+  "animatedCoverUrl": null,
+  "__typename": "AcFeed"
+ },
+ {
+  "anmimeId": "6144472",
+  "title": "如果历史是一群喵 第11季 南宋金元篇",
+  "photoUrl": "https://www.acfun.cn/bangumi/aa6144472_36199_2149836",
+  "type": "1",
+  "likeCount": "1",
+  "poster": "https://p4-plat.wskwai.com/kimg/bs2/zt-image-host/ChgwOGZkYWVlOWM0MDYxMGNiZjlhM2E1MDIQ3svXLw.jpg",
+  "animatedCoverUrl": null,
+  "__typename": "AcFeed"
+ },
+ {
+  "anmimeId": "6144471",
+  "title": "肥志百科 第11季 （动物篇）",
+  "photoUrl": "https://www.acfun.cn/bangumi/aa6144471_36199_2149822",
+  "type": "1",
+  "likeCount": "0",
+  "poster": "https://p2-plat.wskwai.com/kimg/bs2/zt-image-host/ChgwOGIyOTNlOGM0MDYxMGU3YmFkNWM1MDQQ3svXLw.jpg",
+  "animatedCoverUrl": null,
+  "__typename": "AcFeed"
+ }
+]

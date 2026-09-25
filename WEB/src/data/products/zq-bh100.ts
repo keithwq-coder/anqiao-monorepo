@@ -1,0 +1,110 @@
+import type { Product } from "./types";
+
+/** ZQ-BH100 床下健康监测仪。 */
+export const zqBh100: Product = {
+  slug: "zq-bh100",
+  model: "ZQ-BH100",
+  name: {
+    zh: "安守护 · 床下健康监测仪",
+    en: "An Shou Hu · Under-Bed Health Monitor",
+    fr: "An Shou Hu · Moniteur de santé sous matelas",
+    es: "An Shou Hu · Monitor de salud bajo cama",
+    ja: "安守護 · ベッド下健康モニター",
+    ru: "An Shou Hu · Монитор здоровья под кроватью",
+  },
+  tagline: {
+    zh: "置于床垫下方，无感采集睡眠全过程数据",
+    en: "Placed under the mattress — captures whole-night sleep data without any sensing burden",
+    fr: "Placé sous le matelas — collecte sans contrainte des données de sommeil",
+    es: "Colocado bajo el colchón — captura sin molestias los datos del sueño",
+    ja: "マットレス下に設置、無感で睡眠全過程のデータを取得",
+    ru: "Размещается под матрасом — бесшумный сбор данных сна",
+  },
+  features: {
+    zh: [
+      "微动传感，睡眠分期分析，形成睡眠质量画像",
+      "睡眠中心率、呼吸持续监测",
+      "离床记录与夜间异常提醒",
+      "零接触、无辐射担忧，支持长期趋势追踪",
+    ],
+    en: [
+      "Micro-motion sensing with sleep-stage analysis for a sleep-quality profile",
+      "Continuous heart-rate and respiration monitoring during sleep",
+      "Bed-exit records and nighttime anomaly reminders",
+      "Zero contact, no radiation concerns, long-term trend tracking",
+    ],
+    fr: [
+      "Capteur de micro-mouvement, analyse des phases de sommeil",
+      "Surveillance continue du rythme cardiaque et de la respiration",
+      "Enregistrement des sorties de lit et alertes nocturnes",
+      "Zéro contact, sans inquiétude de radiation, suivi des tendances",
+    ],
+    es: [
+      "Sensor de micromovimiento con análisis de fases del sueño",
+      "Monitorización continua del ritmo cardíaco y la respiración",
+      "Registro de salidas de cama y avisos nocturnos",
+      "Cero contacto, sin preocupación por radiación, seguimiento de tendencias",
+    ],
+    ja: [
+      "微動センシング、睡眠ステージ分析で睡眠の質を可視化",
+      "睡眠中の心拍・呼吸を継続モニタリング",
+      "離床記録と夜間異常リマインダー",
+      "ゼロ接触、放射線の心配なし、長期トレンド追跡対応",
+    ],
+    ru: [
+      "Микровибрационный датчик, анализ фаз сна",
+      "Непрерывный мониторинг пульса и дыхания во сне",
+      "Записи выходов из кровати и ночные напоминания",
+      "Ноль контакта, без радиации, отслеживание трендов",
+    ],
+  },
+  scenes: {
+    zh: ['养老机构', '社区居家养老', '医疗卫生', '旅居康养', '智慧酒店', '职场健康', '儿少健康监测', '居家安防', '保险健康权益', '长护险监管', '母婴照护', '礼品采购', '会员服务', '企业福利', '招投标项目', '睡眠监测', '体征监测', '健康档案', '慢病管理', '长者', '独居空巢老人', '儿童青少年', '高压力/亚健康人群', '慢病人群'],
+    en: ['Elderly-care institutions', 'Community home care', 'Medical & health', 'Relocation & vacation care', 'Smart hospitality', 'Workplace health', 'Child & adolescent health monitoring', 'Home safety & security', 'Insurance health benefits', 'Long-term care insurance supervision', 'Maternal & infant care', 'Gifting & corporate benefits', 'Membership & rights services', 'Corporate benefits', 'Tender projects', 'Sleep monitoring', 'Vital-sign monitoring', 'Health records', 'Chronic care', 'Seniors', 'Seniors living alone', 'Children & adolescents', 'High-stress & sub-health', 'Chronic-disease patients'],
+    fr: ['Institutions pour personnes âgées', 'Soins à domicile', 'Médical et santé', 'Séjours de santé', 'Hôtellerie intelligente', 'Santé au travail', 'Suivi de la santé des enfants et adolescents', 'Sécurité à domicile', 'Avantages santé pour assureurs', "Supervision de l'assurance dépendance", 'Soins mère-enfant', "Cadeaux et avantages d'entreprise", "Services d'adhésion", 'Avantages salariés', "Appels d'offres", 'Suivi du sommeil', 'Surveillance des signes', 'Dossiers de santé', 'Soins chroniques', 'Personnes âgées', 'Seniors vivant seuls', 'Enfants et adolescents', 'Stress et sous-santé', 'Patients chroniques'],
+    es: ['Residencias de ancianos', 'Cuidados en el hogar', 'Médico y salud', 'Cuidados en estancias', 'Hotelería inteligente', 'Salud laboral', 'Monitorización de la salud infantil y juvenil', 'Seguridad en el hogar', 'Beneficios de salud para aseguradoras', 'Supervisión del seguro de larga duración', 'Cuidados materno-infantiles', 'Regalos y beneficios corporativos', 'Servicios de membresía', 'Beneficios corporativos', 'Licitações / concursos', 'Monitorización del sueño', 'Monitorización de signos', 'Historial de salud', 'Cuidados crónicos', 'Mayores', 'Mayores que viven solos', 'Niños y adolescentes', 'Estrés y subsalud', 'Pacientes crónicos'],
+    ja: ['介護施設', '在宅介護', '医療衛生', '旅居康養', 'スマートホテル', '職場の健康', '児童・青少年の健康モニタリング', '在宅セキュリティ', '保険健康特典', '介護保険監督', '母子ケア', 'ギフト・福利厚生', '会員サービス', '企業福利厚生', '入札プロジェクト', '睡眠モニタリング', 'バイタルモニタリング', '健康カルテ', '慢性疾患管理', '高齢者', '独居・空巣の高齢者', '児童・青少年', '高ストレス・亜健康層', '慢性疾患患者'],
+    ru: ['Учреждения для пожилых', 'Домашний уход', 'Медицина и здоровье', 'Оздоровительные поездки', 'Умные отели', 'Здоровье на рабочем месте', 'Мониторинг здоровья детей и подростков', 'Безопасность дома', 'Страховые медицинские бонусы', 'Надзор за страхованием долгосрочного ухода', 'Уход за матерью и ребёнком', 'Подарки и корпоративные льготы', 'Членские сервисы и права', 'Корпоративные льготы', 'Тендерные проекты', 'Мониторинг сна', 'Мониторинг показателей', 'Медкарты', 'Управление хроническими заболеваниями', 'Пожилые', 'Одинокие пожилые', 'Дети и подростки', 'Стресс и субздоровье', 'Пациенты с хроническими заболеваниями'],
+  },
+  spec: {
+    zh: '探测原理：微动传感（置于床垫下方）\n监测方式：非接触，无需佩戴\n监测内容：睡眠分期、心率、呼吸、离床记录\n安装方式：床垫下方\n通信方式：WiFi',
+    en: 'Detection: micro-motion sensing (under mattress)\nContactless, no wearable\nMonitors: sleep stages, heart rate, respiration, bed-exit records\nInstallation: under mattress\nConnectivity: WiFi',
+    fr: 'Détection : capteur de micro-mouvement (sous matelas)\nSans contact, aucun dispositif à porter\nSurveille : phases de sommeil, rythme cardiaque, respiration, sorties de lit\nInstallation : sous matelas\nConnectivité : WiFi',
+    es: 'Detección: sensor de micromovimiento (bajo colchón)\nSin contacto, sin dispositivos\nMonitoriza: fases del sueño, ritmo cardíaco, respiración, salidas de cama\nInstalación: bajo colchón\nConectividad: WiFi',
+    ja: '検知原理：微動センシング（マットレス下）\n非接触、装着不要\nモニタリング：睡眠ステージ、心拍、呼吸、離床記録\n設置：マットレス下\n通信：WiFi',
+    ru: 'Детекция: микровибрационный датчик (под матрасом)\nБесконтактно, без носимых\nМониторинг: фазы сна, пульс, дыхание, выходы из кровати\nУстановка: под матрас\nСвязь: WiFi',
+  },
+  customers: {
+    zh: "需要夜间睡眠与离床守护的机构床位与居家卧室场景。",
+    en: "Institutional beds and home bedrooms needing nighttime sleep and bed-exit guarding.",
+    fr: "Lits en institution et chambres à domicile nécessitant une surveillance nocturne.",
+    es: "Camas de residencias y dormitorios que necesitan vigilancia nocturna del sueño.",
+    ja: "夜間の睡眠と離床見守りが必要な施設ベッドと在宅寝室。",
+    ru: "Учрежденческие кровати и домашние спальни, требующие ночного контроля сна.",
+  },
+  warranty: {
+    zh: "12 个月保修，特殊情况另定",
+    en: "12-month warranty, special cases determined separately",
+    fr: "Garantie 12 mois, conditions particulières à convenir",
+    es: "Garantía de 12 meses, casos especiales a convenir",
+    ja: "12ヶ月保証、特殊な状況は別途協議",
+    ru: "Гарантия 12 месяцев, особые случаи оговариваются отдельно",
+  },
+  images: [
+    {
+      src: "/images/products/zq-bh100/three-view.webp",
+      alt: {
+        zh: "ZQ-BH100 床下健康监测仪 三视图",
+        en: "ZQ-BH100 Under-Bed Health Monitor — three views",
+        fr: "ZQ-BH100 Moniteur sous matelas — trois vues",
+        es: "ZQ-BH100 Monitor bajo cama — tres vistas",
+        ja: "ZQ-BH100 ベッド下健康モニター 三面図",
+        ru: "ZQ-BH100 Монитор под кроватью — три вида",
+      },
+      width: 1600,
+      height: 760,
+    },
+  ],
+  deployment: ["卧室"],
+  relatedSlugs: ["zq-sh100"],
+};
