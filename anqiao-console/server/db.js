@@ -1,7 +1,8 @@
-// 阶段四 · sqlite 数据层（INTEGRATION-SPEC §8 阶段四）
+// 阶段四 · 持久化数据层（INTEGRATION-SPEC §8 阶段四）
 // 映射内存模型：租户告警/处置、账号口令哈希、长护险状态、可变体征快照。
-// DATA_LAYER=sqlite 启用；缺省 seed 为种子内存态（可回滚）。
-// 注意：node:sqlite 仅 Node ≥22 可用；seed 模式不加载该内置模块（兼容 Node 20）。
+// DATA_LAYER=sqlite 启用（需 Node ≥22 内置 node:sqlite）；
+// DATA_LAYER=mysql 启用 MySQL 5.7 持久层（anqiao_console 库，Node 20 兼容，凭据走 MYSQL_* 环境变量或 MYSQL_URL）；
+// 缺省 seed 为种子内存态（可回滚）。
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -11,7 +12,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export function dataLayerMode() {
   const mode = (process.env.DATA_LAYER || 'seed').toLowerCase()
-  return mode === 'sqlite' ? 'sqlite' : 'seed'
+  if (mode === 'sqlite') return 'sqlite'
+  if (mode === 'mysql') return 'mysql'
+  return 'seed'
+}
+
+function isPersistentMode() {
+  const mode = dataLayerMode()
+  return mode === 'sqlite' || mode === 'mysql'
 }
 
 export function dbPath() {
@@ -74,6 +82,68 @@ async function ensureDb() {
   return sqliteReady
 }
 
+// ---- MySQL 5.7 持久层（anqiao_console）----
+
+let mysqlPool = null
+let mysqlReady = null
+
+function mysqlConfig() {
+  if (process.env.MYSQL_URL) return { uri: process.env.MYSQL_URL, connectionLimit: 5 }
+  return {
+    host: process.env.MYSQL_HOST || '127.0.0.1',
+    port: Number(process.env.MYSQL_PORT || 3306),
+    user: process.env.MYSQL_USER || 'anqiao_app',
+    password: process.env.MYSQL_PASSWORD || '',
+    database: process.env.MYSQL_DATABASE || 'anqiao_console',
+    charset: 'utf8mb4',
+    connectionLimit: 5,
+  }
+}
+
+async function ensureMysql() {
+  if (mysqlPool) return mysqlPool
+  if (!mysqlReady) {
+    mysqlReady = (async () => {
+      const mysql = await import('mysql2/promise')
+      mysqlPool = mysql.createPool(mysqlConfig())
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS meta (
+          \`key\` VARCHAR(64) NOT NULL PRIMARY KEY,
+          \`value\` TEXT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS tenant_alerts (
+          tenant_id VARCHAR(128) NOT NULL PRIMARY KEY,
+          payload MEDIUMTEXT NOT NULL,
+          updated_at VARCHAR(40) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS accounts (
+          username VARCHAR(128) NOT NULL PRIMARY KEY,
+          password_hash VARCHAR(255) NOT NULL,
+          updated_at VARCHAR(40) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS ltc_state (
+          id INT NOT NULL PRIMARY KEY,
+          payload MEDIUMTEXT NOT NULL,
+          updated_at VARCHAR(40) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS tenant_vitals (
+          tenant_id VARCHAR(128) NOT NULL,
+          patient_id VARCHAR(128) NOT NULL,
+          payload MEDIUMTEXT NOT NULL,
+          updated_at VARCHAR(40) NOT NULL,
+          PRIMARY KEY (tenant_id, patient_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query("INSERT IGNORE INTO meta (`key`, `value`) VALUES ('schema_version', '1')")
+      return mysqlPool
+    })()
+  }
+  return mysqlReady
+}
+
 export function closeDb() {
   if (db) {
     try {
@@ -84,6 +154,15 @@ export function closeDb() {
     db = null
     sqliteReady = null
   }
+  if (mysqlPool) {
+    try {
+      mysqlPool.end()
+    } catch {
+      /* ignore */
+    }
+    mysqlPool = null
+    mysqlReady = null
+  }
 }
 
 function now() {
@@ -91,7 +170,22 @@ function now() {
 }
 
 export async function saveTenantAlerts(tenantId, alerts) {
-  if (dataLayerMode() !== 'sqlite') return false
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      await pool.execute(
+        `INSERT INTO tenant_alerts (tenant_id, payload, updated_at) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE payload = VALUES(payload), updated_at = VALUES(updated_at)`,
+        [tenantId, JSON.stringify(alerts), now()],
+      )
+      return true
+    } catch (err) {
+      console.error('[db] mysql saveTenantAlerts failed:', err.message)
+      return false
+    }
+  }
+  if (mode !== 'sqlite') return false
   const conn = await ensureDb()
   conn
     .prepare(
@@ -103,7 +197,26 @@ export async function saveTenantAlerts(tenantId, alerts) {
 }
 
 export async function loadAllTenantAlerts() {
-  if (dataLayerMode() !== 'sqlite') return {}
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      const [rows] = await pool.execute('SELECT tenant_id, payload FROM tenant_alerts')
+      const out = {}
+      for (const r of rows) {
+        try {
+          out[r.tenant_id] = JSON.parse(r.payload)
+        } catch {
+          /* skip */
+        }
+      }
+      return out
+    } catch (err) {
+      console.error('[db] mysql loadAllTenantAlerts failed, falling back to seed:', err.message)
+      return {}
+    }
+  }
+  if (mode !== 'sqlite') return {}
   try {
     const conn = await ensureDb()
     const rows = conn.prepare('SELECT tenant_id, payload FROM tenant_alerts').all()
@@ -123,7 +236,22 @@ export async function loadAllTenantAlerts() {
 }
 
 export async function saveAccountHash(username, passwordHash) {
-  if (dataLayerMode() !== 'sqlite') return false
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      await pool.execute(
+        `INSERT INTO accounts (username, password_hash, updated_at) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), updated_at = VALUES(updated_at)`,
+        [username, passwordHash, now()],
+      )
+      return true
+    } catch (err) {
+      console.error('[db] mysql saveAccountHash failed:', err.message)
+      return false
+    }
+  }
+  if (mode !== 'sqlite') return false
   const conn = await ensureDb()
   conn
     .prepare(
@@ -135,7 +263,20 @@ export async function saveAccountHash(username, passwordHash) {
 }
 
 export async function loadAccountHashes() {
-  if (dataLayerMode() !== 'sqlite') return {}
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      const [rows] = await pool.execute('SELECT username, password_hash FROM accounts')
+      const out = {}
+      for (const r of rows) out[r.username] = r.password_hash
+      return out
+    } catch (err) {
+      console.error('[db] mysql loadAccountHashes failed:', err.message)
+      return {}
+    }
+  }
+  if (mode !== 'sqlite') return {}
   try {
     const conn = await ensureDb()
     const rows = conn.prepare('SELECT username, password_hash FROM accounts').all()
@@ -149,7 +290,22 @@ export async function loadAccountHashes() {
 }
 
 export async function saveLtcState(state) {
-  if (dataLayerMode() !== 'sqlite') return false
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      await pool.execute(
+        `INSERT INTO ltc_state (id, payload, updated_at) VALUES (1, ?, ?)
+         ON DUPLICATE KEY UPDATE payload = VALUES(payload), updated_at = VALUES(updated_at)`,
+        [JSON.stringify(state), now()],
+      )
+      return true
+    } catch (err) {
+      console.error('[db] mysql saveLtcState failed:', err.message)
+      return false
+    }
+  }
+  if (mode !== 'sqlite') return false
   const conn = await ensureDb()
   conn
     .prepare(
@@ -161,7 +317,19 @@ export async function saveLtcState(state) {
 }
 
 export async function loadLtcState() {
-  if (dataLayerMode() !== 'sqlite') return null
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      const [rows] = await pool.execute('SELECT payload FROM ltc_state WHERE id = 1')
+      if (!rows.length) return null
+      return JSON.parse(rows[0].payload)
+    } catch (err) {
+      console.error('[db] mysql loadLtcState failed:', err.message)
+      return null
+    }
+  }
+  if (mode !== 'sqlite') return null
   try {
     const conn = await ensureDb()
     const row = conn.prepare('SELECT payload FROM ltc_state WHERE id = 1').get()
@@ -174,7 +342,40 @@ export async function loadLtcState() {
 }
 
 export async function saveTenantVitalsSnapshot(tenantId, patients) {
-  if (dataLayerMode() !== 'sqlite') return false
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      const conn = await pool.getConnection()
+      const ts = now()
+      try {
+        await conn.beginTransaction()
+        for (const p of patients) {
+          await conn.execute(
+            `INSERT INTO tenant_vitals (tenant_id, patient_id, payload, updated_at) VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE payload = VALUES(payload), updated_at = VALUES(updated_at)`,
+            [tenantId, p.patient_id, JSON.stringify(p.vitals), ts],
+          )
+        }
+        await conn.commit()
+        return true
+      } catch (err) {
+        try {
+          await conn.rollback()
+        } catch {
+          /* ignore */
+        }
+        console.error('[db] mysql vitals snapshot failed:', err.message)
+        return false
+      } finally {
+        conn.release()
+      }
+    } catch (err) {
+      console.error('[db] mysql vitals snapshot failed:', err.message)
+      return false
+    }
+  }
+  if (mode !== 'sqlite') return false
   const conn = await ensureDb()
   const stmt = conn.prepare(
     `INSERT INTO tenant_vitals (tenant_id, patient_id, payload, updated_at) VALUES (?, ?, ?, ?)
@@ -200,7 +401,25 @@ export async function saveTenantVitalsSnapshot(tenantId, patients) {
 }
 
 export async function loadTenantVitals(tenantId) {
-  if (dataLayerMode() !== 'sqlite') return {}
+  const mode = dataLayerMode()
+  if (mode === 'mysql') {
+    try {
+      const pool = await ensureMysql()
+      const [rows] = await pool.execute('SELECT patient_id, payload FROM tenant_vitals WHERE tenant_id = ?', [tenantId])
+      const out = {}
+      for (const r of rows) {
+        try {
+          out[r.patient_id] = JSON.parse(r.payload)
+        } catch {
+          /* skip */
+        }
+      }
+      return out
+    } catch {
+      return {}
+    }
+  }
+  if (mode !== 'sqlite') return {}
   try {
     const conn = await ensureDb()
     const rows = conn.prepare('SELECT patient_id, payload FROM tenant_vitals WHERE tenant_id = ?').all(tenantId)

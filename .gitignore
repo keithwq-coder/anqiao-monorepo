@@ -71,6 +71,7 @@ anqiao-console/deploy_huaweicloud.py
 anqiao-console/deploy/deploy_huawei_aqkj.py
 anqiao-console/deploy/preflight_huawei.py
 anqiao-console/deploy/smoke_huawei.py
+ops/init_mysql_isolated_hub.py
 
 # ---- 浏览器会话档案（Cookies/登录态）----
 crawler/video/browser_profile/

@@ -9,11 +9,12 @@
     "preview": "vite preview",
     "server": "node server/index.js",
     "backup:sqlite": "node server/backup-sqlite.mjs",
-    "test": "node --test server/test-ltc.mjs server/test-account-matrix.mjs server/test-device-ltc.mjs server/test-phase-c.mjs server/test-phase-d.mjs server/test-real-devices-seed.mjs server/test-workbench.mjs server/test-home-care.mjs server/test-medical-supervision.mjs server/test-insurer-operations.mjs"
+    "test": "node --test --test-concurrency=1 server/test-ltc.mjs server/test-account-matrix.mjs server/test-device-ltc.mjs server/test-phase-c.mjs server/test-phase-d.mjs server/test-real-devices-seed.mjs server/test-workbench.mjs server/test-home-care.mjs server/test-medical-supervision.mjs server/test-insurer-operations.mjs"
   },
   "dependencies": {
     "argon2": "^0.45.1",
     "echarts": "^5.6.0",
+    "mysql2": "^3.24.4",
     "vue": "^3.5.13"
   },
   "devDependencies": {

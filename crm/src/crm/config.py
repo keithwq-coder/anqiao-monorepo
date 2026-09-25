@@ -1,4 +1,4 @@
-"""Fail-closed runtime configuration for PostgreSQL environments."""
+"""Fail-closed runtime configuration for MySQL environments."""
 
 from functools import cached_property
 from typing import Literal
@@ -19,11 +19,11 @@ class Settings(BaseSettings):
 
     crm_environment: Literal["development", "test", "production"] = "development"
     database_host: str
-    database_port: int = Field(default=5432, ge=1, le=65535)
+    database_port: int = Field(default=3306, ge=1, le=65535)
     database_name: str
     database_user: str
     database_password: SecretStr
-    database_sslmode: Literal["disable", "prefer", "require"] = "prefer"
+    database_sslmode: Literal["disable", "prefer", "require"] = "prefer"  # PG 遗留字段，MySQL 驱动不再使用
     ai_enabled: bool = False
     # 培训 wiki ↔ CRM 内部同步接口的鉴权 token（空 = 禁用内部接口，一律 403）
     crm_internal_token: SecretStr = SecretStr("")
@@ -74,22 +74,23 @@ class Settings(BaseSettings):
     @cached_property
     def database_url(self) -> URL:
         return URL.create(
-            drivername="postgresql+psycopg",
+            drivername="mysql+pymysql",
             username=self.database_user,
             password=self.database_password.get_secret_value(),
             host=self.database_host,
             port=self.database_port,
             database=self.database_name,
-            query={"sslmode": self.database_sslmode},
+            query={"charset": "utf8mb4"},
         )
 
     @cached_property
     def offline_database_url(self) -> URL:
-        """Return a secret-free PostgreSQL URL for offline SQL generation."""
+        """Return a secret-free MySQL URL for offline SQL generation."""
         return URL.create(
-            drivername="postgresql+psycopg",
+            drivername="mysql+pymysql",
             username=self.database_user,
             host=self.database_host,
             port=self.database_port,
             database=self.database_name,
+            query={"charset": "utf8mb4"},
         )
