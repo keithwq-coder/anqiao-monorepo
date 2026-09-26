@@ -2126,8 +2126,8 @@ export function auditLog() {
 
 function persist() {
   if (!persistEnabled) return
-  if (dataLayerMode() === 'sqlite') {
-    saveLtcState(state).catch((err) => console.error('[ltc] sqlite 持久化失败:', err.message))
+  if (['sqlite', 'mysql'].includes(dataLayerMode())) {
+    saveLtcState(state).catch((err) => console.error('[ltc] 持久化失败:', err.message))
     return
   }
   try {

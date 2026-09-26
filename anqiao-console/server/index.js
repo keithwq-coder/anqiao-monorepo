@@ -145,11 +145,11 @@ import {
   recordInsurerInspection,
 } from './ltc.js'
 
-// 启动时还原快照（sqlite 优先，回退 store.json 种子模式）；seed 模式不碰 node:sqlite
+// 启动时还原快照（持久层优先，回退 store.json 种子模式）；seed 模式不碰持久层
 const sqliteAlerts = await loadAllTenantAlerts()
 const jsonAlerts = loadState()
 const alertSnapshots =
-  dataLayerMode() === 'sqlite' && Object.keys(sqliteAlerts).length > 0 ? sqliteAlerts : (jsonAlerts ?? {})
+  ['sqlite', 'mysql'].includes(dataLayerMode()) && Object.keys(sqliteAlerts).length > 0 ? sqliteAlerts : (jsonAlerts ?? {})
 if (alertSnapshots && typeof alertSnapshots === 'object') {
   for (const [tid, alerts] of Object.entries(alertSnapshots)) {
     const d = getTenantData(tid)
@@ -168,7 +168,7 @@ for (const a of ACCOUNTS) {
   if (restoredHashes[a.username]) a.password_hash = restoredHashes[a.username]
 }
 const passwordUpgradeReady = upgradeSeedPasswordHashes().then(async () => {
-  if (dataLayerMode() === 'sqlite') {
+  if (['sqlite', 'mysql'].includes(dataLayerMode())) {
     for (const a of ACCOUNTS) await saveAccountHash(a.username, a.password_hash)
   }
 })
@@ -176,7 +176,7 @@ const passwordUpgradeReady = upgradeSeedPasswordHashes().then(async () => {
 function persistTenantAlerts(tenantId) {
   const d = getTenantData(tenantId)
   if (!d) return
-  if (dataLayerMode() === 'sqlite') {
+  if (['sqlite', 'mysql'].includes(dataLayerMode())) {
     Promise.all([
       saveTenantAlerts(tenantId, d.alerts),
       saveTenantVitalsSnapshot(tenantId, d.patients),
