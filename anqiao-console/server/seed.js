@@ -159,9 +159,9 @@ function todayStr8() {
   return nowIso8().slice(0, 10)
 }
 
-// ---------- 床位与楼层布局 ----------
-// 凯健护理院与前端大屏 mock 对账一致：87 在住 / 96 床位
-const KAIJIAN_OCCUPIED_BEDS = [
+// ---------- 床位与楼层布局（康宁护理院 · 演示租户专用，虚构机构） ----------
+// 演示楼层布局：87 在住 / 96 床位
+const NURSING_DEMO_OCCUPIED_BEDS = [
   '401-A','401-B','402-A','402-B','403-A','403-B','404-A','404-B','405-A','405-B','406-A','406-B',
   '407-A','407-B','408-A','408-B','409-A','409-B','410-A','410-B','411-A','411-B',
   '301-A','301-B','302-A','302-B','303-A','303-B','304-A','304-B','305-A','305-B','306-A','306-B',
@@ -171,15 +171,18 @@ const KAIJIAN_OCCUPIED_BEDS = [
   '101-A','101-B','102-A','102-B','103-A','103-B','104-A','104-B','105-A','105-B','106-A','106-B',
   '107-A','107-B','108-A','108-B','109-A','109-B','110-A','110-B','111-A','111-B',
 ]
-const KAIJIAN_VACANT_BEDS = ['412-A','412-B','311-B','312-A','312-B','212-A','212-B','112-A','112-B']
+const NURSING_DEMO_VACANT_BEDS = ['412-A','412-B','311-B','312-A','312-B','212-A','212-B','112-A','112-B']
 
-const KAIJIAN_FLOOR_WARDS = {
+const NURSING_DEMO_FLOOR_WARDS = {
   '4F': '完全失能专区',
   '3F': '认知障碍专区',
   '2F': '术后康复专区',
   '1F': '慢病颐养专区',
 }
-const KAIJIAN_FLOOR_CARE = { '4F': '特级护理', '3F': '一级护理', '2F': '二级护理', '1F': '二级护理' }
+const NURSING_DEMO_FLOOR_CARE = { '4F': '特级护理', '3F': '一级护理', '2F': '二级护理', '1F': '二级护理' }
+
+// 演示护理员花名池（虚构，体验域模拟数据；供 buildPatients/buildAlerts 处置人字段使用）
+const NURSES = ['李春梅','王秀兰','张丽萍','赵桂芳','刘淑华','陈玉珍','杨金花','周美玲','吴丽华','郑桂英','孙玉兰','马秀珍']
 
 const SURNAMES = ['张','李','王','刘','陈','杨','赵','黄','周','吴','徐','孙','胡','朱','高','林','何','郭','马','罗']
 const ELDER_MALE_NAMES = [
@@ -1268,6 +1271,30 @@ export const TENANT_CONFIGS = {
     template: null,
     deployment: 'saas',
   },
+  kangning: {
+    name: '康宁护理院（演示）', // 体验域虚构机构（业主已批准拟名），常驻演示标识
+    kind: 'nursing_home',
+    vertical: 'nursing_home',
+    template: 'nursing_home_v1',
+    deployment: 'saas',
+    seed: 20260926,
+    alertIdBase: 81001,
+    occupiedBeds: NURSING_DEMO_OCCUPIED_BEDS,
+    vacantBeds: NURSING_DEMO_VACANT_BEDS,
+    floorWards: NURSING_DEMO_FLOOR_WARDS,
+    floorCare: NURSING_DEMO_FLOOR_CARE,
+    nurses: NURSES.length,
+    inBedRatio: 0.85,
+    abnormalPlan: [
+      { idx: 0, type: 'hr' },
+      { idx: 5, type: 'off_bed' },
+      { idx: 11, type: 'fall' },
+      { idx: 17, type: 'tp' },
+    ],
+    patientTotal: NURSING_DEMO_OCCUPIED_BEDS.length,
+    alertTypes: ['fall','off_bed','hr','br','tp','fall','off_bed','hr','br','tp','off_bed','hr'],
+    alertStatuses: ['handled','handled','triggered','handling','handled','missed','handled','triggered','handled','handling','handled','handled'],
+  },
 }
 
 // 租户数据为可变内存态（处置写操作、WS 新告警会直接改 alerts 数组），生产换 DB。
@@ -1279,6 +1306,7 @@ const TENANT_DATA = {
   bureau_suqian: buildTenant(TENANT_CONFIGS.bureau_suqian),
   bureau_moumou: buildTenant(TENANT_CONFIGS.bureau_moumou),
   insurer: buildTenant(TENANT_CONFIGS.insurer),
+  kangning: buildTenant(TENANT_CONFIGS.kangning), // 首个机构照护型租户（occupiedBeds 分支）
 }
 
 

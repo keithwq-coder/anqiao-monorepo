@@ -10,7 +10,7 @@
 
 - 硬件库 `api_health_track`（37 表）与硬件 API 8000 **只读零影响**；不重启 8000/8081/7557/8888；本地 vite 进程（PID 8332/37344 等）勿杀；
 - 严禁安装 PostgreSQL/Redis；argon2 不可用（scrypt 已兼容，**不再尝试安装**）；
-- Zero Fake Data：真实域零捏造；演示域虚构名（康宁护理院等已批准拟名）+ 常驻「演示」标识；**代码/文档禁现真实品牌**（凯健/居家乐，含变量名残留 `KAIJIAN_*`，T2 顺手改名）；
+- Zero Fake Data：真实域零捏造；演示域虚构名（康宁护理院等已批准拟名）+ 常驻「演示」标识；**演示域代码/文案禁现真实品牌**（含变量名残留 `KAIJIAN_*`，T2 改名）。**豁免**：自营真实设备点位名（PRD §2.2 唯一合法清单，如 `ANQIAO_DEVICES`/`anqiaoDevices.ts` 的「凯健国际·404」标签与地址）属真实域数据，不在清理范围——品牌名扫描仅针对演示域新增代码（见 T5 Step 3）；
 - git **定点 add**（勿 `git add -A`；另一会话双大屏在途改动勿提交勿覆盖）；CRLF 警告无害；
 - SDD：新路由先登记 `docs/API-CONTRACT.md`（下一个编号 **N21**，N17–N20 已实现），后实现；
 - 测试体系：`npm test` = `node --test --test-concurrency=1`（15 个既有文件）；测试子进程自生成随机 `SEED_ACCOUNT_PASSWORD`，不入库；
@@ -42,7 +42,7 @@
 **Interfaces:**
 - Produces: 租户 `kangning`（name `康宁护理院（演示）`，kind `nursing_home`，vertical `nursing_home`，template `nursing_home_v1`，deployment `saas`，seed `20260926`，alertIdBase `81001`，nurses `12`，inBedRatio `0.85`，abnormalPlan `[]`，occupiedBeds/floorWards/floorCare = 改名后 NURSING_DEMO_* 常量）。
 
-- [ ] **Step 1 前置阅读**：读 seed.js `buildPatients`(294)/`buildAlerts`(~350)/beds 概览函数(1495-1520)，确认空床呈现机制后再定 vacantBeds 字段是否需要
+- [ ] **Step 1 前置阅读**：✔ 已完成——`listBeds`（seed.js:1549）消费 `cfg.vacantBeds`（空床机制现成）；`buildAlerts` 需 `cfg.alertTypes/alertStatuses/patientTotal`；`requireNursingTenant` 无 kind 门槛（occupiedBeds 即过）。结论：**config 需含 vacantBeds**
 - [ ] **Step 2 红测**：断言 `getTenantData('kangning')` 非空、patients>0、`getTenantName('kangning')` 含「演示」、`cfg.occupiedBeds.length===87`
 - [ ] **Step 3 实现**：改名 KAIJIAN_* 四组常量（全局仅定义处，零引用，安全）；注册 config + `TENANT_DATA.kangning = buildTenant(...)`（走 occupiedBeds 分支，seed.js:1186）
 - [ ] **Step 4 绿测 + 全量回归**
@@ -87,7 +87,7 @@
 
 - [ ] **Step 1 实现**：组结构 + 两级交互（Level1 选中 → Level2 角色卡栅格）；大健康占位卡置灰
 - [ ] **Step 2 手动验收清单**：七组渲染、两级切换、演示徽标常驻、真实卡无内嵌口令、全部 42+16 席位可达、大健康占位不可进
-- [ ] **Step 3 全局扫描**：`grep -rn "凯健\|居家乐" src/ server/` 零命中
+- [ ] **Step 3 全局扫描**：演示域新增代码（ConsoleLogin.vue、康宁相关文件、登录文案）`凯健|居家乐` 零命中；**自营真实点位标签（anqiaoDevices.ts / seed.js ANQIAO_DEVICES）豁免**（PRD §2.2 真实域）
 - [ ] **Step 4 Commit**：`feat(multi-vertical): two-level vertical->role login`
 
 ### Task 6: 六职能工作台组件（骨架 + 6 配置）
