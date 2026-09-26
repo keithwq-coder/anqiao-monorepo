@@ -246,6 +246,31 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
 
 > 约束：宿迁试点 3 台设备（ASH01086 / ASH01078 / ASH01092）为真实域资产，DELETE 与角色群分配一律 403；写操作全部经 `authorize(ctx, 'device:write')` 权限校验并落审计留痕。
 
+#### 销售客户资产视图与租户管理（多业态设计 §4/§6，N21–N27）
+
+| ID | 方法与路径 | 权限码（实际字符串） | 作用 | 计划阶段 |
+|---|---|---|---|---|
+| N21 | GET `/v1/sales/institutions` | `sales` 席位（`unified_role: 'sales'`）与 `su`/`platform_admin` | 名下客户机构列表：直读 `anqiao_crm.institutions`，按 `institution_owner_history` 归属过滤；无归属机构返回空数组；越权访问他人机构 404 | P0 |
+| N22 | GET `/v1/sales/institutions/{id}/devices` | 同 N21 | 机构绑定设备与在线状态（`device_registry` 按 customer_org 过滤，只读） | P0 |
+| N23 | GET `/v1/sales/institutions/{id}/vitals-summary` | 同 N21 | **脱敏**体征摘要：长者姓名仅「姓 + 称谓」，只输出趋势/异常标记与时间窗，不含诊断与身份字段 | P0 |
+| N24 | GET `/v1/sales/institutions/{id}/alerts` | 同 N21 | 机构设备告警历史（只读） | P0 |
+| N25 | GET `/v1/sales/institutions/{id}/telemetry` | 同 N21 | 遥测曲线：硬件云代理只读转发（现有 user_id 通道），不落盘、不写硬件域 | P0 |
+| N26 | GET `/v1/tenants` | `su`/`platform_admin` | 租户注册表：含 `vertical`/`template`/`deployment` 三字段（seed.js TENANT_CONFIGS） | P0 |
+| N27 | POST `/v1/admin/tenants` | 守卫 `authPayload.username === '吴'`（_allocator_，与 `/v1/admin/users` 同守卫） | 选业态模板开租户：body 为 `tenant_id`/`name`/`vertical`/`template`；vertical 必属四业态枚举；重复 409 | P0 |
+
+> 红线：CRM 域**只读**（`institutions`/`institution_owner_history`/`contacts`，严禁任何写操作）；宿迁 3 设备 3 长者真实数据只读且不得进入无权席位任何视图；越权读 404、无权操作 403（沿用账号矩阵 §4 规则）。
+
+#### 护理院职能席位路由（多业态设计 §3.3，N28–N33，契约先行 · 实现随后续批次）
+
+| ID | 方法与路径 | 权限码（实际字符串） | 作用 | 计划阶段 |
+|---|---|---|---|---|
+| N28 | POST `/v1/facility/rounds` | `rounds:write` | 医生查房记录登记，body 必须挂接体征证据引用（`telemetry_packet` id 或告警 id），否则 400（PRD §0.2 硬件证据优先） | 契约先行 |
+| N29 | POST `/v1/facility/orders`、PATCH `/v1/facility/orders/{id}` | `order:write` | 医嘱开立与四步闭环（开立→核对→执行→记录），状态机不可逆跳转 409 | 契约先行 |
+| N30 | GET/POST/PATCH `/v1/facility/staff` | 读 `staff:read`；写 `staff:write` | 院内员工花名册（人事席位；仅本租户 org 范围） | 契约先行 |
+| N31 | GET/POST `/v1/facility/shifts` | 读 `shift:read`；写 `shift:write` | 排班编排与查询；考勤留痕（ACA-01 采集仪）随硬件到位接入 | 契约先行 |
+| N32 | GET `/v1/facility/bills` | `bill:read` | 床位/护理费账册（月度账期树，挂物联结算凭证引用） | 契约先行 |
+| N33 | POST `/v1/facility/admissions` | `admission:write` | 入住咨询登记与意向跟进（院内最小台账，与 CRM 无耦合） | 契约先行 |
+
 #### GET `/v1/partner/channels`
 
 `partner_admin` 强制只返回本组织渠道。响应：
