@@ -17,7 +17,7 @@
           class="badge"
           :class="dashboardData?.governance_mode?.current_mode === 'direct' ? 'badge-primary' : 'badge-info'"
         >
-          {{ dashboardData?.governance_mode?.current_mode === 'direct' ? '🏛️ 医保直接监管模式' : '🤝 委托经办协同模式 (受托方: 中国太保)' }}
+          {{ dashboardData?.governance_mode?.current_mode === 'direct' ? '🏛️ 医保直接监管模式' : '🤝 委托经办协同模式 (受托方: 经办机构)' }}
         </span>
         <span class="badge badge-success">🛡️ 医保政务专网: 实时连通</span>
       </div>
@@ -196,7 +196,7 @@
         </div>
         <div class="gov-powers-grid">
           <div class="gov-power-box">
-            <div class="power-tag tag-info">受托商业保险经办服务事项 (中国太保)</div>
+            <div class="power-tag tag-info">受托商业保险经办服务事项 (经办机构)</div>
             <ul class="power-list">
               <li v-for="(p, i) in dashboardData?.governance_mode?.delegated_powers" :key="i">
                 ✓ {{ p }}
@@ -479,7 +479,7 @@
               📜 《长期护理保险核查督办函》已下发 · 文号：{{ clue.dispatch_order.order_no }}
             </div>
             <div class="stage-content">
-              <div>下发对象：<strong>{{ clue.dispatch_order.dispatched_to === 'insurer01' ? '中国太平洋财产保险股份有限公司长护经办部' : clue.dispatch_order.dispatched_to }}</strong></div>
+              <div>下发对象：<strong>{{ clue.dispatch_order.dispatched_to === 'insurer01' ? '受托经办机构' : clue.dispatch_order.dispatched_to }}</strong></div>
               <div>办结时限：<strong>{{ clue.dispatch_order.due_hours }} 小时内</strong> | 下发人：{{ clue.dispatch_order.dispatched_by }} ({{ clue.dispatch_order.dispatched_at }})</div>
               <div>核查要点：{{ clue.dispatch_order.inquiry_points }}</div>
             </div>
@@ -1866,7 +1866,7 @@ async function toggleGovernanceMode() {
   const next = current === 'direct' ? 'delegated' : 'direct'
   const confirmMsg = next === 'direct'
     ? '确认将统筹区监管模式切换为【医保局全权直管模式】？（该模式下医保局直接负责全部入户巡查与日常行政执法）'
-    : '确认将统筹区监管模式切换为【委托商保经办协同日常监管模式】？（现行主流过渡期机制，委托太平洋保险协助现场走访核验）'
+    : '确认将统筹区监管模式切换为【委托商保经办协同日常监管模式】？（现行主流过渡期机制，委托经办机构协助现场走访核验）'
   if (confirm(confirmMsg)) {
     try {
       await switchGovernanceMode(next)
@@ -1911,7 +1911,7 @@ async function submitDispatch() {
     showDispatchModal.value = false
     await loadClues()
     await loadDashboard()
-    alert('《长护险现场核查督办函》已成功下达至中国太平洋财产保险股份有限公司经办部！')
+    alert('《长护险现场核查督办函》已成功下达至受托经办机构！')
   } catch (e: any) {
     alert('下发督办函失败: ' + e.message)
   }

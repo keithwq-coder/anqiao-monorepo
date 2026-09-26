@@ -101,22 +101,13 @@ test('3. 宿迁 3 名真实用户（许丽、何家齐、王雪金）账号建�
   }
 })
 
-test('4. 安樵大屏在线设备绑定捏造用户，且视同真实用户能正常登录', async () => {
-  const anqiaoOnlineUsers = [
-    { username: 'user_zhoumin', name: '周敏', sn: 'ASH01146' },
-    { username: 'user_zhangdefu', name: '张德福', sn: 'ASH01076' },
-    { username: 'user_wangjianguo', name: '王建国', sn: 'ASH01016' },
-    { username: 'user_qianxiuying', name: '钱秀英', sn: 'ANCE00003' },
-    { username: 'user_liuchangsheng', name: '刘长生', sn: 'ASH01038' },
-    { username: 'user_chenguizhi', name: '陈桂芝', sn: 'ASH01021' },
-  ]
+test('4. 虚拟与捏造用户彻底清理校验：严禁包含 user_zhoumin 等捏造用户，仅保留真实长者与在册点位', async () => {
+  // 抽样验证捏造用户登录必定被拒 (401)，且避免触发单 IP 5 次防暴破阈值
+  const { httpStatus: s1 } = await postLogin('user_zhoumin')
+  assert.equal(s1, 401, '捏造用户 user_zhoumin 必须被彻底清除，登录应拒绝并返回 401 Unauthorized')
 
-  for (const u of anqiaoOnlineUsers) {
-    const { httpStatus, body } = await postLogin(u.username)
-    assert.equal(httpStatus, 200, `安樵在线用户 ${u.username} (${u.name}) 登录应为 200`)
-    assert.equal(body.data.staff.name, u.name, `用户姓名应为 ${u.name}`)
-    assert.equal(body.data.workspace, 'device_monitoring', '工作台分流正确')
-  }
+  const { httpStatus: s2 } = await postLogin('user_chenguizhi')
+  assert.equal(s2, 401, '捏造用户 user_chenguizhi 必须被彻底清除，登录应拒绝并返回 401 Unauthorized')
 })
 
 test('5. 厂商全国地图与城市下钻：包含苏州与宿迁两地', async () => {

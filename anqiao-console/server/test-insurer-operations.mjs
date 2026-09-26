@@ -38,7 +38,7 @@ function authPost(pathStr, data, token) {
 before(async () => {
   await new Promise((resolve) => {
     child = spawn(process.execPath, [path.join(__dirname, 'index.js')], {
-      env: { ...process.env, PORT: String(PORT), TOKEN_SECRET, SEED_ACCOUNT_PASSWORD: SEED_PASS },
+      env: { ...process.env, PORT: String(PORT), TOKEN_SECRET, SEED_ACCOUNT_PASSWORD: SEED_PASS, DISABLE_LTC_PERSIST: 'true' },
       stdio: ['ignore', 'pipe', 'inherit'],
     })
     let buf = ''

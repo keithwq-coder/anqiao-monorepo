@@ -29,13 +29,14 @@
 
 | 顺序 | 文档 | 权威范围 |
 |---|---|---|
+| 0 | docs/PRODUCT-REQUIREMENTS-SPEC.md | 核心商业模式（硬件系统集成商）、四大感知硬件 1+1+2 量产排产矩阵、真实数据唯一性标准与产品需求基线 |
 | 1 | docs/INTEGRATION-SPEC.md | 仓库边界、端口、切换窗口、回滚、日间/夜间纪律 |
 | 2 | docs/API-CONTRACT.md | 接口路径、字段、响应包 `{code,msg,data}` 的唯一来源 |
 | 3 | docs/PLATFORM-SPEC.md | 组织/角色/权限/数据范围/工作台承载边界 |
 | 4 | docs/LTC-INSURANCE-SPEC.md | 长护险流程、状态机、设备介入、反欺诈门禁 |
 | 5 | docs/ACCOUNT-MATRIX.md | 现有登录账号矩阵与 data_scope |
 | 6 | docs/DOMAIN-GLOSSARY.md | 术语 |
-| 7 | docs/LTC-WORKBENCH-SPEC.md | 上述约束之下的工作台产品行为与信息架构 |
+| 7 | docs/LTC-WORKBENCH-SPEC.md | 上述约束之下的工作台产品行为、双类工作台信息架构（§12）与 36 岗位交互流 |
 | 8 | docs/HOME-CARE-SPEC.md | 社区居家养老机构（虚拟养老院）空间网格、账号与工作台行为 |
 
 **Spec 先行；实现与 Spec 不一致视为缺陷；代码与旧文档冲突时，先改本 Spec 再改代码。**涉及上位 Spec 的差异，先按裁决顺序对齐上位 Spec，并同步本 Spec，然后实现。
@@ -1432,6 +1433,27 @@ npm run build
 
 **剩余**：材料真上传、项目下发回执、生产夜间窗口发布。
 
+### 9.5.2 §12 组件化多层级交互优化实施记录（2026-09-25）
+
+**范围**：§12.4 独立账号类工作台「SOP 流程树 + 主从三栏工作间」组件化落地，覆盖 AssessorApp（评定师）、InsurerOperationsApp（经办）；§12.3.3 CareDesk 危象抢占浮层。
+
+**改动文件**
+
+| 类型 | 路径 |
+|---|---|
+| 契约 | `docs/API-CONTRACT.md` §3.4.1 新增 N16 `GET /v1/ltc/workbench/workflow-tree`；`src/types/workbench-ia.ts` 增 `summaryGroup`、`MasterQueueCard` |
+| 服务端 | `server/workbench-workflow-tree.js`（补 insurer_staff/assessor_admin 承载条目；permRequired 对齐 ROLE_PERMISSIONS 实际码；透传 summaryGroup）；`server/ltc.js` `getWorkbenchWorkflowTree`（徽标=N01 分组同口径，按角色权限派生统计）；`server/index.js` N16 路由 |
+| 前端共享组件 | `src/features/ltc-workbench/components/SopWorkflowTree.vue`（两级树+实时徽标）、`MasterQueueList.vue`（案卷队列态）、`MasterDetailStudio.vue`（30/45/25 三栏+底栏签署区） |
+| API | `src/api/ltc-workbench.ts` N16 客户端 |
+| 工作台重构 | `AssessorApp.vue`、`InsurerOperationsApp.vue`：去互斥 Tab、去局促弹窗（量表/专家会审/结算核减/飞检/督办回执迁入三栏中栏）、删席位混杂切换（§12.4.1 防兼任）；`CareDeskApp.vue`：Level 1/2 未闭环告警顶层悬浮抢占条 + 30s 告警轮询保活 |
+| 测试 | `server/test-workbench-sop-studio.mjs`（6 项 TDD：红→绿）；`test-workbench-workflow-tree.mjs` 权限码对齐实际码；`package.json` npm test 接入新套件 |
+
+**行为对齐**： insurer01 树含受理派单+结算初审双域且徽标=N01 同口径 → 通过；assessor01/suqian_expert 树纯净无跨域节点 → 通过；跨角色节点 403 拦截 → 通过；三栏 30/45/25 + 底栏法定签署区 → 通过；CareDesk 危象脱离 Tab 顶层抢占 → 通过。
+
+**验证退出码**：`npm test` **101/101**（95 基线 + 6 新增，0 fail）；`npm run build`（vue-tsc + vite）0 error。
+
+**遗留（后续窗口）**：E2E 浏览器级走查（三栏交互手感）待人工验收；medical_supervision 工作台同构改造未在本批（医保域已由 MedicalToday 页流覆盖）。
+
 ### 9.6 验证与阶段报告
 
 每阶段报告包含：实际改动文件、修订 Spec、实际执行命令及退出码、AC 结果、剩余阻塞及影响范围。使用通过/失败/未执行三种结果，测试输出与截图可作为证据。
@@ -1540,4 +1562,134 @@ medical01、insurer01、assessor01 及统筹区专员沿用账号矩阵。family
 - 各角色 AC、跨范围授权、原有测试及 npm run build 有真实结果记录。
 - 等级与待遇的正式责任主体、设备 null 语义、宿迁 3 台及云扫描比对口径满足硬性基线。
 - 实现报告包含改动文件、测试命令、AC 结果、构建结果与仍需业务确认的事项。
+
+## 12. 工作台分类学与多层级信息架构规范（Workbench IA & Interaction Spec）
+
+### 12.1 架构动因与反模式根除
+早期代码存在“扁平化单页堆砌”的典型反模式：左侧侧边栏信息量极少（常年仅 1 个图标，高度空置），右侧主容器堆砌数十个指标卡、多层横向 Tab（互斥切屏）与深层嵌套弹窗，割裂了真实业务的人因工程学与时序流。
+根据平台规范与真实岗位物理现实，本节正式确立**双类工作台分类学体系（Two-Category Workbench Taxonomy）**，作为全域 36 个角色工作台多层级重构的唯一权威指导。
+
+### 12.2 双类工作台分类学定义
+
+| 维度 | 第 1 类：共享/公共席位终端类（Shared Terminal） | 第 2 类：独立个人账号类（Dedicated Personal） |
+|---|---|---|
+| **物理载体** | 病区护士台电脑、走廊壁挂触摸屏、移动查房推车平板、居家呼叫坐席大屏 | 个人办公 PC、笔记本电脑、外勤专用 Pad、专家移动端 |
+| **设备运行形态** | 7×24h 常开常亮，网络高保活，会话常驻，绝不轻易注销完全退出 | 个人单点登录，单次专注作业 30~120 分钟，超时锁定 |
+| **人员与隐私特征** | 同班组多人共用 1~2 台终端；同病区/科室数据共享，**跨账号隐私低敏感** | 一人一号，专属权责边界，**强隐私、强合规、强法定责任** |
+| **责任与操作留痕** | 双层身份留痕：机器终端审计 + 当班作业员操作留痕 | 个人数字签名、行政执法与医学终身责任制、不可替代 |
+| **核心交互范式** | **常态物联监护 + 当班人员极速秒切 + 突发危象强制抢占** | **左侧业务 SOP 流程树 + 右侧主从三栏专注办理工作间** |
+| **归属工作台示例** | `care_desk`（护理台）、`home_dispatch`（居家调度）、`nursing_staff`（床旁工位） | `assessor`（评定师）、`assessor_expert`（专家）、`insurer_*`（经办）、`medical_*`（医保）等 |
+
+### 12.3 第 1 类：共享终端类工作台规范（Shared Terminal Spec）
+#### 12.3.1 双层身份解耦模型（Dual-Layer Identity Model）
+共享终端工作台必须将“机器物理终端”与“当班作业员”彻底解耦：
+1. **终端层（Terminal Shell）**：
+   - 持有终端永久凭据或病区公用令牌，绑定物理病区/楼层（如 `ward: "4F"`, `terminal_type: "care_desk"`）；
+   - 保持与后端 WebSocket/SSE 实时物联数据链路高保活，承载病区床位体征、跌倒雷达遥测与全局呼叫；
+2. **作业员层（Operator Session）**：
+   - 终端内提供“当班人员极速切换池（Roster Quick-Switch Bar）”；
+   - 护士/护工走近终端，点击自身头像或输入 2 位 PIN 码，在 **100ms 内**完成上下文切换；
+   - 切换操作员绝不触发页面全量 Reload，绝不中断终端底层的 WebSocket 遥测监听。
+
+#### 12.3.2 自动归位与双重签名留痕（Auto-Reset & Dual-Signature）
+1. **自动归位倒计时（Auto-Reset Timer）**：
+   - 作业员登入后，顶栏显示 30 秒倒计时；
+   - 任何键盘、鼠标或触摸事件自动重置 30 秒时钟；
+   - 若 30 秒无任何交互，系统静默退出作业员个人状态，平滑归位至“病区公共监护大盘”，防止占坑；
+2. **操作双重签名留痕（Dual-Signature Audit）**：
+   - 所有写入动作（巡房打卡、防压疮翻身、用药核对、处置登记）在发往后端 `/v1` 接口时，Payload 必须同时携带双身份签名：
+     ```json
+     {
+       "terminal_id": "station_4f_01",
+       "operator_id": "kaijian_nurse01",
+       "operator_name": "何丽",
+       "action": "turn_pressure_relief",
+       "payload": { "patient_id": "P000401", "posture": "right_lateral" }
+     }
+     ```
+
+#### 12.3.3 全局突发危象强制抢占机制（Life-Critical Preempt Mechanism）
+1. **严禁互斥 Tab 遮挡**：
+   - 紧急呼叫（SOS 拉绳、毫米波坠床预警、心率呼吸越界）**严禁置于二级 Tab 之内**；
+2. **全屏抢占与挂起保护（Preempt & Stash）**：
+   - 一旦触发 Level 1 / Level 2 告警，顶层全域悬浮抢占条（Floating Emergency Bar）毫秒级强行弹出；
+   - 当前作业员正在编辑的表单就地暂存（Stash），待抢救响应完成后无损还原（Pop）。
+
+---
+
+### 12.4 第 2 类：独立个人账号类工作台规范（Dedicated Personal Spec）
+#### 12.4.1 “一个权限 = 一个独立工作台”与防混杂原则
+1. **杜绝角色越权兼任**：
+   - 严禁在同一工作台内用普通按钮横向切换“外勤评定师 / 评审专家组长 / 质控主管”或“受理员 / 飞检员 / 财务结算员”；
+   - 服务端依据 `session.permissions` 与 `principal.role` 严格裁剪，前端严格呈现对应岗位的专属业务流；
+2. **左侧业务 SOP 流程树规范（Workflow Navigation Tree）**：
+   - 废除左侧单一图标荒漠化设计；
+   - 左侧展示两级导航树：
+     - **Level 1 业务阶段**（如：今日待办、现场评定流、专家质证流、公信力中心）；
+     - **Level 2 状态队列**（如：待入户 3、现场查验中 1、待补充材料 0）；
+   - 每个队列末端动态悬挂未读/待办数字徽标，徽标数据由 `/v1/workbench/summary` 实时驱动。
+
+#### 12.4.2 右侧主从三栏专注办理工作间（Master-Detail Studio）
+1. **状态漏斗队列态（Master List View）**：
+   - 左侧选定流程节点后，右侧展示清晰的案卷列表、紧急度红黄牌与 SLA 倒计时；
+2. **全屏三栏专注办理态（Detail Studio View）**：
+   - 点击案件直接切换至三栏工作间（绝不使用局促滚动弹窗）：
+     - **左栏（证据卷宗台，30% 宽）**：长者基本信息、委托申请书、既往三甲医院病历与残疾证明；
+     - **中栏（核心业务台，45% 宽）**：国家失能标准 29 项四领域量表填报、扣减审核计算公式、行政批示；
+     - **右栏（客观物联辅助台，25% 宽）**：安守护雷达近 7 天连续体征基线包、离床/跌倒记录、AI 冲突提示（设备结论恒为 null，AI 采纳必须留痕）；
+     - **底栏（法定签署区）**：双人现场核验签名、专家联名签署、盖章签发。
+
+---
+
+### 12.5 全系统 36 角色与双类工作台映射规范矩阵
+
+| 序号 | 角色代号 (Role) | 中文岗位名称 | 工作台分类 | 对应挂载工作台/模块 | 左侧专属 SOP 流程树核心节点 |
+|---|---|---|---|---|---|
+| 1 | `nursing_station` | 病区护理台公共终端 | 共享终端类 | `care_desk` | 床位风险分级漏斗 / 当班排班池 / 护理执行日历 |
+| 2 | `nursing_head` | 病区护士长 | 共享终端类 | `care_desk` | 全病区监护 / 重点重症监护 / 排班管理 / 质控抽查 |
+| 3 | `nursing_nurse` | 责任护士 | 共享终端类 | `care_desk` / `nursing_staff` | 管床长者清单 / 医嘱执行 / 翻身打卡 / 呼叫处置 |
+| 4 | `nursing_caregiver`| 管床护工 | 共享终端类 | `nursing_staff` | 床位照护 Checklist / 助餐 / 翻身 / 巡更打卡 |
+| 5 | `home_dispatcher` | 虚拟养老院调度坐席 | 共享终端类 | `home_dispatch` | 紧急呼叫应答 / 待派工单 / 在途监控 / 完工回执 |
+| 6 | `elderly_care_admin`| 居家服务中心主任 | 共享终端类 | `home_dispatch` | 片区调度总盘 / 突发应急指挥 / 网格运力分析 |
+| 7 | `grid_team_leader` | 居家应急网格长 | 共享终端类 | `home_dispatch` | 片区求助响应 / 助老员在途打卡 / 疑难处置 |
+| 8 | `assessor` | 现场入户主评人 | 独立账号类 | `assessor_field_studio` | 待预约 / 在途打卡 / 现场29项量表录入 / 面签归档 |
+| 9 | `assessor_expert` | 临床医学评审专家 | 独立账号类 | `assessor_expert_studio` | 待审案卷 / 临床病历质证 / 雷达客观比对 / 双专家会签 |
+| 10 | `assessor_admin` | 评估机构质控主管 | 独立账号类 | `assessor_quality_admin` | 统筹区高斯偏离监控 / 双人入户门禁 / 结论书盖章签发 |
+| 11 | `insurer_intake` | 经办受理派单专员 | 独立账号类 | `insurer_intake_studio` | 参保资格初验 / 评估机构回避匹配 / 派单时效催办 |
+| 12 | `insurer_inspector`| 经办现场飞检专员 | 独立账号类 | `insurer_inspector_studio`| 双随机抽查排班 / 现场暗访双录 / 违规稽核留痕 |
+| 13 | `insurer_auditor` | 经办结算初审核销员 | 独立账号类 | `insurer_auditor_studio` | 机构月度申报账册 / 扣减审核计算 / 医保凭证出具 |
+| 14 | `insurer_service` | 经办综合客服申诉员 | 独立账号类 | `insurer_service_studio` | 信访申诉受理 / 调取原始评定证据 / 组织医学复评 |
+| 15 | `insurer_director` | 经办项目总监 | 独立账号类 | `insurer_director_studio` | 统筹区经办大盘 / 基金支出流速 / 机构履约考核 |
+| 16 | `medical_director` | 医保分管局长 | 独立账号类 | `medical_director_studio` | 全市基金总盘决策 / 风险穿透 / 重大行政处罚签批 |
+| 17 | `medical_supervisor`| 医保长护监督科长 | 独立账号类 | `medical_supervision_studio`| 定点机构信用监管 / 跨部门联合执法 / 常态检查 |
+| 18 | `medical_auditor` | 基金监管稽核专员 | 独立账号类 | `medical_auditor_studio` | 疑点线索研判 / 案件一案一档 / 追回退款 / 罚没通知 |
+| 19 | `medical_finance` | 医保待遇财务专员 | 独立账号类 | `medical_finance_studio` | 经办结算终审复核 / 财政专户划拨 / 支付凭证确认 |
+| 20 | `medical_assessor_admin`| 评估资格核准专员 | 独立账号类 | `medical_assessor_studio` | 评定机构准入备案 / 专家库轮转 / 争议终局裁决 |
+| 21 | `nursing_admin` | 养老院院长 | 独立账号类 | `nursing_home_admin` | 全院在院长者大盘 / 长护险申报汇总 / 医疗质量督办 |
+| 22 | `patient_dossier` | 病案管理专员 | 独立账号类 | `patient_dossier` | 【楼层-房间-患者树】/ 全周期生命体征档案 / 慢病谱 |
+| 23 | `device_monitoring`| 院内物联运维专员 | 独立账号类 | `device_monitoring` | 【空间物理拓扑树】/ 设备离线漏斗 / 固件巡检 |
+| 24 | `reports_center` | 医保结算报表专员 | 独立账号类 | `reports_center` | 【年度-月度账期树】/ 医保合规核销账册 / 翻身报告 |
+| 25 | `rehab_therapist` | 康复治疗师 | 独立账号类 | `rehab_studio` | 长者肌力评定 / 制定康复处方 / 康复训练打卡 / 评效 |
+| 26 | `dementia_specialist`| 认知症照护专员 | 独立账号类 | `dementia_studio` | MMSE测评量表 / 走失雷达围栏配置 / 认知激活干预 |
+| 27 | `assistive_specialist`| 辅具适配专员 | 独立账号类 | `assistive_studio` | 辅具需求评估 / 辅具租赁审批 / 出库安装与回访 |
+| 28 | `case_manager` | 居家个案管理师 | 独立账号类 | `home_case_studio` | 辖区重点长者全周期主线 / 申请转介 / 照护计划跟踪 |
+| 29 | `quality_inspector`| 居家服务质检员 | 独立账号类 | `home_quality_studio` | 入户双录照片抽查 / 电话回访 / 异常工单扣减审核 |
+| 30 | `ltc_biller` | 居家长护结算员 | 独立账号类 | `home_billing_studio` | 月度居家工单核算 / 民政医保补贴计算 / 报销单导出 |
+| 31 | `grid_caregiver` | 社区助老员 | 独立账号类 | `caregiver_mobile` | 今日入户路线打卡 / 助餐助洁拍照 / 异常上报 |
+| 32 | `family_contact` | 参保人家属 | 独立账号类 | `family_workspace` | 亲情长者绑定 / 申报向导 / 体征全时感知 / 进度申诉 |
+| 33 | `system_admin` | 系统超级管理员 | 独立账号类 | `system_admin` | 【全域多租户树】/ 账号矩阵 / 跨域权限配置 / 审计 |
+| 34 | `platform_admin` | 平台自营总管 | 独立账号类 | `platform_operations` | 12阶段设备生命周期 / 全国点位穿透 / 质量事件 |
+| 35 | `partner_admin` | 渠道合伙人总管 | 独立账号类 | `partner_operations` | 渠道拓客报备 / 出货装机协同 / 佣金对账结算 |
+| 36 | `device_user` | 平台硬件技术员 | 独立账号类 | `device_monitoring` | 批量设备出入库 / 协议配置 / OTA 远程固件更新 |
+
+---
+
+### 12.6 SDD 契约驱动与 TDD 测试验收规范
+1. **SDD 契约代码落盘**：
+   - 共享终端状态机契约、操作员切换协议、流程树 Schema 统一定义在 `src/types/workbench-ia.ts`；
+2. **关键难点代码 TDD 验收纪律**：
+   - 核心状态机必须在 `server/test-shared-terminal-fsm.mjs` 等测试套件中先行编写；
+   - 运行 `npm test` 确认红测（Fail）后，方可编写实现代码直至绿测（Pass）；
+   - 测试通过后方可合入主干并在生产窗口按 INTEGRATION-SPEC 推进。
+
 

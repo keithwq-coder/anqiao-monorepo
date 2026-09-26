@@ -104,7 +104,7 @@ export const ACCOUNTS = [
   // ==================== 江苏省医疗保障局全局监督指导 ====================
   { username: 'province_medical', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-prov-med'),       staff_name: '省医保局长护指导组',role: 'medical_director',        unified_role: 'medical_director',    tenant_id: 'bureau',        org_id: 'bureau',        workspace: 'medical_supervision',  scope: 'global', assigned_title: '江苏省医疗保障局长护险监督指导中心' },
 
-  // ==================== 某某市长护险受托经办机构账号群（中国太保 · 全业务演示专区） ====================
+  // ==================== 某某市长护险受托经办机构账号群（惠生人寿（演示）· 全业务演示专区） ====================
   { username: 'demo_insurer_director', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ins-dir'),  staff_name: '赵国华 总监',       role: 'insurer_director',        unified_role: 'insurer_director',    tenant_id: 'insurer',      org_id: 'insurer',      workspace: 'insurer_operations',   scope: 'pool', pool_id: 'moumou', assigned_title: '受托经办项目部总监 / 经办负责人 (演示席位)' },
   { username: 'demo_insurer_intake',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ins-int'),  staff_name: '王雪梅 专员',       role: 'insurer_intake',          unified_role: 'insurer_intake',      tenant_id: 'insurer',      org_id: 'insurer',      workspace: 'insurer_operations',   scope: 'pool', pool_id: 'moumou', assigned_title: '业务受理与派单调度专员 / 法定回避审核 (演示席位)' },
   { username: 'demo_insurer_inspector',password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ins-insp'), staff_name: '李勇 巡查主管',      role: 'insurer_inspector',       unified_role: 'insurer_inspector',   tenant_id: 'insurer',      org_id: 'insurer',      workspace: 'insurer_operations',   scope: 'pool', pool_id: 'moumou', assigned_title: '现场巡查与质量飞检主管 / 物联异常核查组 (演示席位)' },
@@ -114,52 +114,19 @@ export const ACCOUNTS = [
   // ==================== 宿迁市长护险受托经办试点专班（国家深化试点 · 真实 3 人服务与 3 台设备） ====================
   { username: 'suqian_insurer',        password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ins-sq'),   staff_name: '宿迁商保经办专员',  role: 'insurer_staff',           unified_role: 'insurer_operator',    tenant_id: 'insurer_suqian',org_id: 'insurer_suqian',workspace: 'insurer_operations', scope: 'pool', pool_id: 'suqian', assigned_title: '宿迁长护险商保经办专班 (许丽/何家齐/王雪金 3台在网设备服务)' },
 
+  // ==================== 宿迁市长护险失能评定与专家评审专班（国家深化试点 · 广济第三方评定中心） ====================
+  { username: 'suqian_assessor',       password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-asr-sq'),    staff_name: '许建强 评定师',     role: 'assessor',                unified_role: 'assessor',            tenant_id: 'assessor_suqian',org_id: 'assessor_suqian',workspace: 'assessor_workspace',  scope: 'pool', pool_id: 'suqian', assigned_title: '国家失能等级评定师 / 主治医师 (许丽/何家齐/王雪金 现场评定责任人)' },
+  { username: 'suqian_expert',         password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-exp-sq'),    staff_name: '孙建国 主任医师',   role: 'assessor_expert',         unified_role: 'assessor_expert',     tenant_id: 'assessor_suqian',org_id: 'assessor_suqian',workspace: 'assessor_workspace',  scope: 'pool', pool_id: 'suqian', assigned_title: '宿迁市长护失能评定专家委员会医学评审组长 (主任医师/神经内科)' },
+  { username: 'suqian_assessor_admin', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-adm-sq'),    staff_name: '刘芳芳 质控主管',   role: 'assessor_admin',          unified_role: 'assessor_admin',      tenant_id: 'assessor_suqian',org_id: 'assessor_suqian',workspace: 'assessor_workspace',  scope: 'pool', pool_id: 'suqian', assigned_title: '宿迁广济第三方评定中心质控主管 (副主任护师)' },
+
+  // ==================== 某某市长护险失能评定与专家委员会账号群（明康评定中心 · 全业务演示专区） ====================
+  { username: 'demo_assessor',         password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-asr-demo'),  staff_name: '周海峰 评定师',     role: 'assessor',                unified_role: 'assessor',            tenant_id: 'assessor_org',   org_id: 'assessor_org',   workspace: 'assessor_workspace',  scope: 'pool', pool_id: 'moumou', assigned_title: '明康第三方失能评定中心现场评定师 (演示席位)' },
+  { username: 'demo_expert',           password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-exp-demo'),  staff_name: '钱德明 主任医师',   role: 'assessor_expert',         unified_role: 'assessor_expert',     tenant_id: 'assessor_org',   org_id: 'assessor_org',   workspace: 'assessor_workspace',  scope: 'pool', pool_id: 'moumou', assigned_title: '某某市长护险评定专家委员会医学评审组长 (演示席位)' },
+  { username: 'demo_assessor_admin',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-adm-demo'),  staff_name: '陈红 质控总监',     role: 'assessor_admin',          unified_role: 'assessor_admin',      tenant_id: 'assessor_org',   org_id: 'assessor_org',   workspace: 'assessor_workspace',  scope: 'pool', pool_id: 'moumou', assigned_title: '明康第三方失能评定中心质控总监 (演示席位)' },
+
   // 兼容别名
   { username: 'insurer01',       password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-insurer01'),       staff_name: '王雪梅 经办专员',   role: 'insurer_staff',           unified_role: 'insurer_operator',    tenant_id: 'insurer',      org_id: 'insurer',      workspace: 'insurer_operations',   scope: 'pool', pool_id: 'moumou', assigned_title: '业务受理与经办专员' },
   { username: 'assessor01',      password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-assessor01'),      staff_name: '长护险评估人员',    role: 'assessor',                unified_role: 'assessor',            tenant_id: 'assessor_org', org_id: 'assessor_org', workspace: 'assessor_workspace',  scope: 'task' },
-  // ==================== 凯健国际护理院全员拟真矩阵 ====================
-  // 1. 院级管理层
-  { username: 'kaijian_admin',       password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-kj-admin'),        staff_name: '顾振华 院长',       role: 'nursing_admin',           unified_role: 'nursing_admin',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_home_admin',   scope: 'org',      assigned_title: '院长 / 运营总经理' },
-  { username: 'kaijian_nursing_dir', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-kj-dir'),          staff_name: '陈美琳 主任',       role: 'nursing_admin',           unified_role: 'nursing_admin',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_home_admin',   scope: 'org',      assigned_title: '护理部主任 (副主任护师)' },
-  { username: 'kaijian_ltc_officer', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-kj-ltc'),          staff_name: '周立平 结算主管',   role: 'nursing_admin',           unified_role: 'nursing_admin',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_home_admin',   scope: 'org',      assigned_title: '长护险与医保结算主管' },
-
-  // 2. 各病区护士长 (主管护师)
-  { username: 'headnurse_4f',        password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-hn-4f'),           staff_name: '沈雅琴 护士长',     role: 'nursing_head',            unified_role: 'nursing_head',        tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['4F'], assigned_title: '4F完全失能区护士长 (主管护师)', assigned_bed_range: 'all' },
-  { username: 'headnurse_3f',        password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-hn-3f'),           staff_name: '林素梅 护士长',     role: 'nursing_head',            unified_role: 'nursing_head',        tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['3F'], assigned_title: '3F认知障碍区护士长 (主管护师)', assigned_bed_range: 'all' },
-  { username: 'headnurse_2f',        password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-hn-2f'),           staff_name: '朱秀华 护士长',     role: 'nursing_head',            unified_role: 'nursing_head',        tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['2F'], assigned_title: '2F术后康复区护士长 (主管护师)', assigned_bed_range: 'all' },
-  { username: 'headnurse_1f',        password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-hn-1f'),           staff_name: '严冬梅 护士长',     role: 'nursing_head',            unified_role: 'nursing_head',        tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['1F'], assigned_title: '1F慢病颐养区护士长 (主管护师)', assigned_bed_range: 'all' },
-
-  // 3. 各病区护士台/大屏公用席位账号（大屏常驻监护大盘）
-  { username: 'ward_4f_station',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ward-4f'),        staff_name: '4F完全失能区护理台', role: 'nursing_station',         unified_role: 'nursing_station',     tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['4F'] },
-  { username: 'ward_3f_station',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ward-3f'),        staff_name: '3F认知障碍区护理台', role: 'nursing_station',         unified_role: 'nursing_station',     tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['3F'] },
-  { username: 'ward_2f_station',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ward-2f'),        staff_name: '2F术后康复区护理台', role: 'nursing_station',         unified_role: 'nursing_station',     tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['2F'] },
-  { username: 'ward_1f_station',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ward-1f'),        staff_name: '1F慢病颐养区护理台', role: 'nursing_station',         unified_role: 'nursing_station',     tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'care_desk',            scope: 'assigned', assigned_floors: ['1F'] },
-
-  // 4. 4F 完全失能专区责任护工团队 (特级护理，压疮与翻身重中之重)
-  { username: 'kaijian_nurse01',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-kj-nurse01'),      staff_name: '李晓芳 护工',       role: 'nursing_nurse',           unified_role: 'nursing_nurse',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['4F'], assigned_nurse: '李晓芳 护工', assigned_title: '4F责任组长 (高级照护师)', assigned_bed_range: '401-406', on_duty: true },
-  { username: 'kaijian_cg_4f_01',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-4f-01'),        staff_name: '李晓芳 护工',       role: 'nursing_nurse',           unified_role: 'nursing_nurse',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['4F'], assigned_nurse: '李晓芳 护工', assigned_title: '4F责任组长 (高级照护师)', assigned_bed_range: '401-406', on_duty: true },
-  { username: 'kaijian_cg_4f_02',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-4f-02'),        staff_name: '王芳 护工主管',     role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['4F'], assigned_nurse: '王芳 护工主管', assigned_title: '4F责任护工 (中级照护师)', assigned_bed_range: '407-411', on_duty: true },
-  { username: 'kaijian_cg_4f_03',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-4f-03'),        staff_name: '刘建国 护工',       role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['4F'], assigned_nurse: '刘建国 护工',   assigned_title: '4F当值机动护工 (初级照护师)', assigned_bed_range: '401-411', on_duty: true },
-  { username: 'kaijian_cg_4f_04',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-4f-04'),        staff_name: '孙秀英 护工',       role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['4F'], assigned_nurse: '孙秀英 护工',   assigned_title: '4F轮班护工 (今日轮休)',     assigned_bed_range: 'none',    on_duty: false },
-
-  // 5. 3F 认知障碍专区责任护工团队 (一级护理，防走失与跌倒预防)
-  { username: 'kaijian_nurse02',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-kj-nurse02'),      staff_name: '张晓敏 护工',       role: 'nursing_nurse',           unified_role: 'nursing_nurse',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['3F'], assigned_nurse: '张晓敏 护工', assigned_title: '3F责任组长 (认知症专护)',   assigned_bed_range: '301-306', on_duty: true },
-  { username: 'kaijian_cg_3f_01',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-3f-01'),        staff_name: '张晓敏 护工',       role: 'nursing_nurse',           unified_role: 'nursing_nurse',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['3F'], assigned_nurse: '张晓敏 护工', assigned_title: '3F责任组长 (认知症专护)',   assigned_bed_range: '301-306', on_duty: true },
-  { username: 'kaijian_cg_3f_02',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-3f-02'),        staff_name: '陈宇 护工',         role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['3F'], assigned_nurse: '陈宇 护工',     assigned_title: '3F责任护工 (中级照护师)', assigned_bed_range: '307-311', on_duty: true },
-  { username: 'kaijian_cg_3f_03',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-3f-03'),        staff_name: '周平 护工',         role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['3F'], assigned_nurse: '周平 护工',     assigned_title: '3F轮班护工 (今日轮休)',     assigned_bed_range: 'none',    on_duty: false },
-
-  // 6. 2F 术后康复专区责任护工团队 (二级护理，介护与肢体促活)
-  { username: 'kaijian_cg_2f_01',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-2f-01'),        staff_name: '赵燕 护工',         role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['2F'], assigned_nurse: '赵燕 护工',     assigned_title: '2F责任组长 (康复介护师)', assigned_bed_range: '201-206', on_duty: true },
-  { username: 'kaijian_cg_2f_02',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-2f-02'),        staff_name: '吴强 护工',         role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['2F'], assigned_nurse: '吴强 护工',     assigned_title: '2F责任护工 (中级照护师)', assigned_bed_range: '207-211', on_duty: true },
-  { username: 'kaijian_cg_2f_03',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-2f-03'),        staff_name: '郑华 护工',         role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['2F'], assigned_nurse: '郑华 护工',     assigned_title: '2F轮班护工 (今日轮休)',     assigned_bed_range: 'none',    on_duty: false },
-
-  // 7. 1F 慢病颐养专区责任护工团队 (二级护理，基础生活与体征监护)
-  { username: 'kaijian_cg_1f_01',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-1f-01'),        staff_name: '何丽 护工',         role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['1F'], assigned_nurse: '何丽 护工',     assigned_title: '1F责任组长 (慢病照护师)', assigned_bed_range: '101-106', on_duty: true },
-  { username: 'kaijian_cg_1f_02',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-1f-02'),        staff_name: '宋敏 护工',         role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['1F'], assigned_nurse: '宋敏 护工',     assigned_title: '1F责任护工 (中级照护师)', assigned_bed_range: '107-111', on_duty: true },
-  { username: 'kaijian_cg_1f_03',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-1f-03'),        staff_name: '马桂英 护工',       role: 'nursing_caregiver',       unified_role: 'nursing_caregiver',   tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['1F'], assigned_nurse: '马桂英 护工',   assigned_title: '1F轮班护工 (今日轮休)',     assigned_bed_range: 'none',    on_duty: false },
-
-  // 8. 康复与专业医疗支持
-  { username: 'kaijian_rehab01',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-kj-rehab'),         staff_name: '黄俊杰 理疗师',     role: 'nursing_nurse',           unified_role: 'nursing_nurse',       tenant_id: 'kaijian',      org_id: 'kaijian',      workspace: 'nursing_staff',        scope: 'assigned', assigned_floors: ['1F', '2F', '3F', '4F'], assigned_title: '康复理疗师 (主管技师)', assigned_bed_range: 'all', on_duty: true },
   { username: 'partner_admin',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-partner01'),       staff_name: '中科智护渠道经理',  role: 'partner_admin',           unified_role: 'partner_admin',       tenant_id: 'partner_p1',   org_id: 'partner_p1',   workspace: 'partner_operations',   scope: 'channel' },
   // 家属可登录账号（阶段 D · LTC-WORKBENCH-SPEC §0.3/§4.4）：绑定+授权后进 family_workspace
   { username: 'family_demo',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-family-demo'),   staff_name: '许丽家属',          role: 'family_contact',           unified_role: 'family_contact',   tenant_id: 'bureau',     org_id: 'bureau',     workspace: 'family_workspace',    scope: 'applicant', applicant_ids: ['P_SQ_01'], binding_status: 'active', authorization_status: 'active', binding_valid_from: '2026-01-01T00:00:00+08:00', binding_valid_until: '2027-01-01T00:00:00+08:00' },
@@ -170,35 +137,8 @@ export const ACCOUNTS = [
   { username: 'wangxuejin',      password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-wangxuejin'),      staff_name: '王雪金',            role: 'user',                    unified_role: 'device_user',         tenant_id: 'bureau',       org_id: 'bureau',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ASH01092' },
   { username: 'dingzhikun',      password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-dingzhikun'),      staff_name: '丁志坤',            role: 'user',                    unified_role: 'device_user',         tenant_id: 'bureau',       org_id: 'bureau',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ASH01092' },
 
-  // 安樵在线设备捏造用户（视同真实用户，分别绑定 anqiao-dashboard 在线设备）
-  { username: 'user_zhoumin',    password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-zm'),              staff_name: '周敏',              role: 'user',                    unified_role: 'device_user',         tenant_id: 'anqiao',       org_id: 'anqiao',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ASH01146' },
-  { username: 'user_zhangdefu',  password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-zdf'),             staff_name: '张德福',            role: 'user',                    unified_role: 'device_user',         tenant_id: 'anqiao',       org_id: 'anqiao',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ASH01076' },
-  { username: 'user_wangjianguo',password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-wjg'),             staff_name: '王建国',            role: 'user',                    unified_role: 'device_user',         tenant_id: 'anqiao',       org_id: 'anqiao',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ASH01016' },
-  { username: 'user_qianxiuying',password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-qxy'),             staff_name: '钱秀英',            role: 'user',                    unified_role: 'device_user',         tenant_id: 'anqiao',       org_id: 'anqiao',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ANCE00003' },
-  { username: 'user_liuchangsheng',password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-lcs'),           staff_name: '刘长生',            role: 'user',                    unified_role: 'device_user',         tenant_id: 'anqiao',       org_id: 'anqiao',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ASH01038' },
-  { username: 'user_chenguizhi', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cgz'),             staff_name: '陈桂芝',            role: 'user',                    unified_role: 'device_user',         tenant_id: 'anqiao',       org_id: 'anqiao',       workspace: 'device_monitoring',    scope: 'org', bound_device_sn: 'ASH01021' },
 
-  // ==================== 苏州市姑苏区智护居家养老服务中心拟真全员矩阵 ====================
-  { username: 'station_master',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-st-master'),       staff_name: '陆振东 站长',       role: 'elderly_care_admin',      unified_role: 'elderly_care_admin',  tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'org',      assigned_title: '中心站长 / 运营总监' },
-  { username: 'dispatch_center',  password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-dp-center'),       staff_name: '苏智护调度中枢 (苏怡)', role: 'home_dispatcher',        unified_role: 'home_dispatcher',     tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'org',      assigned_title: '调度中枢应急呼叫席' },
-  { username: 'cg_canglang_01',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-cl-01'),        staff_name: '林小燕',            role: 'grid_caregiver',          unified_role: 'grid_caregiver',      tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'canglang', assigned_title: '高级助老员', on_duty: true },
-  { username: 'cg_canglang_02',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-cl-02'),        staff_name: '陈秀英',            role: 'grid_caregiver',          unified_role: 'grid_caregiver',      tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'canglang', assigned_title: '中级养老照护师', on_duty: true },
-  { username: 'cg_canglang_03',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-cl-03'),        staff_name: '黄建国',            role: 'grid_caregiver',          unified_role: 'grid_caregiver',      tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'canglang', assigned_title: '当值机动助老员', on_duty: true },
-  { username: 'cg_canglang_04',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-cl-04'),        staff_name: '周玉兰',            role: 'grid_caregiver',          unified_role: 'grid_caregiver',      tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'canglang', assigned_title: '初级助老员(今日轮休)', on_duty: false },
-  { username: 'cg_shuangta_01',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-st-01'),        staff_name: '王惠芬',            role: 'grid_team_leader',        unified_role: 'grid_team_leader',    tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'shuangta', assigned_title: '双塔片区组长 (高级照护师)', on_duty: true },
-  { username: 'cg_shuangta_02',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-st-02'),        staff_name: '张伟民',            role: 'grid_caregiver',          unified_role: 'grid_caregiver',      tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'shuangta', assigned_title: '养老照护员', on_duty: true },
-  { username: 'cg_sanxiang_01',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-sx-01'),        staff_name: '何丽娜',            role: 'grid_caregiver',          unified_role: 'grid_caregiver',      tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'sanxiang', assigned_title: '慢病照护员 (主管护师)', on_duty: true },
-  { username: 'cg_sanxiang_02',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cg-sx-02'),        staff_name: '赵淑清',            role: 'grid_caregiver',          unified_role: 'grid_caregiver',      tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_area: 'sanxiang', assigned_title: '助老员', on_duty: true },
   { username: 'assessor_liming',  password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-as-liming'),       staff_name: '李明 评估师',       role: 'assessor',                unified_role: 'assessor',            tenant_id: 'assessor_org',   org_id: 'assessor_org',   workspace: 'assessor_workspace', scope: 'task',     assigned_title: '上门失能评估师' },
-  { username: 'rehab_chen',       password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-rh-chen'),         staff_name: '陈主任',            role: 'rehab_specialist',        unified_role: 'rehab_specialist',    tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_title: '康复理疗巡诊师 (主治医师)', on_duty: true },
-  // 多学科专业团队 (IDT) 与连锁质控风控部
-  { username: 'nurse_shenyaping', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-ns-syp'),          staff_name: '沈雅萍 主管护师',   role: 'home_nurse',              unified_role: 'home_nurse',          tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_title: '居家医疗护理站长 / 专职护师', on_duty: true },
-  { username: 'pt_chenjianxin',   password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-pt-cjx'),          staff_name: '陈建新 康复治疗师', role: 'rehab_therapist',        unified_role: 'rehab_therapist',    tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_title: '居家康复治疗师 (PT主管)', on_duty: true },
-  { username: 'dementia_zhufang', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-dm-zf'),           staff_name: '朱芳 认知症专护师', role: 'dementia_specialist',    unified_role: 'dementia_specialist',tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_title: '记忆照护与认知症专护师', on_duty: true },
-  { username: 'cm_xumeiling',     password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-cm-xml'),          staff_name: '徐美玲 个案管理师', role: 'case_manager',            unified_role: 'case_manager',        tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'org',      assigned_title: '养老管家 / 个案管理师', on_duty: true },
-  { username: 'tech_zhanghongbo', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-tc-zhb'),          staff_name: '张洪波 适老辅具顾问',role: 'assistive_specialist',   unified_role: 'assistive_specialist',tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'assigned', assigned_title: '适老化改造与辅具工程师', on_duty: true },
-  { username: 'qc_jiangguoqiang', password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-qc-jgq'),          staff_name: '蒋国强 质控主管',   role: 'quality_inspector',       unified_role: 'quality_inspector',   tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'org',      assigned_title: '质量督导部主管 / 资深质检员', on_duty: true },
-  { username: 'biller_zhouliping',password_hash: hashPassword(SEED_ACCOUNT_PASSWORD, 'aq-seed-salt-bl-zlp'),          staff_name: '周立平 结算专员',   role: 'ltc_biller',              unified_role: 'ltc_biller',          tenant_id: 'home_care_gusu', org_id: 'home_care_gusu', workspace: 'home_dispatch',     scope: 'org',      assigned_title: '长护险结算与风控专员', on_duty: true },
 ]
 
 
@@ -259,7 +199,6 @@ const ELDER_FEMALE_NAMES = [
   '戴美华', '夏淑贞', '田玉珍', '任秀娥', '范秀云', '方宝珍', '石素英', '姚秀清',
   '谭玉芬', '廖桂芳', '熊秀荣', '陆淑英', '郝玉兰', '崔秀英', '江秀珍', '顾玉霞',
 ]
-const NURSES = ['李晓芳 护工','王芳 护工主管','张晓敏 护工','陈宇 护工','赵燕 护工师','何丽 护工']
 const DOCTORS = ['赵医生 (主治)', '钱主任 (副高)', '孙医生 (主治)', '李主任 (主任医师)']
 const DISEASE_TAGS = ['高血压病', '冠心病', '糖尿病', '认知障碍', '脑卒中后', '慢阻肺']
 
@@ -1250,46 +1189,6 @@ const TENANT_CONFIGS = {
     name: '系统组织',
     kind: 'platform',
   },
-  kaijian: {
-    name: '凯健国际护理院',
-    kind: 'nursing_home',
-    seed: 20260914,
-    patientTotal: 87,
-    bedTotal: 96,
-    deviceTotal: 248,
-    deviceOnline: 247,
-    inBedRatio: 0.52,
-    occupiedBeds: KAIJIAN_OCCUPIED_BEDS,
-    vacantBeds: KAIJIAN_VACANT_BEDS,
-    floorWards: KAIJIAN_FLOOR_WARDS,
-    floorCare: KAIJIAN_FLOOR_CARE,
-    alertIdBase: 10231,
-    alertTypes: ['fall','fall','fall','off_bed','off_bed','off_bed','off_bed','off_bed','hr','hr','hr','hr','br','br','br','tp','tp'],
-    alertStatuses: ['triggered','triggered','triggered','triggered','handling','handling','handling','handled','handled','handled','handled','handled','handled','handled','handled','missed','missed'],
-    abnormalPlan: [
-      { idx: 5, type: 'fall' },
-      { idx: 11, type: 'off_bed' },
-      { idx: 17, type: 'hr' },
-      { idx: 23, type: 'tp' },
-      { idx: 31, type: 'br' },
-    ],
-    // 当值护理组（按楼层分组，班次卡展示用）
-    nurses: [
-      { name: '李晓芳 护工', floor: '4F' },
-      { name: '王芳 护工主管', floor: '4F' },
-      { name: '张晓敏 护工', floor: '3F' },
-      { name: '陈宇 护工', floor: '3F' },
-      { name: '赵燕 护工师', floor: '2F' },
-      { name: '何丽 护工', floor: '1F' },
-    ],
-    // 专区护理配比（与大屏 mock / 构建期配置同口径，凯健演示确定性数据）
-    wardNurse: {
-      '4F': { count: 6, ratio: '1:2.5 (特级专班)' },
-      '3F': { count: 5, ratio: '1:3.0 (失智专护)' },
-      '2F': { count: 4, ratio: '1:4.0 (康复介护)' },
-      '1F': { count: 3, ratio: '1:5.5 (活力自理)' },
-    },
-  },
   anqiao: {
     name: '中科安樵 · 自营运营中心',
     kind: 'vendor', // 保持 vendor 兼容，auth 模块识别 anqiao_ops
@@ -1309,12 +1208,16 @@ const TENANT_CONFIGS = {
     kind: 'medical_bureau',
   },
   insurer: {
-    name: '中国太平洋人寿保险股份有限公司 · 某某市长护险受托经办中心',
+    name: '惠生人寿保险股份有限公司（演示）· 某某市长护险受托经办中心',
     kind: 'insurer',
   },
   insurer_suqian: {
     name: '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班',
     kind: 'insurer',
+  },
+  assessor_suqian: {
+    name: '宿迁市广济第三方失能等级评定中心',
+    kind: 'assessment_org',
   },
   assessor_org: {
     name: '某某市明康第三方失能评定中心',
@@ -1328,15 +1231,10 @@ const TENANT_CONFIGS = {
     name: '示范区康养示范中心',
     kind: 'customer_org',
   },
-  home_care_gusu: {
-    name: '示范区智护居家养老服务中心',
-    kind: 'elderly_care_org',
-  },
 }
 
 // 租户数据为可变内存态（处置写操作、WS 新告警会直接改 alerts 数组），生产换 DB。
 const TENANT_DATA = {
-  kaijian: buildTenant(TENANT_CONFIGS.kaijian),
   anqiao: buildTenant(TENANT_CONFIGS.anqiao),
 }
 
@@ -1750,8 +1648,8 @@ const PROJECT_SCALARS = {
 
 /** 租户 → 项目映射（跨项目 404）；宿迁试点/医保局/经办 → suqian，其余有效租户默认 kaijian */
 export function projectIdForTenant(tenantId) {
-  if (tenantId === 'bureau' || tenantId === 'bureau_suqian' || tenantId === 'insurer_suqian') return 'suqian'
-  if (tenantId === 'kaijian' || tenantId === 'anqiao' || tenantId === 'platform') return 'kaijian'
+  if (tenantId === 'bureau' || tenantId === 'bureau_suqian' || tenantId === 'insurer_suqian' || tenantId === 'assessor_suqian') return 'suqian'
+  if (tenantId === 'anqiao' || tenantId === 'platform') return 'kaijian'
   if (tenantId === 'bureau_moumou' || tenantId === 'insurer' || tenantId === 'assessor_org' || tenantId === 'partner_p1') {
     return 'kaijian'
   }
@@ -2013,7 +1911,7 @@ export const DEVICE_ASSETS = [
     "service_subject_id": "P00084",
     "device_placement_location": "苏州市吴中区藤器街太湖科创中心A座903室 (中科展厅总控)",
     "installation_site_id": "太湖科创中心·903",
-    "monitoring_user_id": "user_zhoumin",
+    "monitoring_user_id": null,
     "lifecycle_status": "monitoring",
     "online": true,
     "last_data_time": "2026-09-22T23:56:08+08:00",
@@ -2044,7 +1942,7 @@ export const DEVICE_ASSETS = [
     "service_subject_id": "P00001",
     "device_placement_location": "苏州市苏州工业园区星湖街815号康养公寓8幢815室",
     "installation_site_id": "园区康养·815",
-    "monitoring_user_id": "user_zhangdefu",
+    "monitoring_user_id": null,
     "lifecycle_status": "monitoring",
     "online": true,
     "last_data_time": "2026-09-18T08:34:58+08:00",
@@ -2075,7 +1973,7 @@ export const DEVICE_ASSETS = [
     "service_subject_id": "P00002",
     "device_placement_location": "苏州市苏州工业园区仁爱路独墅湖科教创新区科研楼B栋206室",
     "installation_site_id": "独墅湖科创区·206",
-    "monitoring_user_id": "user_wangjianguo",
+    "monitoring_user_id": null,
     "lifecycle_status": "monitoring",
     "online": true,
     "last_data_time": "2026-08-14T02:03:42+08:00",
@@ -2106,7 +2004,7 @@ export const DEVICE_ASSETS = [
     "service_subject_id": "P00012",
     "device_placement_location": "苏州市苏州工业园区星湖街613号康养公寓6幢613室",
     "installation_site_id": "园区康养·613",
-    "monitoring_user_id": "user_qianxiuying",
+    "monitoring_user_id": null,
     "lifecycle_status": "monitoring",
     "online": true,
     "last_data_time": "2026-05-22T23:24:41+08:00",
@@ -2230,7 +2128,7 @@ export const DEVICE_ASSETS = [
     "service_subject_id": "P00013",
     "device_placement_location": "苏州市吴中区藤器街太湖科创中心A座9层办公区 (运营演示台)",
     "installation_site_id": "太湖科创中心·演示台",
-    "monitoring_user_id": "user_liuchangsheng",
+    "monitoring_user_id": null,
     "lifecycle_status": "monitoring",
     "online": true,
     "last_data_time": "2026-09-22T17:28:11+08:00",
@@ -2261,7 +2159,7 @@ export const DEVICE_ASSETS = [
     "service_subject_id": "P00014",
     "device_placement_location": "苏州市吴中区藤器街太湖科创中心A座9层设备库房B区 (2026-09-22 新装待部署)",
     "installation_site_id": "太湖科创中心·库房B",
-    "monitoring_user_id": "user_chenguizhi",
+    "monitoring_user_id": null,
     "lifecycle_status": "monitoring",
     "online": true,
     "last_data_time": "2026-09-23T14:30:00+08:00",
@@ -3527,4 +3425,4 @@ export const PARTNER_CHANNELS = [
   },
 ]
 
-export { SURNAMES, NURSES }
+export { SURNAMES }

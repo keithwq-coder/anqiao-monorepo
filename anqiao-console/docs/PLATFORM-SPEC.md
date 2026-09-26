@@ -3,7 +3,7 @@
 > 状态：**总体基线 Spec v0.1（平台承载边界）**；评估执行规则、状态机与验收以 `docs/LTC-INSURANCE-SPEC.md` 为唯一来源，本 Spec 仅定义多组织/多域/权限/数据范围的承载边界；接口细节见 `docs/API-CONTRACT.md`。
 > 日期：2026-09-22
 > 读者：产品、后端、前端、业务方（政府/医保局/经办/照护机构/合作伙伴）
-> 关联：`docs/API-CONTRACT.md`（账号/组织/报告基线）、`docs/LTC-INSURANCE-SPEC.md`（流程/状态机/验收）、`docs/RESEARCH-LTC-ANTI-FRAUD.md`（政策与监管调研，反欺诈条款的一手来源）、`docs/DOMAIN-GLOSSARY.md`（术语）、`docs/ACCOUNT-MATRIX.md`（现状账号矩阵）、`docs/INTEGRATION-SPEC.md`（仓库拓扑/部署/切换窗口基线）
+> 关联：`docs/PRODUCT-REQUIREMENTS-SPEC.md`（产品需求与硬件集成商PRD基准）、`docs/API-CONTRACT.md`（账号/组织/报告基线）、`docs/LTC-INSURANCE-SPEC.md`（流程/状态机/验收）、`docs/RESEARCH-LTC-ANTI-FRAUD.md`（政策与监管调研，反欺诈条款的一手来源）、`docs/DOMAIN-GLOSSARY.md`（术语）、`docs/ACCOUNT-MATRIX.md`（现状账号矩阵）、`docs/INTEGRATION-SPEC.md`（仓库拓扑/部署/切换窗口基线）
 >
 > ⚠️ **硬性基线（贯穿全文档）**
 > 1. **全国评估/监管标准优先于地方假设**：失能等级判定统一执行全国评估标准与《评估操作指南》（国家医保局/民政部，见 `docs/RESEARCH-LTC-ANTI-FRAUD.md` §1 文号清单），国家文件**明确**的要求是硬性门禁，地方仅在差异处做**配置化假定**；禁止把地方支付比例、待遇起点、有效期等写成代码或 Spec 缺省。本 Spec 只定义**平台承载边界**，评估执行与设备介入的可执行约束、状态机与验收一律以 `docs/LTC-INSURANCE-SPEC.md` 为唯一来源；未定口径见 §14 开放项。

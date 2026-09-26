@@ -570,6 +570,82 @@ export function recordInsurerInspection(
 ): Promise<InsurerInspectionTask> {
   return http.post<InsurerInspectionTask>(`/v1/ltc/insurer/inspections/${encodeURIComponent(id)}/record`, input)
 }
+export interface AssessorDashboardData {
+  pool_id: string
+  pool_title: string
+  org_id: string
+  org_name: string
+  current_user: {
+    account_id: string
+    name: string
+    role: string
+    unified_role?: string
+    assigned_title?: string
+  }
+  kpis: {
+    total_tasks: number
+    assigned_count: number
+    assessing_count: number
+    pending_expert_count: number
+    completed_count: number
+    pending_insights_count: number
+    severe_disability_rate: number
+    city_normal_severe_rate: number
+    gaussian_status: 'normal' | 'warning'
+    dual_assessor_compliance_pct: number
+    dual_expert_compliance_pct: number
+    guardian_present_rate_pct: number
+    iot_telemetry_consistency_pct: number
+    total_elders_in_pool: number
+  }
+  statutory_red_lines: {
+    dual_assessor_mandatory: boolean
+    dual_expert_confirmation_mandatory: boolean
+    guardian_presence_mandatory: boolean
+    iot_telemetry_conclusion_frozen: null
+    no_developer_jargon: boolean
+  }
+  tasks: AssessmentTask[]
+  snapshots: AssessmentSnapshot[]
+  insights: AssistantInsight[]
+  assessors: AssessorProfile[]
+  assessment_orgs: AssessmentOrg[]
+}
 
+export function getAssessorDashboard(params?: { pool_id?: string }): Promise<AssessorDashboardData> {
+  const qs = new URLSearchParams()
+  if (params?.pool_id) qs.set('pool_id', params.pool_id)
+  const q = qs.toString()
+  return http.get<AssessorDashboardData>(`/v1/ltc/assessor/dashboard${q ? '?' + q : ''}`)
+}
 
+export function startAssessmentTask(taskId: string): Promise<AssessmentTask> {
+  return http.post<AssessmentTask>(`/v1/ltc/tasks/${encodeURIComponent(taskId)}/start`)
+}
 
+export function submitAssessmentTask(taskId: string, input: {
+  daily_living_score?: number
+  cognition_score?: number
+  perception_score?: number
+  mental_score?: number
+  preliminary_level: string
+  guardian_present?: boolean
+  second_assessor_name?: string
+  video_evidence?: string
+  remarks?: string
+}): Promise<{ task: AssessmentTask; result: any }> {
+  return http.post<{ task: AssessmentTask; result: any }>(`/v1/ltc/tasks/${encodeURIComponent(taskId)}/submit`, input)
+}
+
+export function expertReviewTask(taskId: string, input: {
+  second_expert_id?: string
+  second_expert_name?: string
+  clinical_diagnosis: string
+  recommended_level: string
+  expert_opinion: string
+  iot_consistency_verdict?: 'consistent' | 'acceptable' | 'deviated'
+  iot_clinical_rationale?: string
+  sign_off_status?: 'approved' | 'returned'
+}): Promise<{ task: AssessmentTask; report: any }> {
+  return http.post<{ task: AssessmentTask; report: any }>(`/v1/ltc/tasks/${encodeURIComponent(taskId)}/expert-review`, input)
+}

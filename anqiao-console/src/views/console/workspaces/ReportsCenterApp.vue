@@ -7,7 +7,7 @@
           <h1 class="page-title">监测与报告系统 · 医疗与长护质控中心</h1>
           <span class="badge badge-primary">权威客观存证</span>
           <span class="badge badge-success">医保监管直连</span>
-          <span class="badge badge-neutral">凯健国际护理院</span>
+          <span class="badge badge-neutral">{{ orgName }}</span>
         </div>
         <div class="page-subtitle">
           全周期长者生命体征客观监测 · 卧床长者防压疮定时翻身与体位记录 · 长护险月度医保结算合规审计 · 智能感知设备运行质量分析
@@ -221,7 +221,7 @@
         <div class="report-document printable-content" id="reportPrintArea">
           <!-- 红头机构抬头 -->
           <div class="doc-header">
-            <div class="doc-org-title">凯健国际护理院 · 中科安樵智能健康监测中心</div>
+            <div class="doc-org-title">{{ orgName }} · 中科安樵智能健康监测中心</div>
             <div class="doc-org-sub">KAIJIAN INTERNATIONAL CARE HOME · INTELLIGENT TELEMETRY SYSTEM</div>
             <div class="doc-red-line"></div>
             <div class="doc-sub-red-line"></div>
@@ -426,7 +426,7 @@
               <div class="content-summary-box">
                 <p><strong>医保长护基金合规审计结论：</strong></p>
                 <p class="summary-text">
-                  本期对凯健国际护理院全院申报的 <strong>{{ activeReport.data?.application_count || 48 }} 名</strong> 长护险失能长者进行了全量客观核验。通过中科安樵智能硬件在床感知与服务工单时序比对，完成 <strong>{{ (activeReport.data?.verified_hours || 21600).toLocaleString() }} 小时</strong> 客观在床与照护真实性闭环验证。反欺诈模型未发现任何空刷、代打卡或虚构服务情形，综合合规率 <strong>100%</strong>。长护险基金拟结算拨款金额为 <strong>¥{{ (activeReport.data?.settlement_amount || 153600).toLocaleString() }}</strong>。
+                  本期对{{ orgName }}全院申报的 <strong>{{ activeReport.data?.application_count || 48 }} 名</strong> 长护险失能长者进行了全量客观核验。通过中科安樵智能硬件在床感知与服务工单时序比对，完成 <strong>{{ (activeReport.data?.verified_hours || 21600).toLocaleString() }} 小时</strong> 客观在床与照护真实性闭环验证。反欺诈模型未发现任何空刷、代打卡或虚构服务情形，综合合规率 <strong>100%</strong>。长护险基金拟结算拨款金额为 <strong>¥{{ (activeReport.data?.settlement_amount || 153600).toLocaleString() }}</strong>。
                 </p>
               </div>
 
@@ -523,7 +523,7 @@
                 <path id="stampUpperPath" d="M 22 80 A 58 58 0 0 1 138 80" fill="none" />
                 <text fill="#dc2626" font-size="11.5" font-weight="bold" letter-spacing="2">
                   <textPath href="#stampUpperPath" startOffset="50%" text-anchor="middle">
-                    凯健国际护理院
+                    {{ orgName }}
                   </textPath>
                 </text>
                 <!-- 印章下方横排文字 -->
@@ -599,6 +599,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { getReports, generateReport, type LtcReport } from '../../../api/client'
+import { useOrgIdentity } from '../../../features/ltc-workbench/org-identity'
+
+const { orgName } = useOrgIdentity()
 
 const loading = ref(false)
 const generating = ref(false)

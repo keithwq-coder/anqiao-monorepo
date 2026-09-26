@@ -83,7 +83,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (body.code === 401) {
     clearSession()
-    if (!location.hash.startsWith('#/console')) location.hash = '#/console'
     throw new ApiError(401, body.msg || '登录已过期，请重新登录')
   }
   if (body.code !== 200) {

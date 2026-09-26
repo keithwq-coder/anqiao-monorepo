@@ -4,7 +4,7 @@
     <div class="page-header">
       <div>
         <div class="page-title-row">
-          <h1 class="page-title">凯健国际护理院 · 院长综合运营决策中心</h1>
+          <h1 class="page-title">{{ orgName }} · 院长综合运营决策中心</h1>
           <span class="badge badge-primary">机构代码: KAIJIAN-HQ-01</span>
           <span class="badge badge-success">医保定点机构认证</span>
           <span class="badge badge-purple">安全运行 142 天零严重事故</span>
@@ -358,7 +358,7 @@
           <div class="step-arrow">➔</div>
           <div class="step-box step-active">
             <div class="step-num">Step 3</div>
-            <div class="step-title">经办机构 (太保) 复核</div>
+            <div class="step-title">经办机构复核</div>
             <div class="step-info">重点抽查 15 份特级长者档案</div>
             <div class="step-status">⏳ 复核进行中 (当前阶段)</div>
           </div>
@@ -367,7 +367,7 @@
             <div class="step-num">Step 4</div>
             <div class="step-title">医保局支付核定与划拨</div>
             <div class="step-info">拟拨付 ¥241,825 元</div>
-            <div class="step-status">待太保复核后划账</div>
+            <div class="step-status">待经办机构复核后划账</div>
           </div>
         </div>
       </div>
@@ -982,7 +982,10 @@
 import InstitutionLtcEntry from '../../../features/ltc-workbench/pages/InstitutionLtcEntry.vue'
 import { ref, onMounted, computed } from 'vue'
 import { getOverview, getPatients, getAlerts } from '../../../api/client'
+import { useOrgIdentity } from '../../../features/ltc-workbench/org-identity'
 import type { Overview, Patient, Alert } from '../../../api/types'
+
+const { orgName } = useOrgIdentity()
 
 const activeTab = ref<'patients' | 'ltc' | 'quality' | 'alerts' | 'caregivers'>('patients')
 

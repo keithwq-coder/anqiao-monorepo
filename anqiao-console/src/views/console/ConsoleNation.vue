@@ -179,7 +179,7 @@ onUnmounted(() => {
 })
 
 function goAlerts() {
-  location.hash = '#/console/alerts'
+  location.hash = '#/alerts'
 }
 </script>
 

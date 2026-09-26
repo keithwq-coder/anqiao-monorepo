@@ -62,6 +62,12 @@ import {
   dataScopeOf,
   workspaceOf,
   authorize,
+  createDeviceAsset,
+  updateDeviceAsset,
+  deleteDeviceAsset,
+  listDeviceAssignments,
+  createDeviceAssignment,
+  deleteDeviceAssignment,
   createApplication,
   listApplications,
   getApplication,
@@ -83,7 +89,11 @@ import {
   listAssessedPersons,
   createAssessmentSnapshot,
   getAssessmentSnapshot,
+  listAssessmentSnapshots,
   handleInsight,
+  listAssessmentInsights,
+  expertReviewTask,
+  getAssessorDashboard,
   listServicePlans,
   listServiceVisits,
   listServiceEvidence,
@@ -101,6 +111,7 @@ import {
   getDeviceLiveTelemetry,
   getWorkbenchSummary,
   listWorkbenchTodos,
+  getWorkbenchWorkflowTree,
   authorizedWorkspacesFor,
   applicationAction,
   listApplicationMaterials,
@@ -770,6 +781,10 @@ async function routeLtc(req, res, ctx, url) {
   if (path === '/v1/ltc/workbench/todos') {
     if (method === 'GET') return ok(res, listWorkbenchTodos(ctx, q))
   }
+  // SOP 流程树（N16，LTC-WORKBENCH-SPEC §12.4）
+  if (path === '/v1/ltc/workbench/workflow-tree') {
+    if (method === 'GET') return ok(res, getWorkbenchWorkflowTree(ctx, q))
+  }
 
   // 被评估对象 (AssessedPerson)
   if (path === '/v1/ltc/assessed-persons') {
@@ -834,7 +849,7 @@ async function routeLtc(req, res, ctx, url) {
   // 任务详情（API-CONTRACT §3.4；阶段 A 接线 getAssessmentTask）
   m = /^\/v1\/ltc\/(?:assessment-tasks|tasks)\/([A-Za-z0-9_-]+)$/.exec(path)
   if (method === 'GET' && m) return ok(res, getAssessmentTask(ctx, m[1]))
-  const taskAction = /^\/v1\/ltc\/(?:assessment-tasks|tasks)\/([A-Za-z0-9_-]+)\/(accept|start|evidence|submit|return)$/.exec(path)
+  const taskAction = /^\/v1\/ltc\/(?:assessment-tasks|tasks)\/([A-Za-z0-9_-]+)\/(accept|start|evidence|submit|return|expert-review)$/.exec(path)
   if (method === 'POST' && taskAction) {
     const [, taskId, action] = taskAction
     const b = await body()
@@ -843,6 +858,7 @@ async function routeLtc(req, res, ctx, url) {
     if (action === 'evidence') return ok(res, addEvidence(ctx, taskId, b))
     if (action === 'submit') return ok(res, submitTask(ctx, taskId, b))
     if (action === 'return') return ok(res, returnTask(ctx, taskId, b))
+    if (action === 'expert-review') return ok(res, expertReviewTask(ctx, taskId, b))
   }
 
   // 证据查询 (GET /v1/ltc/evidence)
@@ -850,8 +866,9 @@ async function routeLtc(req, res, ctx, url) {
     if (method === 'GET') return okList(listEvidence(ctx, q?.task_id))
   }
 
-  // 设备介入数据包快照 (POST /v1/ltc/snapshots, GET /v1/ltc/snapshots/:id)
+  // 设备介入数据包快照 (POST /v1/ltc/snapshots, GET /v1/ltc/snapshots/:id, GET /v1/ltc/snapshots)
   if (path === '/v1/ltc/snapshots') {
+    if (method === 'GET') return okList(listAssessmentSnapshots(ctx, q))
     if (method === 'POST') return ok(res, createAssessmentSnapshot(ctx, await body()))
   }
   const snapMatch = /^\/v1\/ltc\/snapshots\/([A-Za-z0-9_-]+)$/.exec(path)
@@ -859,7 +876,10 @@ async function routeLtc(req, res, ctx, url) {
     return ok(res, getAssessmentSnapshot(ctx, snapMatch[1]))
   }
 
-  // 评估师处理 AI 洞察 (POST /v1/ltc/insights/:id/handle)
+  // 评估师处理 AI 洞察 (GET /v1/ltc/insights, POST /v1/ltc/insights/:id/handle)
+  if (path === '/v1/ltc/insights') {
+    if (method === 'GET') return okList(listAssessmentInsights(ctx, q))
+  }
   const insightMatch = /^\/v1\/ltc\/insights\/([A-Za-z0-9_-]+)\/handle$/.exec(path)
   if (method === 'POST' && insightMatch) {
     return ok(res, handleInsight(ctx, insightMatch[1], await body()))
@@ -943,6 +963,11 @@ async function routeLtc(req, res, ctx, url) {
   }
   if (path === '/v1/ltc/supervision/penetration' && method === 'GET') {
     return ok(res, getSupervisionPenetration(ctx, q))
+  }
+
+  // 失能评定机构与专家评审大盘 (Assessor & Expert Platform)
+  if (path === '/v1/ltc/assessor/dashboard' && method === 'GET') {
+    return ok(res, getAssessorDashboard(ctx, q))
   }
 
   // 受托经办机构业务中心 (Insurer TPA Platform)
@@ -1236,6 +1261,59 @@ const server = http.createServer(async (req, res) => {
       }
       if (method === 'GET' && path === '/v1/devices') {
         return handleDevicesList(req, res, authPayload, url)
+      }
+      if (method === 'POST' && path === '/v1/devices') {
+        let body
+        try {
+          body = await readBody(req)
+        } catch {
+          return badRequest(res, '请求体格式错误')
+        }
+        try {
+          return ok(res, createDeviceAsset(ltcCtx(authPayload), body))
+        } catch (err) {
+          return mapLtcError(res, err)
+        }
+      }
+      const devAssetMatch = /^\/v1\/devices\/([A-Za-z0-9_-]+)$/.exec(path)
+      if (devAssetMatch && (method === 'PATCH' || method === 'DELETE')) {
+        let body = {}
+        if (method === 'PATCH') {
+          try {
+            body = await readBody(req)
+          } catch {
+            return badRequest(res, '请求体格式错误')
+          }
+        }
+        try {
+          const result = method === 'PATCH'
+            ? updateDeviceAsset(ltcCtx(authPayload), devAssetMatch[1], body)
+            : deleteDeviceAsset(ltcCtx(authPayload), devAssetMatch[1])
+          return ok(res, result)
+        } catch (err) {
+          return mapLtcError(res, err)
+        }
+      }
+      if (path === '/v1/device-assignments' && (method === 'GET' || method === 'POST')) {
+        try {
+          if (method === 'GET') {
+            return ok(res, listDeviceAssignments(ltcCtx(authPayload), {
+              device_id: url.searchParams.get('device_id') || undefined,
+            }))
+          }
+          const body = await readBody(req)
+          return ok(res, createDeviceAssignment(ltcCtx(authPayload), body))
+        } catch (err) {
+          return mapLtcError(res, err)
+        }
+      }
+      const devAssignmentMatch = /^\/v1\/device-assignments\/([A-Za-z0-9_-]+)$/.exec(path)
+      if (devAssignmentMatch && method === 'DELETE') {
+        try {
+          return ok(res, deleteDeviceAssignment(ltcCtx(authPayload), devAssignmentMatch[1]))
+        } catch (err) {
+          return mapLtcError(res, err)
+        }
       }
       const devLifecycle = /^\/v1\/devices\/([A-Za-z0-9_-]+)\/lifecycle$/.exec(path)
       if (method === 'POST' && devLifecycle) {

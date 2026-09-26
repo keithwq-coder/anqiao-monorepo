@@ -46,7 +46,7 @@
           <span class="badge badge-primary text-xs ml-2">{{ staffTitle }}</span>
         </div>
         <div class="page-subtitle">
-          凯健国际护理院 · 所属病区: <strong class="text-primary">{{ assignedFloorText }}</strong> · 负责床段: <strong class="text-primary">{{ assignedBedText }}</strong>
+          {{ orgName }} · 所属病区: <strong class="text-primary">{{ assignedFloorText }}</strong> · 负责床段: <strong class="text-primary">{{ assignedBedText }}</strong>
         </div>
       </div>
       <div class="header-badges">
@@ -149,7 +149,7 @@
             <button class="btn btn-sm btn-primary" @click="patrolBed(p)">
               🩺 巡房打卡
             </button>
-            <a :href="'#/console/patients/' + p.patient_id" class="btn btn-sm btn-outline">
+            <a :href="'#/patients/' + p.patient_id" class="btn btn-sm btn-outline">
               详情
             </a>
           </div>
@@ -255,6 +255,7 @@ const activeTab = ref<'patients' | 'alerts' | 'record'>('patients')
 const { activeCaregiver } = useWardStaff()
 const curSession = computed(() => props.session || getSession())
 const principal = computed(() => curSession.value?.principal as any)
+const orgName = computed(() => principal.value?.org_name || '机构')
 
 const nurseName = computed(() => {
   if (activeCaregiver.value) return activeCaregiver.value.name

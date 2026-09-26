@@ -182,6 +182,9 @@
                       class="active-indicator"
                     ></span>
                   </button>
+                  <div v-if="onDutyCaregivers.length === 0" class="nurse-roster-empty text-muted">
+                    本班次暂无在册护工
+                  </div>
                 </div>
               </template>
             </div>
@@ -206,6 +209,7 @@
       ></div>
 
       <div class="shell-main-area">
+        <DemoPoolBanner v-if="session?.principal?.pool_id === 'moumou'" />
         <div v-if="isFamily && !familyGate.canEnter" class="family-gate-wrap">
           <FamilyAccess
             :reason="familyGate.reason"
@@ -399,6 +403,7 @@ import {
   type WorkbenchTodo,
 } from '../../api/ltc-workbench'
 import ScopeBadge from '../../features/ltc-workbench/components/ScopeBadge.vue'
+import DemoPoolBanner from '../../features/ltc-workbench/components/DemoPoolBanner.vue'
 import TodayTodoList from '../../features/ltc-workbench/components/TodayTodoList.vue'
 import FamilyAccess from '../../features/ltc-workbench/pages/FamilyAccess.vue'
 import DeviceLabels from '../../features/ltc-workbench/pages/DeviceLabels.vue'
@@ -422,14 +427,18 @@ function onSelectHomeCaregiver(cg: any) {
   selectedWorkspace.value = 'home_dispatch'
   currentSubView.value = 'workspace'
   patientDetailId.value = ''
-  if (location.hash.startsWith('#/console/patients')) {
-    location.hash = '#/console'
+  if (location.hash.includes('patients')) {
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', location.pathname + location.search)
+    } else {
+      location.hash = ''
+    }
   }
 }
 
 const WORKSPACE_METAS: Record<string, { name: string; icon: string; desc: string }> = {
   home_dispatch: { name: '居家调度与服务中心', icon: '🏡', desc: '片区网格调度/呼叫应答/助老员入户工单' },
-  home_elderly_dossier: { name: '在管长者全景档案', icon: '🧓', desc: '72位在管长者/失能等级/安居感知全貌' },
+  home_elderly_dossier: { name: '在管长者全景档案', icon: '🧓', desc: '在管长者档案/失能等级/安居感知全貌' },
   home_device_monitoring: { name: '居家设备监测情况', icon: '📡', desc: '家庭毫米波雷达/睡眠垫/SOS在线与体征遥测' },
   home_supervision_reports: { name: '服务与监管报告系统', icon: '📊', desc: '入户服务工单日志/长护险月度结算核销报告' },
   system_admin: { name: '系统超级管理员工作台', icon: '⚙', desc: '全域租户/账号矩阵/四层鉴权架构' },
@@ -441,7 +450,7 @@ const WORKSPACE_METAS: Record<string, { name: string; icon: string; desc: string
   assessor_workspace: { name: '长护险评估师工作台', icon: '📝', desc: '任务接收/快照生成/AI洞察处置/现场评定' },
   nursing_home_admin: { name: '院长综合管理工作台', icon: '🏥', desc: '全院大盘/长护险申报结算/质量风控' },
   care_desk: { name: '楼层智能护理台', icon: '🖥️', desc: '床位监护网格/一键呼叫响应/防压疮翻身' },
-  patient_dossier: { name: '在院长者全景档案', icon: '🧓', desc: '全病区87位在管长者档案与生理体征全貌' },
+  patient_dossier: { name: '在院长者全景档案', icon: '🧓', desc: '在管长者全景档案与生理体征全貌' },
   nursing_staff: { name: '责任护工照护', icon: '🩺', desc: '楼层在床监护/体征异常处置/交接班记录' },
   partner_operations: { name: '合作伙伴渠道工作台', icon: '🤝', desc: '渠道拓展组织/出货装机/意向商机' },
   family_workspace: { name: '家属申报工作台', icon: '👪', desc: '申报/补正/进度/正式结果/申诉' },
@@ -505,7 +514,7 @@ const platformTitle = computed(() => {
     }
   }
   if (r.startsWith('insurer_')) {
-    if (t === 'insurer_suqian' || props.session.pool_id === 'suqian') {
+    if (t === 'insurer_suqian' || props.session.principal?.pool_id === 'suqian') {
       return {
         main: '宿迁市长期护理保险受托经办业务协同平台',
         sub: '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班',
@@ -513,13 +522,19 @@ const platformTitle = computed(() => {
     }
     return {
       main: '某某市长期护理保险受托经办业务协同平台',
-      sub: '中国太平洋人寿保险股份有限公司 · 某某市长护险受托经办中心',
+      sub: props.session.principal?.org_name || '受托经办机构',
     }
   }
-  if (r === 'assessor') {
+  if (r === 'assessor' || r === 'assessor_expert' || r === 'assessor_admin') {
+    if (t === 'assessor_suqian' || props.session.principal?.pool_id === 'suqian') {
+      return {
+        main: '宿迁市长期护理保险失能评定与专家评审工作台',
+        sub: '宿迁市广济第三方失能等级评定中心 · 国家长护险深化试点',
+      }
+    }
     return {
-      main: '长护险失能评估移动协同平台',
-      sub: '第三方专业评估机构 · 失能等级评定中心',
+      main: '某某市长期护理保险失能评定与专家评审工作台',
+      sub: '某某市明康第三方失能评定中心 · 专业医学委员会与质控中心',
     }
   }
   return {
@@ -555,8 +570,8 @@ const sidebarTitleTag = computed(() => {
   if (r.startsWith('insurer_')) {
     return '长护商业经办体系'
   }
-  if (r === 'assessor') {
-    return '失能等级评估体系'
+  if (r.startsWith('assessor')) {
+    return '失能评定与医学评审'
   }
   return '协同工作台矩阵'
 })
@@ -607,8 +622,12 @@ function handleNavClick(key: string) {
   }
   currentSubView.value = 'workspace'
   patientDetailId.value = ''
-  if (location.hash.startsWith('#/console/patients')) {
-    location.hash = '#/console'
+  if (location.hash.includes('patients')) {
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', location.pathname + location.search)
+    } else {
+      location.hash = ''
+    }
   }
   switchWorkspace(key)
 }
@@ -617,8 +636,12 @@ function handleNurseClick(nurse: CaregiverSeat) {
   selectCaregiver(nurse)
   currentSubView.value = 'workspace'
   patientDetailId.value = ''
-  if (location.hash.startsWith('#/console/patients')) {
-    location.hash = '#/console'
+  if (location.hash.includes('patients')) {
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', location.pathname + location.search)
+    } else {
+      location.hash = ''
+    }
   }
   switchWorkspace('nursing_staff')
 }
@@ -711,10 +734,16 @@ function getDefaultWorkspace(): string {
 const initialWs = (() => {
   const allowed = allowedWorkspaces(props.session)
   if (typeof window !== 'undefined') {
-    const m = /^#\/console\/([a-zA-Z0-9_-]+)/.exec(window.location.hash || '')
-    if (m && m[1] !== 'patients' && allowed.includes(m[1])) {
+    const m = /^#\/?(?:console\/)?([a-zA-Z0-9_-]+)/.exec(window.location.hash || '')
+    if (m && m[1] !== 'patients' && m[1] !== 'console' && allowed.includes(m[1])) {
       return m[1]
     }
+    try {
+      const saved = sessionStorage.getItem('anqiao_active_ws')
+      if (saved && allowed.includes(saved)) {
+        return saved
+      }
+    } catch {}
   }
   return getDefaultWorkspace()
 })()
@@ -747,7 +776,18 @@ function switchWorkspace(key: string) {
   currentSubView.value = 'workspace'
   patientDetailId.value = ''
   selectedWorkspace.value = key
-  location.hash = `#/console/${key}`
+  try {
+    sessionStorage.setItem('anqiao_active_ws', key)
+  } catch {}
+
+  // 纯净 URL 规范：若当前带有历史 console 或 patients 的 hash 则净化地址栏，不强制添加 #/console
+  if (location.hash.includes('patients') || location.hash.startsWith('#/console')) {
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', location.pathname + location.search)
+    } else {
+      location.hash = ''
+    }
+  }
 
   openApplicationId.value = null
   openTimeline.value = null
@@ -795,14 +835,11 @@ const activeComponent = computed(() => {
   return map[selectedWorkspace.value] || PlatformOperationsApp
 })
 
-// 仅长护险经办/评估/系统总控等拥有基础待办流的工作台才展示通用今日必做条带（医保综合监管工作台自带完整宏观大盘与专班审核模块）
 const isLtcWorkbench = computed(() => {
   const ws = selectedWorkspace.value
   return [
-    'insurer_operations',
     'assessor_workspace',
     'system_admin',
-    'platform_operations',
   ].includes(ws)
 })
 
@@ -922,8 +959,8 @@ function checkHash() {
   componentError.value = null
   const h = location.hash || ''
 
-  // 1. 机构长者床位体征客观详情: #/console/patients/:id
-  const mPatient = /^#\/console\/patients\/([^/?#]+)/.exec(h)
+  // 1. 机构长者床位体征客观详情: #/patients/:id 或 #/console/patients/:id
+  const mPatient = /^#\/?(?:console\/)?patients\/([^/?#]+)/.exec(h)
   if (mPatient) {
     const isInstitutionScope = authorizedWs.value.some((w) =>
       ['care_desk', 'patient_dossier', 'nursing_home_admin', 'nursing_staff'].includes(w),
@@ -940,7 +977,9 @@ function checkHash() {
       selectedWorkspace.value = target
       currentSubView.value = 'workspace'
       patientDetailId.value = ''
-      location.replace(`#/console/${target}`)
+      if (window.history.replaceState) {
+        window.history.replaceState(null, '', location.pathname + location.search)
+      }
       return
     }
   }
@@ -948,14 +987,17 @@ function checkHash() {
   currentSubView.value = 'workspace'
   patientDetailId.value = ''
 
-  // 2. 具体协同工作台: #/console/:workspaceKey
-  const mWs = /^#\/console\/([a-zA-Z0-9_-]+)/.exec(h)
+  // 2. 具体协同工作台: #/:workspaceKey 或 #/console/:workspaceKey
+  const mWs = /^#\/?(?:console\/)?([a-zA-Z0-9_-]+)/.exec(h)
   if (mWs) {
     const wsKey = mWs[1]
-    if (wsKey !== 'patients') {
+    if (wsKey !== 'patients' && wsKey !== 'console') {
       if (authorizedWs.value.includes(wsKey)) {
         if (selectedWorkspace.value !== wsKey) {
           selectedWorkspace.value = wsKey
+          try {
+            sessionStorage.setItem('anqiao_active_ws', wsKey)
+          } catch {}
           loadWorkbench()
         }
         return
@@ -963,27 +1005,37 @@ function checkHash() {
         // 请求的工作台不在授权范围，矫正为默认合法工作台
         const fallbackWs = getDefaultWorkspace()
         selectedWorkspace.value = fallbackWs
-        location.replace(`#/console/${fallbackWs}`)
         loadWorkbench()
         return
       }
     }
   }
 
-  // 3. 根路径或未指定具体工作台 (如 #/console, #, #/login) -> 规范化并补充工作台 hash
-  const curWs = selectedWorkspace.value && authorizedWs.value.includes(selectedWorkspace.value)
+  // 3. 根路径或未指定具体工作台 -> 规范纯净 URL 访问模式，绝不强制向地址栏塞入 #/console
+  const savedWs = typeof window !== 'undefined' ? sessionStorage.getItem('anqiao_active_ws') : null
+  const curWs = (selectedWorkspace.value && authorizedWs.value.includes(selectedWorkspace.value))
     ? selectedWorkspace.value
-    : getDefaultWorkspace()
+    : (savedWs && authorizedWs.value.includes(savedWs))
+      ? savedWs
+      : getDefaultWorkspace()
   selectedWorkspace.value = curWs
-  if (location.hash !== `#/console/${curWs}`) {
-    location.replace(`#/console/${curWs}`)
+
+  // 若地址栏存在冗余的历史 hash（如 #/console 或 #），主动净化地址栏
+  if (h === '#/console' || h === '#console' || h === '#' || h === '#/') {
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', location.pathname + location.search)
+    }
   }
 }
 
 function backToWorkspace() {
   currentSubView.value = 'workspace'
   patientDetailId.value = ''
-  location.hash = `#/console/${selectedWorkspace.value}`
+  if (window.history.replaceState) {
+    window.history.replaceState(null, '', location.pathname + location.search)
+  } else {
+    location.hash = ''
+  }
 }
 
 function handleLogout() {
@@ -1384,6 +1436,12 @@ watch(
   gap: 2px;
   margin-top: 2px;
   margin-bottom: 4px;
+}
+
+.nurse-roster-empty {
+  padding: 6px 6px 6px 24px;
+  font-size: 11px;
+  opacity: 0.65;
 }
 
 .nurse-floor-pills {

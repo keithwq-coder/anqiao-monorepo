@@ -37,6 +37,8 @@ export const ROLE_WORKSPACE_MAP = {
   insurer_auditor: WORKSPACES.INSURER_OPERATIONS, // 结算初审核销
   insurer_service: WORKSPACES.INSURER_OPERATIONS, // 综合客服与申诉
   assessor: WORKSPACES.ASSESSOR_WORKSPACE,
+  assessor_expert: WORKSPACES.ASSESSOR_WORKSPACE, // 临床评审医学专家
+  assessor_admin: WORKSPACES.ASSESSOR_WORKSPACE, // 评估机构质控主管
   nursing_admin: WORKSPACES.NURSING_HOME_ADMIN,
   nursing_head: WORKSPACES.CARE_DESK,
   nursing_station: WORKSPACES.CARE_DESK,
@@ -79,6 +81,8 @@ export const ROLE_DATA_SCOPE_MAP = {
   insurer_auditor: 'pool',
   insurer_service: 'pool',
   assessor: 'task',
+  assessor_expert: 'pool',
+  assessor_admin: 'pool',
   nursing_admin: 'org',
   nursing_head: 'assigned',
   nursing_station: 'assigned',
@@ -243,6 +247,21 @@ export const ROLE_PERMISSIONS = {
     'task:operate', 'task:read', 'result:submit',
     'evidence:write', 'evidence:read', 'monitoring:read',
     'insight:handle', 'snapshot:read', 'report:read',
+    'assessed_person:read',
+  ],
+  assessor_expert: [
+    // 评定专家委员会医学评审专家：疑难案件集中盲审、双专家复核签认、签署评定结论书、出具评审报告
+    'task:operate', 'task:read', 'result:submit', 'result:read', 'result:approve',
+    'expert_review:sign', 'evidence:read', 'monitoring:read',
+    'insight:handle', 'snapshot:read', 'report:generate', 'report:read',
+    'assessed_person:read',
+  ],
+  assessor_admin: [
+    // 评估机构质控主管：机构任务全盘统揽、排班派工质控、偏离度分析、机构公信力大盘
+    'task:read', 'task:operate', 'result:read',
+    'evidence:read', 'monitoring:read', 'snapshot:read',
+    'assessor:manage', 'quality:read', 'quality:audit',
+    'report:generate', 'report:read', 'assessed_person:read',
   ],
   nursing_admin: [
     'patient:read', 'patient:write', 'bed:read', 'bed:write',

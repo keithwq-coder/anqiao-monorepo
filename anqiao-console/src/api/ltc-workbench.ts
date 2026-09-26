@@ -82,3 +82,35 @@ export function getWorkbenchTodos(query: WorkbenchQuery = {}): Promise<Workbench
   const q = qs.toString()
   return http.get<WorkbenchTodoPage>(`/v1/ltc/workbench/todos${q ? '?' + q : ''}`)
 }
+
+// N16：当前登录角色两级 SOP 流程树（LTC-WORKBENCH-SPEC §12.4 / API-CONTRACT §3.4.1）
+export interface WorkflowTreeItem {
+  stageKey: string
+  label: string
+  badgeCount: number
+  badgeTone: 'normal' | 'warn' | 'danger'
+  permRequired?: string
+  summaryGroup?: string
+}
+
+export interface WorkflowTreeGroup {
+  groupKey: string
+  groupLabel: string
+  items: WorkflowTreeItem[]
+}
+
+export interface WorkbenchWorkflowTree {
+  role: string
+  workspaceKey: string
+  domainTitle: string
+  groups: WorkflowTreeGroup[]
+  as_of: string
+}
+
+export function getWorkbenchWorkflowTree(query: WorkbenchQuery = {}): Promise<WorkbenchWorkflowTree> {
+  const qs = new URLSearchParams()
+  if (query.workspace) qs.set('workspace', query.workspace)
+  if (query.subject_id) qs.set('subject_id', query.subject_id)
+  const q = qs.toString()
+  return http.get<WorkbenchWorkflowTree>(`/v1/ltc/workbench/workflow-tree${q ? '?' + q : ''}`)
+}

@@ -6,7 +6,7 @@
           <h1 class="page-title">设备监测情况 · 智能物联网实时遥测中心</h1>
           <span class="badge badge-primary">病区设备直连</span>
           <span class="badge badge-success">毫秒级客观遥测</span>
-          <span class="badge badge-neutral">凯健国际护理院</span>
+          <span class="badge badge-neutral">{{ orgName }}</span>
         </div>
         <div class="page-subtitle">
           全院床位智能压电睡眠监护床垫 · 毫米波生命体征雷达 · 卫生间防跌倒感知终端 · 在线状态/实时心率呼吸/网络质量一体化监测
@@ -397,7 +397,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { getOverview, getGeoDevices, getAlerts, handleAlert } from '../../../api/client'
+import { useOrgIdentity } from '../../../features/ltc-workbench/org-identity'
 import type { Overview, DevicePoint, Alert } from '../../../api/types'
+
+const { orgName } = useOrgIdentity()
 
 const activeTab = ref<'ward' | 'devices' | 'alerts'>('ward')
 const overview = ref<Overview | null>(null)

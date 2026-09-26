@@ -9,7 +9,7 @@
           <span class="badge-total">{{ data ? data.total : 87 }} 位在管长者</span>
         </div>
         <p class="page-subtitle">
-          凯健国际护理院 · 全病区在院长者客观健康档案 · 毫米波生命体征全时连续感知 · 护理自理等级与照护责任全貌
+          {{ orgName }} · 全病区在院长者客观健康档案 · 毫米波生命体征全时连续感知 · 护理自理等级与照护责任全貌
         </p>
       </div>
       <div class="header-actions">
@@ -209,7 +209,10 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { getPatients } from '../../../api/client'
 import { onRealtime } from '../../../api/realtime'
+import { useOrgIdentity } from '../../../features/ltc-workbench/org-identity'
 import type { Paged, Patient, PatientStatusFilter, VitalsEvent } from '../../../api/types'
+
+const { orgName } = useOrgIdentity()
 
 const data = ref<Paged<Patient> | null>(null)
 const loading = ref(false)
@@ -299,7 +302,7 @@ function changePage(delta: number) {
 }
 
 function openPatientDetail(p: Patient) {
-  location.hash = `#/console/patients/${encodeURIComponent(p.patient_id)}`
+  location.hash = `#/patients/${encodeURIComponent(p.patient_id)}`
 }
 
 const offFns: Array<() => void> = []

@@ -740,7 +740,11 @@ function getDiseaseColorClass(d: string): string {
 
 function goBack() {
   emit('back')
-  location.hash = '#/console'
+  if (window.history.replaceState) {
+    window.history.replaceState(null, '', location.pathname + location.search)
+  } else {
+    location.hash = ''
+  }
 }
 
 function quickTurn(pos: string) {

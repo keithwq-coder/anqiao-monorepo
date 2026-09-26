@@ -18,9 +18,9 @@ interface DemoRole {
   tag: string
 }
 
-const activeCategory = ref<'home' | 'institution' | 'insurer' | 'supervision' | 'admin'>('home')
+const activeCategory = ref<'home' | 'institution' | 'insurer' | 'assessor' | 'supervision' | 'admin'>('home')
 
-const DEMO_CATEGORIES: Record<'home' | 'institution' | 'insurer' | 'supervision' | 'admin', { label: string; icon: string; items: DemoRole[] }> = {
+const DEMO_CATEGORIES: Record<'home' | 'institution' | 'insurer' | 'assessor' | 'supervision' | 'admin', { label: string; icon: string; items: DemoRole[] }> = {
   home: {
     label: '社区居家养老',
     icon: '🏡',
@@ -48,12 +48,25 @@ const DEMO_CATEGORIES: Record<'home' | 'institution' | 'insurer' | 'supervision'
     label: '受托商保经办',
     icon: '💼',
     items: [
-      { u: 'demo_insurer_director', name: '赵国华 项目总监', title: '太保长护险项目部总监', desc: '某某市经办全盘统揽 / 医保督办回执审签 / 经办质效SLA', tag: '经办·项目总' },
+      { u: 'demo_insurer_director', name: '赵国华 项目总监', title: '长护险项目部总监', desc: '某某市经办全盘统揽 / 医保督办回执审签 / 经办质效SLA', tag: '经办·项目总' },
       { u: 'demo_insurer_intake', name: '王雪梅 受理专员', title: '业务受理与派单调度组', desc: '失能申报材料初审 / 法定派单回避审查 / 评估任务分流', tag: '经办·受理调度' },
       { u: 'demo_insurer_inspector', name: '李勇 巡查主管', title: '现场巡查与质量飞检组', desc: '物联异常靶向突击飞检 / 现场核验笔录 / 违规工单锁定', tag: '经办·质控飞检' },
       { u: 'demo_insurer_auditor', name: '张慧敏 审核员', title: '费用核销与结算初审组', desc: '机构月度申报经办初审 / 工单物联自动对撞核减 / 意见书盖印', tag: '经办·结算初审' },
       { u: 'demo_insurer_service', name: '孙丽 综合专员', title: '参保咨询与家属申诉组', desc: '长者咨询热线答疑 / 失能等级异议申诉初核 / 服务回访', tag: '经办·客服申诉' },
       { u: 'suqian_insurer', name: '宿迁商保经办专班', title: '太保宿迁长护经办组', desc: '国家长护深化试点 · 真实纳管在网设备3台（许丽/何家齐/王雪金）', tag: '宿迁·商保专班' },
+    ],
+  },
+  assessor: {
+    label: '失能评定与医学评审',
+    icon: '📝',
+    items: [
+      { u: 'suqian_assessor', name: '许建强 评定师', title: '宿迁广济第三方评定中心', desc: '国家深化试点 · 双人入户规范 / 真实长者在床遥测交叉印证', tag: '宿迁·评定师' },
+      { u: 'suqian_expert', name: '孙建国 主任医师', title: '宿迁评定专家评审委员会', desc: '国家深化试点 · 双专家医学会审 / 临床证据印证 / 签发评定结论书', tag: '宿迁·专家组长' },
+      { u: 'suqian_assessor_admin', name: '刘芳芳 质控主管', title: '宿迁广济中心质控部', desc: '国家深化试点 · 评定全流程合规追溯 / 机构高斯正态偏离度监测', tag: '宿迁·评定质控' },
+      { u: 'demo_assessor', name: '周海峰 评定师', title: '某某市明康第三方评定中心', desc: '某某市全业务演练 · 双人现场入户 / 四维度量表测算 / 证据留痕', tag: '演示·评定师' },
+      { u: 'demo_expert', name: '钱德明 主任医师', title: '某某市医学评审专家组', desc: '某某市全业务演练 · 集中医学会审 / 筛查设备客观冲突 / 会签结论', tag: '演示·专家组长' },
+      { u: 'demo_assessor_admin', name: '陈红 质控总监', title: '某某市明康评定质控部', desc: '某某市全业务演练 · 机构评定质量管理 / 重度失能比例动态监控', tag: '演示·质控总监' },
+      { u: 'assessor01', name: '基线评定员01', title: '持证失能评定员', desc: '系统基线账号 · 标准评估流程体验与物联设备数据包冻结', tag: '基线·评定员' },
     ],
   },
   supervision: {

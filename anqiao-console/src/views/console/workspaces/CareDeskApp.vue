@@ -1,5 +1,36 @@
 <template>
   <div class="workspace-page care-desk">
+    <!-- §12.3.3 全局突发危象强制抢占浮层（Level 1/2 严禁置于二级 Tab 之内）：
+         顶层全域悬浮抢占条覆盖全屏，作业员当前表单就地暂存（Stash），处置完毕无损还原（Pop） -->
+    <div v-if="criticalAlerts.length > 0" class="preempt-overlay" role="alert" aria-live="assertive">
+      <div class="preempt-bar" :class="criticalAlerts.some(a => a.level === 1) ? 'preempt-l1' : 'preempt-l2'">
+        <div class="preempt-icon">{{ criticalAlerts.some(a => a.level === 1) ? '🚨' : '⚠️' }}</div>
+        <div class="preempt-main">
+          <div class="preempt-title">
+            {{ criticalAlerts.some(a => a.level === 1) ? '突发生命危象强制抢占' : '二级风险告警强制提醒' }}
+            <span class="preempt-count">{{ criticalAlerts.length }} 起未闭环</span>
+          </div>
+          <div class="preempt-detail">
+            <span v-for="a in criticalAlerts" :key="a.alert_id" class="preempt-chip">
+              L{{ a.level }} · {{ a.bed_id }} · {{ a.title }} · {{ a.detail }}
+            </span>
+          </div>
+          <div class="preempt-note">当班作业表单已就地暂存（Stash），处置完毕自动无损还原（Pop）</div>
+        </div>
+        <div class="preempt-actions">
+          <template v-for="a in criticalAlerts" :key="a.alert_id + '-act'">
+            <button v-if="a.status === 'triggered'" class="btn btn-xs btn-light-danger" @click="onClaimAlert(a.alert_id)">
+              立即接单
+            </button>
+            <button v-else-if="a.status === 'handling'" class="btn btn-xs btn-light-success" @click="onHandleAlert(a.alert_id)">
+              完成处置
+            </button>
+          </template>
+          <button class="btn btn-xs btn-light" @click="activeTab = 'alerts'">查看告警中枢</button>
+        </div>
+      </div>
+    </div>
+
     <div class="page-header">
       <div>
         <div class="page-title-row">
@@ -11,7 +42,7 @@
           </span>
         </div>
         <div class="page-subtitle">
-          凯健国际护理院 · 病区大屏看板与席位终端 · 常态全域监护 + 当班责任护工一键秒切个人工作台
+          {{ orgName }} · 病区大屏看板与席位终端 · 常态全域监护 + 当班责任护工一键秒切个人工作台
         </div>
       </div>
       <div class="header-actions">
@@ -219,7 +250,7 @@
                 <button class="btn btn-xs btn-outline-primary" @click="openTurnModal(p)">
                   翻身登记
                 </button>
-                <a :href="'#/console/patients/' + p.patient_id" class="btn btn-xs btn-primary">
+                <a :href="'#/patients/' + p.patient_id" class="btn btn-xs btn-primary">
                   体征详情
                 </a>
               </div>
@@ -476,6 +507,8 @@ const props = defineProps<{
 }>()
 
 const curSession = computed(() => props.session || getSession())
+// 客户交付产品化：机构名由会话租户上下文驱动（PRD §2.3），严禁硬编码特定客户机构名
+const orgName = computed(() => curSession.value?.principal?.org_name || '机构')
 const assignedFloors = computed(() => (curSession.value?.principal as any)?.assigned_floors || [])
 const isStationAccount = computed(() => {
   const p = curSession.value?.principal
@@ -725,9 +758,34 @@ async function loadData() {
   }
 }
 
+// §12.3.3 危象抢占：Level 1/2 未闭环告警恒置顶层悬浮条，严禁困于二级 Tab
+const criticalAlerts = computed(() =>
+  alerts.value.filter((a) => (a.level === 1 || a.level === 2) && (a.status === 'triggered' || a.status === 'handling')),
+)
+
+// 共享终端 7×24h 保活：30 秒轮询告警队列，保证抢占条实时弹出
+let alertPollTimer: ReturnType<typeof setInterval> | null = null
+
+async function pollAlerts() {
+  try {
+    const aRes = await getAlerts()
+    alerts.value = aRes.list || []
+  } catch {
+    /* 网络抖动时保留上次数据，下轮重试 */
+  }
+}
+
 onMounted(() => {
   setRosterFloor(filterFloor.value)
   loadData()
+  alertPollTimer = setInterval(pollAlerts, 30000)
+})
+
+onUnmounted(() => {
+  if (alertPollTimer) {
+    clearInterval(alertPollTimer)
+    alertPollTimer = null
+  }
 })
 </script>
 
@@ -736,6 +794,103 @@ onMounted(() => {
   padding: 20px;
   background: #f8fafc;
   min-height: calc(100vh - 64px);
+}
+
+/* §12.3.3 全屏危象强制抢占浮层 */
+.preempt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3000;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.preempt-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  max-width: 96vw;
+  padding: 12px 18px;
+  border-radius: 12px;
+  color: #ffffff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  animation: preempt-pulse 1.2s ease-in-out infinite;
+}
+.preempt-l1 {
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+  border: 2px solid #fecaca;
+}
+.preempt-l2 {
+  background: linear-gradient(135deg, #b45309, #d97706);
+  border: 2px solid #fde68a;
+}
+.preempt-icon {
+  font-size: 30px;
+  flex-shrink: 0;
+}
+.preempt-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.preempt-title {
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preempt-count {
+  background: rgba(255, 255, 255, 0.22);
+  padding: 1px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+}
+.preempt-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.preempt-chip {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.preempt-note {
+  font-size: 11px;
+  opacity: 0.85;
+}
+.preempt-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  flex-shrink: 0;
+}
+.btn-light {
+  background: rgba(255, 255, 255, 0.92);
+  color: #b91c1c;
+}
+.btn-light-danger {
+  background: #ffffff;
+  color: #b91c1c;
+  font-weight: 800;
+}
+.btn-light-success {
+  background: #ffffff;
+  color: #15803d;
+  font-weight: 800;
+}
+@keyframes preempt-pulse {
+  0%, 100% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35); }
+  50% { box-shadow: 0 12px 44px rgba(220, 38, 38, 0.55); }
 }
 
 .page-header {

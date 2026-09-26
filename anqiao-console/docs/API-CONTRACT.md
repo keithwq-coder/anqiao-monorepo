@@ -235,6 +235,17 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
 }
 ```
 
+#### 设备资产 CRUD 与「设备 ↔ 体验角色群」分配（PRD §2.3.2/§2.3.5，N17–N20）
+
+| ID | 方法与路径 | 权限码（实际字符串） | 作用 | 计划阶段 |
+|---|---|---|---|---|
+| N17 | POST `/v1/devices` | `device:write` | 新增设备资产：body 含 `device_id`/`label`/`type` 等七维归属字段；`device_id` 重复返回 409；成功写入生命周期审计日志并返回新 `DeviceAsset` | 已实现 |
+| N18 | PATCH `/v1/devices/{device_id}` | `device:write` | 修改设备 `label`/`type` 等可变字段；变更写入生命周期审计日志并返回更新后 `DeviceAsset`；设备不存在 404 | 已实现 |
+| N19 | DELETE `/v1/devices/{device_id}` | `device:write` | 删除设备并写入生命周期审计留痕；宿迁试点 3 台（ASH01086 / ASH01078 / ASH01092）受保护，返回 403「宿迁试点设备受保护」 | 已实现 |
+| N20 | GET/POST/DELETE `/v1/device-assignments` | 查询 `device:read`；写入 `device:write` | 「设备 ↔ 体验角色群」N:M 分配关系持久化：POST body 为 `device_id` + `role_group`，同设备同群重复分配 409；一台设备可分配多个角色群；宿迁试点 3 台仅限真实域，分配返回 403 | 已实现 |
+
+> 约束：宿迁试点 3 台设备（ASH01086 / ASH01078 / ASH01092）为真实域资产，DELETE 与角色群分配一律 403；写操作全部经 `authorize(ctx, 'device:write')` 权限校验并落审计留痕。
+
 #### GET `/v1/partner/channels`
 
 `partner_admin` 强制只返回本组织渠道。响应：
@@ -342,6 +353,7 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
 | N13 | GET `/v1/ltc/device-bindings` | `device:read` | 对象设备绑定 | D |
 | N14 | POST `/v1/ltc/device-bindings` | `device:write` | 创建绑定 | D |
 | N15 | POST `/v1/ltc/device-bindings/{id}/actions` | `device:write` | 批准/结束/更正区间 | D |
+| N16 | GET `/v1/ltc/workbench/workflow-tree` | `workbench:read` | 当前登录角色的两级 SOP 流程树（§12.4）：Level 1 业务阶段分组 → Level 2 状态队列节点，`badgeCount` 由 N01 分组计数与任务/申请/结算实时状态共同驱动，节点按 `permissionsOf(role)` 服务端裁剪 | 已实现 |
 
 **K 域待实现（须先于页流联调定义字段，阶段 C）**
 

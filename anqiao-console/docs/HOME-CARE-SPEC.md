@@ -312,3 +312,5 @@ export interface HomeElderlyRecord {
 1. **全员账号矩阵验证**：`server/test-home-care.mjs` 验证 20 位人员全登录、四层 RBAC/PBAC 权限及片区网格数据范围隔离；
 2. **平台集成测试套件**：`npm test` 71 个核心测试用例 100% 通过；
 3. **前端编译与构建保障**：`vue-tsc -b && vite build` 严苛模式 0 警告、0 错误通过。
+
+> 体验域（姑苏居家）数据与测试于系统验收后重建（PRD §2.3.3）。`server/test-home-care.mjs` 已自 `npm test` 移除，待体验域角色群账号制作后恢复。

@@ -12,13 +12,11 @@ const session = ref<SessionInfo | null>(getSession())
 
 function syncHashRoute() {
   const h = location.hash || ''
-  if (!session.value) {
-    if (h.startsWith('#/console')) {
-      location.hash = '#/login'
-    }
-  } else {
-    if (!h || h === '#' || h === '#/login' || h === '#login') {
-      location.hash = '#/console'
+  if (!session.value && h.startsWith('#/console')) {
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', location.pathname + location.search)
+    } else {
+      location.hash = ''
     }
   }
 }
@@ -26,9 +24,8 @@ function syncHashRoute() {
 function onLoginSuccess() {
   session.value = getSession()
   startRealtime()
-  const h = location.hash || ''
-  if (!h.startsWith('#/console')) {
-    location.hash = '#/console'
+  if (window.history.replaceState && (location.hash === '#/login' || location.hash === '#login')) {
+    window.history.replaceState(null, '', location.pathname + location.search)
   }
 }
 
@@ -36,7 +33,11 @@ function logout() {
   stopRealtime()
   clearSession()
   session.value = null
-  location.hash = '#/login'
+  if (window.history.replaceState) {
+    window.history.replaceState(null, '', location.pathname + location.search)
+  } else {
+    location.hash = ''
+  }
 }
 
 // ---------- 实时通道：新告警 toast ----------

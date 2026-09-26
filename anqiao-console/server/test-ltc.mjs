@@ -85,7 +85,7 @@ beforeEach(() => {
 })
 
 // ---------- 组织 / 角色 / 登录字段基线 ----------
-test('组织与角色：太平洋保险组织存在，各角色 data_scope / permissions 合理', () => {
+test('组织与角色：经办保险组织存在，各角色 data_scope / permissions 合理', () => {
   assert.equal(dataScopeOf('su'), 'global')
   assert.equal(dataScopeOf('admin'), 'org')
   assert.equal(dataScopeOf('user'), 'org')

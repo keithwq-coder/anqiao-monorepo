@@ -367,36 +367,73 @@ export interface AssessmentTask {
   task_id: string
   application_id: string
   applicant_id: string
+  applicant_name?: string
+  gender?: string
+  age?: number
+  id_card?: string
+  address?: string
+  guardian_name?: string
+  guardian_phone?: string
   status: string
-  assessor: { role: string; account_id: string; name: string; org_id: string }
-  assigned_at: string
-  accepted_at: string | null
-  scale_version: string
+  assessor: { role?: string; account_id: string; name: string; org_id?: string }
+  assessor_ids?: string[]
+  second_assessor_name?: string
+  guardian_present?: boolean
+  video_evidence?: string
+  device_id?: string
+  device_model?: string
+  snapshot_id?: string
+  assigned_at?: string
+  accepted_at?: string | null
+  started_at?: string | null
+  completed_at?: string | null
+  scale_version?: string
+  scores?: {
+    daily_living: number
+    cognition: number
+    perception: number
+    mental_state: number
+    total_score: number
+  } | null
+  preliminary_level?: string | null
+  assessor_level?: string | null
+  objective_conflict?: boolean
+  conflict_detail?: string | null
+  expert_confirmation?: string[] | null
 }
 
 export interface AssessmentSnapshot {
   snapshot_id: string
   task_id: string
-  assessment_id: string
-  application_id: string
-  person_id: string
-  disclaimer_acknowledged: boolean
-  binding_id: string
+  assessment_id?: string
+  application_id?: string
+  applicant_id?: string
+  applicant_name?: string
+  person_id?: string
+  disclaimer_acknowledged?: boolean
+  binding_id?: string
   device_id: string
-  assessment_window: { from: string; to: string }
-  device_status: string
+  device_model?: string
+  assessment_window?: { from: string; to: string }
+  device_status?: string
+  conclusion?: string | null
   metrics: {
-    night_trips: number
-    in_bed_rate_pct: number
-    bed_leave_15min_count: number
-    fall_pose_events: number
-    hr_abnormal_days: number
-    tp_abnormal_days: number
-    avg_hr: number
-    avg_br: number
-    avg_tp: number
+    night_trips?: number
+    in_bed_rate_pct?: number
+    bed_leave_15min_count?: number
+    fall_pose_events?: number
+    hr_abnormal_days?: number
+    tp_abnormal_days?: number
+    avg_hr?: number
+    avg_br?: number
+    avg_tp?: number
   }
-  status: string
+  cross_validation?: {
+    finding: string
+    confidence: string
+    suggested_focus: string
+  } | null
+  status?: string
 }
 
 export interface AssistantInsight {
@@ -470,6 +507,8 @@ export interface Settlement {
   org_id?: string
   org_name?: string
   pre_review_notes?: string
+  pre_review_voucher?: any | null
+  deducted_amount?: number
   voucher?: SettlementVoucher | null
 }
 
@@ -837,8 +876,10 @@ export interface SupervisionClue {
   risk_level: 'red' | 'yellow'
   target_org_id: string
   target_org_name: string
+  target_org?: string
   caregiver_name: string
   elderly_name: string
+  target_elder?: string
   person_id: string
   device_id: string
   description: string

@@ -202,7 +202,7 @@ test('AC-T04 相同筛选 total 一致', () => {
 test('AC-O06/O07 设备绑定创建与结束保留区间', () => {
   resetState()
   restoreFamily()
-  const admin = ctxOf('kaijian_admin')
+  const admin = ctxOf('admin01')
   const page = listDeviceLabels(ctxOf('su01'), { page_size: 1 })
   const deviceId = page.list[0].device_id + '-free'
   const created = createDeviceBinding(admin, {

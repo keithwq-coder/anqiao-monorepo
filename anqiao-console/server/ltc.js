@@ -11,8 +11,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ACCOUNTS, nowIso8, DEVICE_ASSETS } from './seed.js'
+import { ACCOUNTS, nowIso8, DEVICE_ASSETS, DEVICE_LIFECYCLE_LOGS } from './seed.js'
 import { saveLtcState, loadLtcState, dataLayerMode } from './db.js'
+import { generateWorkflowTree } from './workbench-workflow-tree.js'
 import {
   ROLE_PERMISSIONS,
   permissionsOf,
@@ -50,6 +51,8 @@ export const ROLES = [
   'insurer_auditor',
   'insurer_service',
   'assessor',
+  'assessor_expert',
+  'assessor_admin',
   'nursing_admin',
   'nursing_head',
   'nursing_station',
@@ -63,16 +66,20 @@ export function isInsurerRole(role) {
   return typeof role === 'string' && (role.startsWith('insurer_') || role === 'insurer_operator' || role === 'insurer_staff')
 }
 
+export function isAssessorRole(role) {
+  return typeof role === 'string' && (role === 'assessor' || role === 'assessor_expert' || role === 'assessor_admin')
+}
+
 // ---------- 组织（多机构、多租户）----------
 export const ORGS = {
   platform: { org_id: 'platform', name: '系统组织', kind: 'platform' },
-  kaijian: { org_id: 'kaijian', name: '凯健国际护理院', kind: 'nursing_home' },
   anqiao: { org_id: 'anqiao', name: '中科安樵·自营运营中心', kind: 'anqiao_ops' },
   bureau: { org_id: 'bureau', name: '中科安樵·全域医保监管协同中心', kind: 'medical_bureau' },
   bureau_suqian: { org_id: 'bureau_suqian', name: '宿迁市医疗保障局 / 宿迁长护险试点工作组', kind: 'medical_bureau' },
   bureau_moumou: { org_id: 'bureau_moumou', name: '某某市医疗保障局 / 某某市长护险管理服务中心', kind: 'medical_bureau' },
-  insurer: { org_id: 'insurer', name: '中国太平洋人寿保险股份有限公司 · 某某市长护险受托经办中心', kind: 'insurer' },
+  insurer: { org_id: 'insurer', name: '惠生人寿保险股份有限公司（演示）· 某某市长护险受托经办中心', kind: 'insurer' },
   insurer_suqian: { org_id: 'insurer_suqian', name: '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班', kind: 'insurer' },
+  assessor_suqian: { org_id: 'assessor_suqian', name: '宿迁市广济第三方失能等级评定中心', kind: 'assessment_org' },
   assessor_org: { org_id: 'assessor_org', name: '某某市明康第三方失能评定中心', kind: 'assessment_org' },
   partner_p1: { org_id: 'partner_p1', name: '中科智护合作伙伴渠道', kind: 'partner' },
   cust_org01: { org_id: 'cust_org01', name: '某某市示范康养中心', kind: 'customer_org' },
@@ -80,7 +87,7 @@ export const ORGS = {
 
 export function principalForAccount(account) {
   const org = ORGS[account.org_id] ?? {}
-  const poolId = account.pool_id || (account.tenant_id === 'bureau_suqian' || account.tenant_id === 'insurer_suqian' ? 'suqian' : (account.tenant_id === 'bureau_moumou' || account.tenant_id === 'insurer' ? 'moumou' : null))
+  const poolId = account.pool_id || (account.tenant_id === 'bureau_suqian' || account.tenant_id === 'insurer_suqian' || account.tenant_id === 'assessor_suqian' ? 'suqian' : (account.tenant_id === 'bureau_moumou' || account.tenant_id === 'insurer' || account.tenant_id === 'assessor_org' ? 'moumou' : null))
   return {
     account_id: account.username,
     username: account.username,
@@ -103,7 +110,7 @@ export function principalForAccount(account) {
 }
 
 export function ctxForAccount(account) {
-  const poolId = account.pool_id || (account.tenant_id === 'bureau_suqian' ? 'suqian' : account.tenant_id === 'bureau_moumou' ? 'moumou' : null)
+  const poolId = account.pool_id || (account.tenant_id === 'bureau_suqian' || account.tenant_id === 'insurer_suqian' || account.tenant_id === 'assessor_suqian' ? 'suqian' : (account.tenant_id === 'bureau_moumou' || account.tenant_id === 'insurer' || account.tenant_id === 'assessor_org' ? 'moumou' : null))
   return {
     account_id: account.username,
     username: account.username,
@@ -291,15 +298,15 @@ export const SEED_MEDICAL_RECORDS = []
 export const SEED_ASSESSMENT_ORGS = [
   {
     org_id: 'assessor_org',
-    name: '太平洋财产保险某某分公司长护险评估中心',
-    short_name: '太保长护评估中心',
+    name: '某某市明康第三方失能评定中心（演示）',
+    short_name: '明康评定中心',
     unified_social_credit_code: '91320000712384912A',
     license_no: 'LTC-AGY-MM-2023-001',
     qualification_grade: '甲级定点评估机构',
     legal_representative: '徐建华',
     responsible_person: '顾敏 处长',
     contact_phone: '0510-68288120',
-    address: '某某市高新技术产业园区科技大道88号太保大厦7F',
+    address: '某某市高新技术产业园区科技大道88号惠生大厦7F',
     accredited_coverage_areas: ['某某市区', '高新区', '西湖区', '南山区'],
     active_assessors_count: 32,
     completed_assessments_total: 8420,
@@ -323,10 +330,108 @@ export const SEED_ASSESSMENT_ORGS = [
     compliance_audit_rate: 91.5,
     status: 'active',
   },
+  {
+    org_id: 'assessor_suqian',
+    name: '宿迁市广济第三方失能等级评定中心',
+    short_name: '宿迁广济评定中心',
+    unified_social_credit_code: '91321300MA21Q8921K',
+    license_no: 'LTC-AGY-SQ-2025-001',
+    qualification_grade: '甲级定点失能评定机构 (国家首批长护深化试点入围)',
+    legal_representative: '张广济',
+    responsible_person: '刘芳芳 质控主管',
+    contact_phone: '0527-84351120',
+    address: '宿迁市宿城区项里街道发展大道88号医疗健康产业园3号楼',
+    accredited_coverage_areas: ['宿城区', '宿豫区'],
+    active_assessors_count: 8,
+    completed_assessments_total: 126,
+    compliance_audit_rate: 100.0,
+    status: 'active',
+  },
 ]
 
 // ---------- 执业失能评估师名录（含资质、证书号、利益回避与长效追责档案）----------
 export const SEED_ASSESSORS = [
+  {
+    assessor_id: 'ASR-SQ-001',
+    account_username: 'suqian_assessor',
+    name: '许建强',
+    gender: '男',
+    age: 42,
+    qualification_cert_no: 'LTC-ASR-2025-SQ01',
+    qualification_level: '国家一级长期照护失能等级评定师',
+    professional_title: '主治医师',
+    education_background: '南京医科大学 临床医学学士',
+    practicing_years: 14,
+    org_id: 'assessor_suqian',
+    org_name: '宿迁市广济第三方失能等级评定中心',
+    phone: '139****1820',
+    avoidance_org_ids: [],
+    avoidance_org_names: [],
+    active_status: 'practicing',
+    active_status_label: '正常执业',
+    annual_evaluated_count: 78,
+    severe_disability_rate: 23.1,
+    city_avg_severe_rate: 23.8,
+    audit_downgrade_rate: 0.0,
+    accuracy_ratification_rate: 100.0,
+    on_time_sla_rate: 100.0,
+    current_assigned_tasks: 2,
+    ethics_record: '国家长护试点入户核验标杆，双人入户核查执行严谨，物联设备客观快照吻合率100%',
+  },
+  {
+    assessor_id: 'EXP-SQ-001',
+    account_username: 'suqian_expert',
+    name: '孙建国',
+    gender: '男',
+    age: 56,
+    qualification_cert_no: 'LTC-EXP-2025-SQ01',
+    qualification_level: '国家长护险失能评定专家库首席专家',
+    professional_title: '主任医师 / 教授',
+    education_background: '复旦大学医学院 神经病学博士',
+    practicing_years: 30,
+    org_id: 'assessor_suqian',
+    org_name: '宿迁市广济第三方失能等级评定中心',
+    phone: '138****6688',
+    avoidance_org_ids: [],
+    avoidance_org_names: [],
+    active_status: 'practicing',
+    active_status_label: '正常执业 (专家评审委员会组长)',
+    annual_evaluated_count: 240,
+    severe_disability_rate: 22.8,
+    city_avg_severe_rate: 23.8,
+    audit_downgrade_rate: 0.0,
+    accuracy_ratification_rate: 100.0,
+    on_time_sla_rate: 100.0,
+    current_assigned_tasks: 1,
+    ethics_record: '省市长护险医学评审资深专家，主持疑难案件评定与智能物联交叉核验',
+  },
+  {
+    assessor_id: 'ADM-SQ-001',
+    account_username: 'suqian_assessor_admin',
+    name: '刘芳芳',
+    gender: '女',
+    age: 46,
+    qualification_cert_no: 'LTC-QAC-2025-SQ01',
+    qualification_level: '国家长护险定点评估机构质控总监',
+    professional_title: '副主任护师',
+    education_background: '徐州医科大学 护理学本科',
+    practicing_years: 22,
+    org_id: 'assessor_suqian',
+    org_name: '宿迁市广济第三方失能等级评定中心',
+    phone: '136****5520',
+    avoidance_org_ids: [],
+    avoidance_org_names: [],
+    active_status: 'practicing',
+    active_status_label: '正常执业 (机构质控主管)',
+    annual_evaluated_count: 0,
+    severe_disability_rate: 23.1,
+    city_avg_severe_rate: 23.8,
+    audit_downgrade_rate: 0.0,
+    accuracy_ratification_rate: 100.0,
+    on_time_sla_rate: 100.0,
+    current_assigned_tasks: 0,
+    ethics_record: '负责全中心评估质量把关、高斯正态偏离度监控及排班派工法定回避管理',
+  },
   {
     assessor_id: 'ASR-089',
     account_username: 'assessor_wumingxuan',
@@ -481,6 +586,21 @@ export const SEED_APPLICATIONS = [
     objective_conflict: false,
     reviewer_notes: '毫米波雷达在床活动度与夜间体征数据与ADL量表一致，客观印证通过。',
     submitted_at: '2026-09-20T14:00:00+08:00',
+  },
+  {
+    application_id: 'APP-MM-2026-004',
+    applicant_id: 'P_MM_05',
+    applicant_name: '李秀荣',
+    pool_id: 'moumou',
+    application_type: 'first',
+    applied_level: '重度失能一级',
+    status: 'submitted',
+    self_assessment_grade: '自评15分',
+    pre_assessed_level: null,
+    device_id: 'ASH01041',
+    objective_conflict: false,
+    reviewer_notes: '初审申报材料齐全无涂改，待经办窗口执行法定回避核验并派工分配双人评估专家组。',
+    submitted_at: '2026-09-25T09:00:00+08:00',
   },
 ]
 
@@ -912,6 +1032,571 @@ export const SEED_SUPERVISION_CLUES = [
   },
 ]
 
+// ==================== 长护险受托经办机构业务中心 (Insurer TPA Platform) ====================
+export const SEED_INSURER_INSPECTIONS = [
+  {
+    inspection_id: 'INSP-MM-001',
+    pool_id: 'moumou',
+    title: '【现场飞检】助老员王金凤入户打卡与毫米波雷达空房冲突',
+    source: '安守护毫米波雷达智能巡检对撞',
+    target_type: 'caregiver_order',
+    target_name: '王金凤 (助老员)',
+    service_org: '某某市康泰居家照护中心',
+    service_elder: '孙建国 (P_MM_03)',
+    elder_address: '某某市朝阳新村12幢201室',
+    device_sn: 'ASH01148 (毫米波在室雷达)',
+    anomaly_desc: '助老员提交14:00-15:00生活照护工单，但老人家中安守护毫米波雷达连续60分钟遥测判定“室内无人”，高度疑似隔空虚假打卡。',
+    risk_level: 'high',
+    assigned_to: '李勇 (现场巡查主管)',
+    status: 'pending_onsite',
+    due_at: '2026-09-25T18:00:00+08:00',
+    created_at: '2026-09-24T15:30:00+08:00',
+    conclusion: null,
+    conclusion_label: null,
+    onsite_notes: null,
+    inspector_name: null,
+    inspected_at: null,
+    proof_photos: [],
+  },
+  {
+    inspection_id: 'INSP-MM-002',
+    pool_id: 'moumou',
+    title: '【现场飞检】护理员张德彪偏瘫肢体康复时段体征垫无受力体动',
+    source: '智能微动体征垫压电遥测比对',
+    target_type: 'caregiver_order',
+    target_name: '张德彪 (康复护理员)',
+    service_org: '某某市颐养天年护理院',
+    service_elder: '张宝贵 (P_MM_04)',
+    elder_address: '某某市颐养天年护理院3号楼302室01床',
+    device_sn: 'ASH01149 (智能体征垫)',
+    anomaly_desc: '护理员申报45分钟“偏瘫被动肢体综合康复训练”，但体征垫压电传感器在服务时段波形平直无扰动，未监测到任何体位改变或受力扰动。',
+    risk_level: 'high',
+    assigned_to: '李勇 (现场巡查主管)',
+    status: 'pending_onsite',
+    due_at: '2026-09-25T20:00:00+08:00',
+    created_at: '2026-09-24T16:20:00+08:00',
+    conclusion: null,
+    conclusion_label: null,
+    onsite_notes: null,
+    inspector_name: null,
+    inspected_at: null,
+    proof_photos: [],
+  },
+  {
+    inspection_id: 'INSP-MM-003',
+    pool_id: 'moumou',
+    title: '【联合调查】参保人赵大有自评重度失能与雷达连续行走严重冲突',
+    source: '医保局核查督办函 (某医保长护督字〔2026〕第011号)',
+    target_type: 'elder_application',
+    target_name: '赵大有 (参保申请人)',
+    service_org: '某某市康泰居家照护中心 (申报代理)',
+    service_elder: '赵大有 (P00084)',
+    elder_address: '某某市迎春花苑8幢504室',
+    device_sn: 'ASH01146 (毫米波活动度雷达)',
+    anomaly_desc: '家属申报完全失能三级（自评ADL 10分），但安守护雷达连续72小时遥测日均离床行走16次、步速达0.75m/s。',
+    risk_level: 'critical',
+    assigned_to: '李勇、赵国华 (经办联合调查专班)',
+    status: 'onsite_completed',
+    due_at: '2026-09-23T18:00:00+08:00',
+    created_at: '2026-09-22T09:00:00+08:00',
+    conclusion: 'confirmed_fraud',
+    conclusion_label: '违规属实·移交医保立案',
+    onsite_notes: '经办专班联合入户突击走访，老人行走自如，精神良好。家属承认听信中介诱导夸大自评以多领照护补贴。已固定走访笔录与视频并回执医保局。',
+    inspector_name: '李勇 (巡查主管)',
+    inspected_at: '2026-09-22T17:00:00+08:00',
+    proof_photos: ['/proof/zhao_onsite_01.jpg', '/proof/inquiry_record.pdf'],
+  },
+  {
+    inspection_id: 'INSP-SQ-001',
+    pool_id: 'suqian',
+    title: '【试点巡查】宿迁在网终端 ASH01086 (许丽长者) 心跳保活巡检',
+    source: '国家深化试点专网物联感知系统',
+    target_type: 'pilot_terminal',
+    target_name: '许丽 (真实长者)',
+    service_org: '宿迁市长护试点照护中心',
+    service_elder: '许丽 (P_SQ_01)',
+    elder_address: '宿迁市宿城区幸福街道88号',
+    device_sn: 'ASH01086 (智能体征垫)',
+    anomaly_desc: '在网终端高频心跳保活检测，生命体征连续平稳，夜间离床检测正常。',
+    risk_level: 'normal',
+    assigned_to: '宿迁商保经办专员',
+    status: 'onsite_completed',
+    due_at: '2026-09-25T12:00:00+08:00',
+    created_at: '2026-09-24T09:00:00+08:00',
+    conclusion: 'verified_normal',
+    conclusion_label: '试点运行平稳正常',
+    onsite_notes: '远程遥测信号良好，心率与呼吸波形规整，长者居家照护服务履约正常。',
+    inspector_name: '宿迁商保经办专员',
+    inspected_at: '2026-09-24T10:30:00+08:00',
+    proof_photos: ['/proof/suqian_terminal_heartbeat.png'],
+  },
+]
+
+// ==================== 失能等级评定任务、设备客观快照与AI助手洞察种子 ====================
+export const SEED_TASKS = [
+  // 宿迁长护险深化试点（3名长者，双人入户，设备佐证，业务闭环）
+  {
+    task_id: 'TASK-SQ-2026-001',
+    application_id: 'APP-SQ-2026-001',
+    applicant_id: 'P_SQ_01',
+    applicant_name: '许丽',
+    gender: '女',
+    age: 78,
+    id_card: '3213021948********',
+    address: '宿迁市宿城区项里街道长护险试点照护点01号',
+    guardian_name: '许建新 (长子)',
+    guardian_phone: '139****2233',
+    pool_id: 'suqian',
+    tenant_id: 'assessor_suqian',
+    status: 'assessing',
+    scale_version: 'GB-T-2021-V1 (国家失能评定标准)',
+    assessor: { account_id: 'suqian_assessor', name: '许建强 评定师' },
+    assessor_ids: ['suqian_assessor', 'suqian_assessor_02'],
+    second_assessor_name: '赵小燕 (主管护师)',
+    guardian_present: true,
+    onsite_at: '2026-09-24T14:30:00+08:00',
+    video_evidence: 'EV-SQ-VID-20260924-001',
+    device_id: 'ASH01086',
+    device_model: '安守护智能生命体征监测垫 (在床遥测)',
+    snapshot_id: 'SNAP-SQ-001',
+    assigned_at: '2026-09-23T10:00:00+08:00',
+    accepted_at: '2026-09-23T11:00:00+08:00',
+    started_at: '2026-09-24T14:30:00+08:00',
+    created_at: '2026-09-23T09:00:00+08:00',
+    updated_at: '2026-09-24T15:10:00+08:00',
+    scores: {
+      daily_living: 35,
+      cognition: 12,
+      perception: 8,
+      mental_state: 6,
+      total_score: 61,
+    },
+    preliminary_level: '重度失能二级',
+  },
+  {
+    task_id: 'TASK-SQ-2026-002',
+    application_id: 'APP-SQ-2026-002',
+    applicant_id: 'P_SQ_02',
+    applicant_name: '何家齐',
+    gender: '男',
+    age: 82,
+    id_card: '3213021944********',
+    address: '宿迁市宿城区双庄街道长护险试点照护点02号',
+    guardian_name: '何德海 (儿子)',
+    guardian_phone: '138****6677',
+    pool_id: 'suqian',
+    tenant_id: 'assessor_suqian',
+    status: 'pending_expert_review',
+    scale_version: 'GB-T-2021-V1 (国家失能评定标准)',
+    assessor: { account_id: 'suqian_assessor', name: '许建强 评定师' },
+    assessor_ids: ['suqian_assessor', 'suqian_assessor_02'],
+    second_assessor_name: '赵小燕 (主管护师)',
+    guardian_present: true,
+    onsite_at: '2026-09-23T15:00:00+08:00',
+    video_evidence: 'EV-SQ-VID-20260923-002',
+    device_id: 'ASH01078',
+    device_model: '安守护高精度微动毫米波雷达 (环境遥测)',
+    snapshot_id: 'SNAP-SQ-002',
+    assigned_at: '2026-09-22T09:00:00+08:00',
+    accepted_at: '2026-09-22T09:30:00+08:00',
+    started_at: '2026-09-23T15:00:00+08:00',
+    completed_at: '2026-09-23T16:30:00+08:00',
+    created_at: '2026-09-22T08:30:00+08:00',
+    updated_at: '2026-09-23T16:30:00+08:00',
+    scores: {
+      daily_living: 15,
+      cognition: 6,
+      perception: 4,
+      mental_state: 4,
+      total_score: 29,
+    },
+    preliminary_level: '重度失能三级 (完全失能)',
+    assessor_level: '重度失能三级',
+  },
+  {
+    task_id: 'TASK-SQ-2026-003',
+    application_id: 'APP-SQ-2026-003',
+    applicant_id: 'P_SQ_03',
+    applicant_name: '王雪金',
+    gender: '女',
+    age: 85,
+    id_card: '3213211941********',
+    address: '宿迁市宿豫区顺河街道长护险试点照护点03号',
+    guardian_name: '王立强 (家属)',
+    guardian_phone: '136****8899',
+    pool_id: 'suqian',
+    tenant_id: 'assessor_suqian',
+    status: 'assigned',
+    scale_version: 'GB-T-2021-V1 (国家失能评定标准)',
+    assessor: { account_id: 'suqian_assessor', name: '许建强 评定师' },
+    assessor_ids: ['suqian_assessor', 'suqian_assessor_02'],
+    second_assessor_name: '赵小燕 (主管护师)',
+    guardian_present: true,
+    device_id: 'ASH01092',
+    device_model: '安守护智能生命体征监测垫 (在床遥测)',
+    snapshot_id: 'SNAP-SQ-003',
+    assigned_at: '2026-09-25T09:00:00+08:00',
+    created_at: '2026-09-25T08:30:00+08:00',
+    updated_at: '2026-09-25T09:00:00+08:00',
+    scores: null,
+    preliminary_level: null,
+  },
+  // 某某市全业务演练演示任务
+  {
+    task_id: 'TASK-MM-2026-001',
+    application_id: 'APP-MM-2026-001',
+    applicant_id: 'P_MM_01',
+    applicant_name: '赵大有',
+    gender: '男',
+    age: 79,
+    id_card: '3202021947********',
+    address: '某某市梁溪区清名桥街道清名一村18号302室',
+    guardian_name: '赵建国 (儿子)',
+    guardian_phone: '138****1122',
+    pool_id: 'moumou',
+    tenant_id: 'assessor_org',
+    status: 'pending_expert_review',
+    scale_version: 'GB-T-2021-V1',
+    assessor: { account_id: 'demo_assessor', name: '周海峰 评定师' },
+    assessor_ids: ['demo_assessor', 'assessor_02'],
+    second_assessor_name: '宋慧敏 (主管护师)',
+    guardian_present: true,
+    onsite_at: '2026-09-23T10:00:00+08:00',
+    video_evidence: 'EV-MM-VID-20260923-001',
+    device_id: 'ASH01146',
+    device_model: '安守护高精度毫米波雷达 (姿态轨迹)',
+    snapshot_id: 'SNAP-MM-001',
+    assigned_at: '2026-09-22T09:00:00+08:00',
+    accepted_at: '2026-09-22T10:00:00+08:00',
+    started_at: '2026-09-23T10:00:00+08:00',
+    completed_at: '2026-09-23T11:45:00+08:00',
+    created_at: '2026-09-22T08:30:00+08:00',
+    updated_at: '2026-09-23T11:45:00+08:00',
+    scores: { daily_living: 10, cognition: 6, perception: 4, mental_state: 4, total_score: 24 },
+    preliminary_level: '重度失能三级',
+    objective_conflict: true,
+    conflict_detail: '申报完全失能，但72h雷达显示日均离床行走16次，需专家重点质证。',
+  },
+  {
+    task_id: 'TASK-MM-2026-002',
+    application_id: 'APP-MM-2026-002',
+    applicant_id: 'P_MM_02',
+    applicant_name: '钱秀芬',
+    gender: '女',
+    age: 81,
+    id_card: '3202021945********',
+    address: '某某市滨湖区太湖街道周新苑22号501室',
+    guardian_name: '孙美珍 (女儿)',
+    guardian_phone: '139****3344',
+    pool_id: 'moumou',
+    tenant_id: 'assessor_org',
+    status: 'assessing',
+    scale_version: 'GB-T-2021-V1',
+    assessor: { account_id: 'demo_assessor', name: '周海峰 评定师' },
+    assessor_ids: ['demo_assessor', 'assessor_02'],
+    second_assessor_name: '宋慧敏 (主管护师)',
+    guardian_present: true,
+    device_id: 'ASH01076',
+    device_model: '安守护智能生命体征监测垫',
+    snapshot_id: 'SNAP-MM-002',
+    assigned_at: '2026-09-23T09:00:00+08:00',
+    accepted_at: '2026-09-23T10:30:00+08:00',
+    created_at: '2026-09-23T08:30:00+08:00',
+    updated_at: '2026-09-24T09:00:00+08:00',
+    scores: { daily_living: 38, cognition: 10, perception: 6, mental_state: 6, total_score: 60 },
+    preliminary_level: '重度失能二级',
+  },
+  {
+    task_id: 'TASK-MM-2026-003',
+    application_id: 'APP-MM-2026-003',
+    applicant_id: 'P_MM_03',
+    applicant_name: '孙建国',
+    gender: '男',
+    age: 76,
+    id_card: '3202021950********',
+    address: '某某市新吴区旺庄街道春潮花园二区12号102室',
+    guardian_name: '孙强 (儿子)',
+    guardian_phone: '137****5566',
+    pool_id: 'moumou',
+    tenant_id: 'assessor_org',
+    status: 'completed',
+    scale_version: 'GB-T-2021-V1',
+    assessor: { account_id: 'demo_assessor', name: '周海峰 评定师' },
+    assessor_ids: ['demo_assessor', 'assessor_02'],
+    second_assessor_name: '宋慧敏 (主管护师)',
+    guardian_present: true,
+    onsite_at: '2026-09-21T09:30:00+08:00',
+    video_evidence: 'EV-MM-VID-20260921-003',
+    device_id: 'ASH01081',
+    device_model: '安守护高精度毫米波雷达',
+    snapshot_id: 'SNAP-MM-003',
+    assigned_at: '2026-09-20T14:30:00+08:00',
+    accepted_at: '2026-09-20T15:00:00+08:00',
+    started_at: '2026-09-21T09:30:00+08:00',
+    completed_at: '2026-09-21T11:00:00+08:00',
+    created_at: '2026-09-20T14:00:00+08:00',
+    updated_at: '2026-09-21T16:00:00+08:00',
+    scores: { daily_living: 55, cognition: 14, perception: 8, mental_state: 8, total_score: 85 },
+    preliminary_level: '中度失能一级',
+    assessor_level: '中度失能一级',
+    expert_confirmation: ['demo_expert', 'exp_mm_02'],
+    conclusion_report: {
+      report_no: 'BG-MM-202609-003',
+      signed_at: '2026-09-21T16:00:00+08:00',
+      lead_expert: '钱德明 主任医师',
+      second_expert: '王广仁 主任医师',
+      approved_level: '中度失能一级',
+    },
+  },
+  {
+    task_id: 'TASK-MM-2026-004',
+    application_id: 'APP-MM-2026-004',
+    applicant_id: 'P_MM_05',
+    applicant_name: '李秀荣',
+    gender: '女',
+    age: 80,
+    id_card: '3202021946********',
+    address: '某某市惠山区钱桥街道溪南新村5号201室',
+    guardian_name: '李建华 (家属)',
+    guardian_phone: '135****4455',
+    pool_id: 'moumou',
+    tenant_id: 'assessor_org',
+    status: 'assigned',
+    scale_version: 'GB-T-2021-V1',
+    assessor: { account_id: 'demo_assessor', name: '周海峰 评定师' },
+    assessor_ids: ['demo_assessor', 'assessor_02'],
+    second_assessor_name: '宋慧敏 (主管护师)',
+    guardian_present: true,
+    device_id: 'ASH01041',
+    device_model: '安守护智能生命体征监测垫',
+    snapshot_id: 'SNAP-MM-004',
+    assigned_at: '2026-09-25T09:30:00+08:00',
+    created_at: '2026-09-25T09:00:00+08:00',
+    updated_at: '2026-09-25T09:30:00+08:00',
+    scores: null,
+    preliminary_level: null,
+  },
+]
+
+export const SEED_SNAPSHOTS = [
+  // 宿迁长护险试点 3 台设备快照（遵循严格红线：conclusion 恒为 null，设备只作为客观物联遥测佐证）
+  {
+    snapshot_id: 'SNAP-SQ-001',
+    task_id: 'TASK-SQ-2026-001',
+    assessment_id: 'TASK-SQ-2026-001',
+    application_id: 'APP-SQ-2026-001',
+    person_id: 'P_SQ_01',
+    applicant_id: 'P_SQ_01',
+    applicant_name: '许丽',
+    pool_id: 'suqian',
+    device_id: 'ASH01086',
+    device_name: '安守护智能生命体征监测垫',
+    device_type: 'vital_signs_mat',
+    disclaimer_acknowledged: true,
+    status: 'frozen',
+    conclusion: null, // 严格合规红线：结论恒为 null，不干预临床定级
+    coverage: { expected_minutes: 4320, covered_minutes: 4250, coverage_pct: 98.4 },
+    metrics: {
+      night_trips: 4,
+      in_bed_rate_pct: 84.5,
+      bed_leave_15min_count: 2,
+      fall_pose_events: 0,
+      avg_hr: 74.2,
+      avg_br: 17.1,
+      avg_tp: 36.6,
+      apnea_hypopnea_index: 2.1,
+      turn_over_count_night: 6,
+    },
+    sleep_summary: { avg_sleep_hours: 6.8, awake_nights: 1, fragmentation: 'mild' },
+    generated_by: { role: 'assessor', account_id: 'suqian_assessor' },
+    generated_at: '2026-09-24T14:45:00+08:00',
+  },
+  {
+    snapshot_id: 'SNAP-SQ-002',
+    task_id: 'TASK-SQ-2026-002',
+    assessment_id: 'TASK-SQ-2026-002',
+    application_id: 'APP-SQ-2026-002',
+    person_id: 'P_SQ_02',
+    applicant_id: 'P_SQ_02',
+    applicant_name: '何家齐',
+    pool_id: 'suqian',
+    device_id: 'ASH01078',
+    device_name: '安守护高精度微动毫米波雷达',
+    device_type: 'radar',
+    disclaimer_acknowledged: true,
+    status: 'frozen',
+    conclusion: null, // 严格合规红线：结论恒为 null
+    coverage: { expected_minutes: 4320, covered_minutes: 4280, coverage_pct: 99.1 },
+    metrics: {
+      night_trips: 0,
+      in_bed_rate_pct: 99.2,
+      bed_leave_15min_count: 0,
+      fall_pose_events: 0,
+      avg_hr: 68.5,
+      avg_br: 15.8,
+      avg_tp: 36.5,
+      micro_motion_level: 'low (重度卧床低微动)',
+      turn_over_count_night: 0,
+    },
+    sleep_summary: { avg_sleep_hours: 8.5, awake_nights: 0, fragmentation: 'none' },
+    generated_by: { role: 'assessor', account_id: 'suqian_assessor' },
+    generated_at: '2026-09-23T15:15:00+08:00',
+  },
+  {
+    snapshot_id: 'SNAP-SQ-003',
+    task_id: 'TASK-SQ-2026-003',
+    assessment_id: 'TASK-SQ-2026-003',
+    application_id: 'APP-SQ-2026-003',
+    person_id: 'P_SQ_03',
+    applicant_id: 'P_SQ_03',
+    applicant_name: '王雪金',
+    pool_id: 'suqian',
+    device_id: 'ASH01092',
+    device_name: '安守护智能生命体征监测垫',
+    device_type: 'vital_signs_mat',
+    disclaimer_acknowledged: true,
+    status: 'frozen',
+    conclusion: null, // 严格合规红线：结论恒为 null
+    coverage: { expected_minutes: 4320, covered_minutes: 4190, coverage_pct: 97.0 },
+    metrics: {
+      night_trips: 6,
+      in_bed_rate_pct: 76.8,
+      bed_leave_15min_count: 4,
+      fall_pose_events: 0,
+      avg_hr: 82.1,
+      avg_br: 19.3,
+      avg_tp: 36.8,
+      turn_over_count_night: 8,
+    },
+    sleep_summary: { avg_sleep_hours: 5.9, awake_nights: 3, fragmentation: 'moderate' },
+    generated_by: { role: 'assessor', account_id: 'suqian_assessor' },
+    generated_at: '2026-09-25T08:45:00+08:00',
+  },
+  // 某某市全业务快照
+  {
+    snapshot_id: 'SNAP-MM-001',
+    task_id: 'TASK-MM-2026-001',
+    assessment_id: 'TASK-MM-2026-001',
+    application_id: 'APP-MM-2026-001',
+    person_id: 'P_MM_01',
+    applicant_id: 'P_MM_01',
+    applicant_name: '赵大有',
+    pool_id: 'moumou',
+    device_id: 'ASH01146',
+    device_name: '安守护毫米波雷达 (姿态轨迹)',
+    device_type: 'radar',
+    disclaimer_acknowledged: true,
+    status: 'frozen',
+    conclusion: null,
+    coverage: { expected_minutes: 4320, covered_minutes: 4310, coverage_pct: 99.8 },
+    metrics: {
+      night_trips: 16,
+      in_bed_rate_pct: 42.1,
+      bed_leave_15min_count: 14,
+      fall_pose_events: 0,
+      walk_velocity_ms: 0.75,
+      active_movement_hours_day: 5.6,
+    },
+    sleep_summary: { avg_sleep_hours: 6.0, awake_nights: 4, fragmentation: 'high' },
+    generated_by: { role: 'assessor', account_id: 'demo_assessor' },
+    generated_at: '2026-09-23T10:15:00+08:00',
+  },
+]
+
+export const SEED_INSIGHTS = [
+  {
+    insight_id: 'INSIGHT-20260920-001',
+    task_id: 'TASK-20260920-0001',
+    applicant_id: 'P_MM_01',
+    type: 'vital_deviation',
+    title: '连续7日夜间体征与离床频次提示',
+    detail: '监测窗口内夜间平均离床 3.8 次，心率夜间变异度轻度偏高，提示认知或睡眠障碍风险。',
+    suggested_focus: '建议评估师现场着重核实认知功能及夜间防跌倒防范措施。',
+    handling_status: 'pending',
+    handled_by: null,
+    handled_at: null,
+    handling_note: null,
+    disclaimer: '本提示仅为辅助评估现场调查线索，不得直接作为定级或反欺诈判定依据。',
+    created_at: '2026-09-20T09:30:00+08:00',
+  },
+  {
+    insight_id: 'INS-SQ-001',
+    type: 'assistant_insight',
+    insight_version: 'ins-2026-v1',
+    snapshot_id: 'SNAP-SQ-001',
+    task_id: 'TASK-SQ-2026-001',
+    applicant_id: 'P_SQ_01',
+    applicant_name: '许丽',
+    pool_id: 'suqian',
+    focus: '夜间在床翻身微动与体征平稳性核验',
+    summary: '72小时体征垫监测显示夜间平均离床4次，夜间在床体征平稳（HR 74bpm，BR 17bpm），但夜间翻身微动频次明显偏低（均值6次/夜）。',
+    suggestion: '建议评估师现场着重核验长者下肢负重及自主翻身能力，重点评估翻身及床椅转移项，核实防压疮陪护需求。',
+    handling_status: 'adopted',
+    handled_by: 'suqian_assessor',
+    handled_at: '2026-09-24T14:50:00+08:00',
+    handling_note: '现场已复核，长者翻身需家属半协助，微动数据与现场查验一致，已采纳作为现场评定证据。',
+    disclaimer: '本助手洞察仅作为评定师现场核查之辅助线索，严禁作为自动定级依据。',
+    created_at: '2026-09-24T14:45:00+08:00',
+  },
+  {
+    insight_id: 'INS-SQ-002',
+    type: 'assistant_insight',
+    insight_version: 'ins-2026-v1',
+    snapshot_id: 'SNAP-SQ-002',
+    task_id: 'TASK-SQ-2026-002',
+    applicant_id: 'P_SQ_02',
+    applicant_name: '何家齐',
+    pool_id: 'suqian',
+    focus: '重度失能完全卧床状态物联印证',
+    summary: '毫米波雷达连续72小时遥测全天在床率达99.2%，未监测到任何主动离床行走行为，微动强度处于重度卧床基线。',
+    suggestion: '客观遥测与脑梗后遗症重度偏瘫完全卧床病历高度吻合，建议专家委员会评审时采信为客观佐证。',
+    handling_status: 'confirmed',
+    handled_by: 'suqian_assessor',
+    handled_at: '2026-09-23T15:20:00+08:00',
+    handling_note: '已入户核查，长者完全丧失生活自理能力，处于完全卧床状态，物联数据真实可信。',
+    disclaimer: '本助手洞察仅作为评定师现场核查之辅助线索，严禁作为自动定级依据。',
+    created_at: '2026-09-23T15:15:00+08:00',
+  },
+  {
+    insight_id: 'INS-SQ-003',
+    type: 'assistant_insight',
+    insight_version: 'ins-2026-v1',
+    snapshot_id: 'SNAP-SQ-003',
+    task_id: 'TASK-SQ-2026-003',
+    applicant_id: 'P_SQ_03',
+    applicant_name: '王雪金',
+    pool_id: 'suqian',
+    focus: '夜间多频离床与跌倒防范预警',
+    summary: '体征垫监测显示夜间离床达6次，夜间睡眠碎片化明显，心率波动偶见偏高。',
+    suggestion: '提示夜间起夜较频繁，现场评定时请重点评估穿衣、如厕自理能力，并排查卫浴地面及床旁防跌倒隐患。',
+    handling_status: 'pending',
+    handled_by: null,
+    handled_at: null,
+    handling_note: null,
+    disclaimer: '本助手洞察仅作为评定师现场核查之辅助线索，严禁作为自动定级依据。',
+    created_at: '2026-09-25T08:50:00+08:00',
+  },
+  {
+    insight_id: 'INS-MM-001',
+    type: 'assistant_insight',
+    insight_version: 'ins-2026-v1',
+    snapshot_id: 'SNAP-MM-001',
+    task_id: 'TASK-MM-2026-001',
+    applicant_id: 'P_MM_01',
+    applicant_name: '赵大有',
+    pool_id: 'moumou',
+    focus: '客观遥测与申报等级存在重大背离预警',
+    summary: '家属申报重度失能三级（完全失能），但毫米波雷达连续72小时遥测日均离床行走16次，步速约0.75m/s，存在严重矛盾。',
+    suggestion: '建议现场评定组及专家委员会启动靶向查验，要求长者现场演示站立行走，防止挂床骗保。',
+    handling_status: 'needs_manual_review',
+    handled_by: 'demo_assessor',
+    handled_at: '2026-09-23T10:30:00+08:00',
+    handling_note: '现场查验发现长者确实具备自主行走能力，家属自评失实，已提交专家委员会重点复审。',
+    disclaimer: '本助手洞察仅作为评定师现场核查之辅助线索，严禁作为自动定级依据。',
+    created_at: '2026-09-23T10:15:00+08:00',
+  },
+]
+
 // ---------- 状态（内存 + JSON 持久化）----------
 function buildInitialState() {
   return {
@@ -925,26 +1610,10 @@ function buildInitialState() {
     assessmentOrgs: [...SEED_ASSESSMENT_ORGS],
     workOrders: [...SEED_WORK_ORDERS],
     applications: [...SEED_APPLICATIONS],
-    tasks: [],
+    tasks: [...SEED_TASKS],
     evidences: [],
-    snapshots: [],
-    insights: [
-      {
-        insight_id: 'INSIGHT-20260920-001',
-        task_id: 'TASK-20260920-0001',
-        applicant_id: 'P_MM_01',
-        type: 'vital_deviation',
-        title: '连续7日夜间体征与离床频次提示',
-        detail: '监测窗口内夜间平均离床 3.8 次，心率夜间变异度轻度偏高，提示认知或睡眠障碍风险。',
-        suggested_focus: '建议评估师现场着重核实认知功能及夜间防跌倒防范措施。',
-        handling_status: 'pending',
-        handled_by: null,
-        handled_at: null,
-        handling_note: null,
-        disclaimer: '本提示仅为辅助评估现场调查线索，不得直接作为定级或反欺诈判定依据。',
-        created_at: '2026-09-20T09:30:00+08:00',
-      },
-    ],
+    snapshots: [...SEED_SNAPSHOTS],
+    insights: [...SEED_INSIGHTS],
     crossValidations: [],
     results: [],
     reviews: [],
@@ -1159,7 +1828,7 @@ function buildInitialState() {
         org_name: '凯健国际护理院',
         tenant_id: 'kaijian',
         pool_id: 'bureau_moumou',
-        auditor: '某某市医保局长护险专班 / 太平洋保险复核组',
+        auditor: '某某市医保局长护险专班 / 惠生人寿复核组',
         status: 'archived',
         period: '2026-09',
         generated_at: '2026-09-24T16:00:00+08:00',
@@ -1244,6 +1913,8 @@ function buildInitialState() {
         },
       },
     ],
+    insurerInspections: JSON.parse(JSON.stringify(SEED_INSURER_INSPECTIONS)),
+    deviceAssignments: [],
     audit: [],
     seq: 0,
   }
@@ -1318,6 +1989,39 @@ function mergeSeedIntoState(st, saved) {
     }
   }
   st.applications = Array.from(appMap.values())
+
+  const taskMap = new Map()
+  for (const t of (saved.tasks || [])) {
+    taskMap.set(t.task_id, t)
+  }
+  for (const seedTask of SEED_TASKS) {
+    if (!taskMap.has(seedTask.task_id)) {
+      taskMap.set(seedTask.task_id, seedTask)
+    }
+  }
+  st.tasks = Array.from(taskMap.values())
+
+  const snapMap = new Map()
+  for (const s of (saved.snapshots || [])) {
+    snapMap.set(s.snapshot_id, s)
+  }
+  for (const seedSnap of SEED_SNAPSHOTS) {
+    if (!snapMap.has(seedSnap.snapshot_id)) {
+      snapMap.set(seedSnap.snapshot_id, seedSnap)
+    }
+  }
+  st.snapshots = Array.from(snapMap.values())
+
+  const insMap = new Map()
+  for (const i of (saved.insights || [])) {
+    insMap.set(i.insight_id, i)
+  }
+  for (const seedIns of SEED_INSIGHTS) {
+    if (!insMap.has(seedIns.insight_id)) {
+      insMap.set(seedIns.insight_id, seedIns)
+    }
+  }
+  st.insights = Array.from(insMap.values())
 
   if (!st.supervisionClues || st.supervisionClues.length === 0) {
     st.supervisionClues = [...SEED_SUPERVISION_CLUES]
@@ -1408,6 +2112,7 @@ function mergeSeedIntoState(st, saved) {
 
 export function resetState() {
   state = buildInitialState()
+  state.tasks = []
   persist()
 }
 
@@ -1545,12 +2250,15 @@ function canReadApplication(ctx, app) {
     return app.tenant_id === ctx.tenant_id
   }
   if (ctx.role === 'family_contact') return (ctx.applicant_ids ?? []).includes(app.applicant_id)
-  if (ctx.role === 'medical_supervisor' || ctx.role === 'medical_insurance_staff' || ctx.role === 'insurer_operator' || ctx.role === 'insurer_staff') {
+  if (ctx.role === 'medical_supervisor' || ctx.role === 'medical_insurance_staff' || isInsurerRole(ctx.role)) {
+    if (ctx.pool_id && app.pool_id && ctx.pool_id !== app.pool_id) return false
     return true
   }
-  if (ctx.role === 'assessor') {
+  if (ctx.role === 'assessor' || ctx.role === 'assessor_expert' || ctx.role === 'assessor_admin') {
+    if (ctx.pool_id && app.pool_id === ctx.pool_id) return true
+    if (app.tenant_id === ctx.tenant_id) return true
     return state.tasks.some(
-      (t) => t.application_id === app.application_id && t.assessor.account_id === ctx.username,
+      (t) => t.application_id === app.application_id && ((t.assessor?.account_id === ctx.username) || (t.tenant_id === ctx.tenant_id) || (ctx.pool_id && t.pool_id === ctx.pool_id)),
     )
   }
   return false
@@ -1652,28 +2360,48 @@ export function createAssessmentTask(ctx, input) {
 
 function canReadTask(ctx, task) {
   if (ctx.role === 'su') return true
-  if (ctx.role === 'assessor') return task.assessor.account_id === ctx.username
+  if (ctx.role === 'assessor') {
+    return (task.assessor && task.assessor.account_id === ctx.username) || (Array.isArray(task.assessor_ids) && task.assessor_ids.includes(ctx.username))
+  }
+  if (ctx.role === 'assessor_expert' || ctx.role === 'assessor_admin') {
+    if (task.tenant_id === ctx.tenant_id) return true
+    if (ctx.pool_id && task.pool_id === ctx.pool_id) return true
+    return false
+  }
   if (ctx.role === 'admin' || ctx.role === 'platform_admin' || ctx.role === 'user' || ctx.role === 'nursing_admin') {
     return task.tenant_id === ctx.tenant_id
   }
-  if (ctx.role === 'insurer_operator' || ctx.role === 'insurer_staff' || ctx.role === 'medical_supervisor' || ctx.role === 'medical_insurance_staff') {
+  if (isInsurerRole(ctx.role) || ctx.role === 'medical_supervisor' || ctx.role === 'medical_insurance_staff' || ctx.role.startsWith('medical_')) {
+    if (ctx.pool_id && task.pool_id && ctx.pool_id !== task.pool_id) return false
     return true
   }
   return false
 }
 
 function requireOwnTask(ctx, taskId) {
-  if (ctx.role !== 'assessor') throw new LtcError(404, '任务不存在')
+  if (ctx.role !== 'assessor' && ctx.role !== 'assessor_expert' && ctx.role !== 'assessor_admin' && ctx.role !== 'su') {
+    throw new LtcError(404, '任务不存在')
+  }
   const task = state.tasks.find((t) => t.task_id === taskId)
-  if (!task || task.assessor.account_id !== ctx.username) throw new LtcError(404, '任务不存在')
+  if (!task) throw new LtcError(404, '任务不存在')
+  if (ctx.role === 'assessor') {
+    const isAssigned = (task.assessor && task.assessor.account_id === ctx.username) || (Array.isArray(task.assessor_ids) && task.assessor_ids.includes(ctx.username))
+    if (!isAssigned) {
+      throw new LtcError(404, '任务不存在')
+    }
+  }
   return task
 }
 
 export function listAssessmentTasks(ctx, query = {}) {
   let list = state.tasks.filter((t) => canReadTask(ctx, t))
+  const pool = query.pool_id || (ctx.data_scope === 'pool' && ctx.pool_id ? ctx.pool_id : null)
+  if (pool && pool !== 'all') {
+    list = list.filter((t) => t.pool_id === pool)
+  }
   if (query.application_id) list = list.filter((t) => t.application_id === query.application_id)
   if (query.status) list = list.filter((t) => t.status === query.status)
-  if (query.assessor) list = list.filter((t) => t.assessor.account_id === query.assessor)
+  if (query.assessor) list = list.filter((t) => (t.assessor?.account_id === query.assessor) || (Array.isArray(t.assessor_ids) && t.assessor_ids.includes(query.assessor)))
   return list
 }
 
@@ -1772,6 +2500,7 @@ export function createAssessmentSnapshot(ctx, input) {
       { kind: 'vitals', api: '/api/v1/hardware/latest_data', ref: `raw://${deviceId.toLowerCase()}/vitals`, range: `${window.from}..${window.to}` },
     ],
     status: 'frozen',
+    conclusion: null, // 合规红线：结论恒为 null，不干预临床定级
     generated_by: { role: ctx.role, account_id: ctx.username },
     generated_at: nowIso8(),
   }
@@ -1838,6 +2567,17 @@ export function getAssessmentSnapshot(ctx, snapshotId) {
   return snap
 }
 
+export function listAssessmentSnapshots(ctx, query = {}) {
+  let list = state.snapshots
+  const pool = query.pool_id || (ctx.data_scope === 'pool' && ctx.pool_id ? ctx.pool_id : null)
+  if (pool && pool !== 'all') {
+    list = list.filter((s) => s.pool_id === pool)
+  }
+  if (query.task_id) list = list.filter((s) => s.task_id === query.task_id)
+  if (query.device_id) list = list.filter((s) => s.device_id === query.device_id)
+  return list
+}
+
 // ---------- 评估师处理 AI 洞察（POST /v1/ltc/insights/:id/handle）----------
 export function handleInsight(ctx, insightId, input) {
   assertPerm(ctx, 'insight:handle')
@@ -1864,6 +2604,17 @@ export function handleInsight(ctx, insightId, input) {
   audit(ctx, 'insight.handle', insightId, result)
   persist()
   return insight
+}
+
+export function listAssessmentInsights(ctx, query = {}) {
+  let list = state.insights
+  const pool = query.pool_id || (ctx.data_scope === 'pool' && ctx.pool_id ? ctx.pool_id : null)
+  if (pool && pool !== 'all') {
+    list = list.filter((i) => i.pool_id === pool)
+  }
+  if (query.task_id) list = list.filter((i) => i.task_id === query.task_id)
+  if (query.status) list = list.filter((i) => i.handling_status === query.status)
+  return list
 }
 
 export function listEvidence(ctx, taskId) {
@@ -1959,10 +2710,17 @@ export function submitTask(ctx, taskId, input = {}) {
   }
   state.results.push(result)
 
-  task.status = 'completed'
+  const targetStatus = input?.to_expert !== false ? 'pending_expert_review' : 'completed'
+  task.status = targetStatus
+  task.assessor_level = assessorLevel
+  task.preliminary_level = assessorLevel
   task.completed_at = nowIso8()
   task.result_id = result.result_id
   task.updated_at = nowIso8()
+  if (input?.scores) {
+    task.scores = input.scores
+    result.domain_scores = input.scores
+  }
 
   audit(ctx, 'task.submit', result.result_id)
   persist()
@@ -1975,7 +2733,7 @@ export function returnTask(ctx, taskId, input) {
   if (!task) throw new LtcError(404, '任务不存在')
   const reason = (input?.reason ?? '').trim()
   if (!reason) throw new LtcError(400, '退回必须填写 reason')
-  if (!['assessing', 'completed'].includes(task.status)) {
+  if (!['assessing', 'completed', 'pending_expert_review'].includes(task.status)) {
     throw new LtcError(400, `任务状态 ${task.status} 不可退回`)
   }
   const result = state.results.find((r) => r.task_id === task.task_id)
@@ -1998,6 +2756,118 @@ export function returnTask(ctx, taskId, input) {
   audit(ctx, 'task.return', task.task_id, reason)
   persist()
   return { task, result }
+}
+
+// ---------- 评定专家委员会医学评审与结论签发 (POST /v1/ltc/tasks/:id/expert-review) ----------
+export function expertReviewTask(ctx, taskId, input = {}) {
+  assertPerm(ctx, 'expert_review:sign')
+  const task = state.tasks.find((t) => t.task_id === taskId)
+  if (!task) throw new LtcError(404, '评定任务不存在')
+  if (!canReadTask(ctx, task)) throw new LtcError(403, '无权评审此任务')
+
+  const expertId = ctx.username
+  const secondExpertId = input?.second_expert_id || (task.pool_id === 'suqian' ? 'exp_sq_neurology' : 'exp_002')
+  const clinicalDiagnosis = input?.clinical_diagnosis || '脑梗死恢复期伴重度肢体偏瘫、高血压3级极高危'
+  const recommendedLevel = input?.recommended_level || input?.level || task.assessor_level || task.preliminary_level || '重度失能三级'
+  const expertOpinion = input?.expert_opinion || '经专家委员会集中盲审与医学论证，结合安守护物联监测客观数据包与现场双人入户核验记录，确认该评定等级。'
+  const iotConsistencyVerdict = input?.iot_consistency_verdict || 'consistent'
+  const iotRationale = input?.iot_clinical_rationale || '设备连续72小时遥测全天在床率及微动特征与临床严重偏瘫诊断高度吻合，支持重度失能判定。'
+
+  const reviewRecord = {
+    review_id: id('ER'),
+    task_id: task.task_id,
+    application_id: task.application_id,
+    applicant_id: task.applicant_id,
+    lead_expert: ctx.staff_name || ctx.username,
+    lead_expert_id: expertId,
+    second_expert_id: secondExpertId,
+    second_expert_name: input?.second_expert_name || (task.pool_id === 'suqian' ? '王德林 主任医师 (老年科)' : '赵文远 主任医师'),
+    clinical_diagnosis: clinicalDiagnosis,
+    recommended_level: recommendedLevel,
+    expert_opinion: expertOpinion,
+    iot_consistency_verdict: iotConsistencyVerdict,
+    iot_clinical_rationale: iotRationale,
+    sign_off_status: input?.sign_off_status || 'approved',
+    signed_at: nowIso8(),
+  }
+
+  const reportNo = `BG-${(task.pool_id || 'LTC').toUpperCase()}-${nowIso8().slice(0, 10).replace(/-/g, '')}-${bumpSeq()}`
+  const conclusionReport = {
+    report_id: id('REP'),
+    report_no: reportNo,
+    task_id: task.task_id,
+    application_id: task.application_id,
+    applicant_id: task.applicant_id,
+    applicant_name: task.applicant_name,
+    final_grade: recommendedLevel,
+    expert_confirmation: [expertId, secondExpertId],
+    lead_expert: reviewRecord.lead_expert,
+    second_expert: reviewRecord.second_expert_name,
+    clinical_diagnosis: clinicalDiagnosis,
+    expert_opinion: expertOpinion,
+    iot_evidence_summary: iotRationale,
+    signed_at: nowIso8(),
+    seal_org_name: task.pool_id === 'suqian' ? '宿迁市长护险失能评定专家委员会' : '某某市失能评定专家评审委员会',
+    status: 'ratified',
+  }
+
+  task.expert_confirmation = [expertId, secondExpertId]
+  task.expert_review = reviewRecord
+  task.conclusion_report = conclusionReport
+  task.assessor_level = recommendedLevel
+  task.status = 'completed'
+  task.completed_at = nowIso8()
+  task.updated_at = nowIso8()
+
+  // 同步或创建 AssessmentResult
+  let res = state.results.find((r) => r.task_id === task.task_id)
+  if (!res) {
+    res = {
+      result_id: id('AR'),
+      application_id: task.application_id,
+      task_id: task.task_id,
+      applicant_id: task.applicant_id,
+      scale_version: task.scale_version,
+      ruleset_version: `${task.scale_version}-r1`,
+      domain_scores: task.scores || { 自理能力: 20, 认知能力: 6, 精神行为: 4, 感知沟通: 4 },
+      total_score: task.scores?.total_score || 34,
+      application_level: task.preliminary_level || recommendedLevel,
+      assessor_level: recommendedLevel,
+      insurer_suggested_level: null,
+      final_approved_level: null,
+      expert_confirmation: [expertId, secondExpertId],
+      expert_review: reviewRecord,
+      conclusion_report: conclusionReport,
+      assessor_ids: task.assessor_ids || [ctx.username, secondExpertId],
+      guardian_present: task.guardian_present,
+      onsite_at: task.onsite_at || nowIso8(),
+      video_evidence: task.video_evidence || 'EV-VID-ON-SITE',
+      status: 'pending_review',
+      assessor: task.assessor,
+      created_at: nowIso8(),
+      updated_at: nowIso8(),
+    }
+    state.results.push(res)
+  } else {
+    res.expert_confirmation = [expertId, secondExpertId]
+    res.expert_review = reviewRecord
+    res.conclusion_report = conclusionReport
+    res.assessor_level = recommendedLevel
+    res.status = 'pending_review'
+    res.updated_at = nowIso8()
+  }
+
+  // 同步 Application 状态
+  const app = state.applications.find((a) => a.application_id === task.application_id)
+  if (app) {
+    app.status = 'pre_reviewed'
+    app.pre_assessed_level = recommendedLevel
+    app.expert_reviewed_at = nowIso8()
+  }
+
+  audit(ctx, 'task.expert_review', task.task_id, reportNo)
+  persist()
+  return { task, result: res, review: reviewRecord, report: conclusionReport }
 }
 
 // ---------- 经办审核通过并定级（四等级落地）----------
@@ -2122,7 +2992,7 @@ export function reviewSettlement(ctx, settlementId, input = {}) {
       deduction_reasons: reasons,
       auditor: ctx.username,
       audited_at: nowIso8(),
-      insurer_org: set.pool_id === 'suqian' ? '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班' : '中国太平洋人寿保险股份有限公司 · 某某市长护险受托经办中心',
+      insurer_org: set.pool_id === 'suqian' ? '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班' : '惠生人寿保险股份有限公司（演示）· 某某市长护险受托经办中心',
       status: 'pre_review_passed',
     }
     set.steps.pre_reviewed = { by: ctx.username, at: nowIso8(), pass: input?.pass !== false, note: input?.note || '', deducted_amount: deductAmt }
@@ -2153,7 +3023,7 @@ export function reviewSettlement(ctx, settlementId, input = {}) {
         declared_amount: set.amount,
         deducted_amount: deductAmt,
         actual_disbursement: actualAmt,
-        insurer_org: '中国太平洋财产保险股份有限公司长护险经办部',
+        insurer_org: '惠生人寿保险股份有限公司（演示）长护险经办部',
         insurer_reviewed_by: set.pre_reviewed_by || 'insurer01',
         insurer_reviewed_at: set.pre_reviewed_at || nowIso8(),
         medical_org: isSq ? '宿迁市医疗保障局 / 宿迁长护险试点工作组' : '某某市医疗保障局 / 某某市长护险管理服务中心',
@@ -2415,7 +3285,7 @@ export function getSupervisionDashboard(ctx, query = {}) {
       mode_title: (state.governanceMode === 'direct')
         ? '长护险直接监管模式'
         : '长护险委托经办协同监管模式',
-      delegated_partner: '中国太平洋财产保险股份有限公司长护经办部',
+      delegated_partner: '惠生人寿保险股份有限公司（演示）长护经办部',
       mode_desc: (state.governanceMode === 'direct')
         ? '由医疗保障局长护专班直接履行日常巡查、工单审核及行政处罚全流程监管职能。'
         : '全面贯彻行政监督与经办服务权责法定分离原则 · 筑牢长护统筹基金安全监管底线',
@@ -2518,7 +3388,7 @@ export function feedbackSupervisionClue(ctx, clueId, input = {}) {
 
   clue.status = 'feedback_received'
   clue.feedback = {
-    feedback_by: ctx.username === 'insurer01' ? 'insurer01 (太平洋保险长护经办部)' : `${ctx.username} (受托经办核查员)`,
+    feedback_by: ctx.username === 'insurer01' ? 'insurer01 (惠生人寿长护经办部)' : `${ctx.username} (受托经办核查员)`,
     feedback_at: nowIso8(),
     interview_notes: notes,
     objective_snapshot: input.objective_snapshot || '现场家属签字笔录已固定，在线守护仪客观数据已调阅比对。',
@@ -2634,104 +3504,6 @@ export function scanSupervisionClues(ctx, input = {}) {
 }
 
 // ==================== 长护险受托经办机构业务中心 (Insurer TPA Platform) ====================
-export const SEED_INSURER_INSPECTIONS = [
-  {
-    inspection_id: 'INSP-MM-001',
-    pool_id: 'moumou',
-    title: '【现场飞检】助老员王金凤入户打卡与毫米波雷达空房冲突',
-    source: '安守护毫米波雷达智能巡检对撞',
-    target_type: 'caregiver_order',
-    target_name: '王金凤 (助老员)',
-    service_org: '某某市康泰居家照护中心',
-    service_elder: '孙建国 (P_MM_03)',
-    elder_address: '某某市朝阳新村12幢201室',
-    device_sn: 'ASH01148 (毫米波在室雷达)',
-    anomaly_desc: '助老员提交14:00-15:00生活照护工单，但老人家中安守护毫米波雷达连续60分钟遥测判定“室内无人”，高度疑似隔空虚假打卡。',
-    risk_level: 'high',
-    assigned_to: '李勇 (现场巡查主管)',
-    status: 'pending_onsite',
-    due_at: '2026-09-25T18:00:00+08:00',
-    created_at: '2026-09-24T15:30:00+08:00',
-    conclusion: null,
-    conclusion_label: null,
-    onsite_notes: null,
-    inspector_name: null,
-    inspected_at: null,
-    proof_photos: [],
-  },
-  {
-    inspection_id: 'INSP-MM-002',
-    pool_id: 'moumou',
-    title: '【现场飞检】护理员张德彪偏瘫肢体康复时段体征垫无受力体动',
-    source: '智能微动体征垫压电遥测比对',
-    target_type: 'caregiver_order',
-    target_name: '张德彪 (康复护理员)',
-    service_org: '某某市颐养天年护理院',
-    service_elder: '张宝贵 (P_MM_04)',
-    elder_address: '某某市颐养天年护理院3号楼302室01床',
-    device_sn: 'ASH01149 (智能体征垫)',
-    anomaly_desc: '护理员申报45分钟“偏瘫被动肢体综合康复训练”，但体征垫压电传感器在服务时段波形平直无扰动，未监测到任何体位改变或受力扰动。',
-    risk_level: 'high',
-    assigned_to: '李勇 (现场巡查主管)',
-    status: 'pending_onsite',
-    due_at: '2026-09-25T20:00:00+08:00',
-    created_at: '2026-09-24T16:20:00+08:00',
-    conclusion: null,
-    conclusion_label: null,
-    onsite_notes: null,
-    inspector_name: null,
-    inspected_at: null,
-    proof_photos: [],
-  },
-  {
-    inspection_id: 'INSP-MM-003',
-    pool_id: 'moumou',
-    title: '【联合调查】参保人赵大有自评重度失能与雷达连续行走严重冲突',
-    source: '医保局核查督办函 (某医保长护督字〔2026〕第011号)',
-    target_type: 'elder_application',
-    target_name: '赵大有 (参保申请人)',
-    service_org: '某某市康泰居家照护中心 (申报代理)',
-    service_elder: '赵大有 (P00084)',
-    elder_address: '某某市迎春花苑8幢504室',
-    device_sn: 'ASH01146 (毫米波活动度雷达)',
-    anomaly_desc: '家属申报完全失能三级（自评ADL 10分），但安守护雷达连续72小时遥测日均离床行走16次、步速达0.75m/s。',
-    risk_level: 'critical',
-    assigned_to: '李勇、赵国华 (经办联合调查专班)',
-    status: 'onsite_completed',
-    due_at: '2026-09-23T18:00:00+08:00',
-    created_at: '2026-09-22T09:00:00+08:00',
-    conclusion: 'confirmed_fraud',
-    conclusion_label: '违规属实·移交医保立案',
-    onsite_notes: '经办专班联合入户突击走访，老人行走自如，精神良好。家属承认听信中介诱导夸大自评以多领照护补贴。已固定走访笔录与视频并回执医保局。',
-    inspector_name: '李勇 (巡查主管)',
-    inspected_at: '2026-09-22T17:00:00+08:00',
-    proof_photos: ['/proof/zhao_onsite_01.jpg', '/proof/inquiry_record.pdf'],
-  },
-  {
-    inspection_id: 'INSP-SQ-001',
-    pool_id: 'suqian',
-    title: '【试点巡查】宿迁在网终端 ASH01086 (许丽长者) 心跳保活巡检',
-    source: '国家深化试点专网物联感知系统',
-    target_type: 'pilot_terminal',
-    target_name: '许丽 (真实长者)',
-    service_org: '宿迁市长护试点照护中心',
-    service_elder: '许丽 (P_SQ_01)',
-    elder_address: '宿迁市宿城区幸福街道88号',
-    device_sn: 'ASH01086 (智能体征垫)',
-    anomaly_desc: '在网终端高频心跳保活检测，生命体征连续平稳，夜间离床检测正常。',
-    risk_level: 'normal',
-    assigned_to: '宿迁商保经办专员',
-    status: 'onsite_completed',
-    due_at: '2026-09-25T12:00:00+08:00',
-    created_at: '2026-09-24T09:00:00+08:00',
-    conclusion: 'verified_normal',
-    conclusion_label: '试点运行平稳正常',
-    onsite_notes: '远程遥测信号良好，心率与呼吸波形规整，长者居家照护服务履约正常。',
-    inspector_name: '宿迁商保经办专员',
-    inspected_at: '2026-09-24T10:30:00+08:00',
-    proof_photos: ['/proof/suqian_terminal_heartbeat.png'],
-  },
-]
 
 export function getInsurerDashboard(ctx, query = {}) {
   const requestedPool = query.pool_id || (ctx.data_scope === 'pool' && ctx.pool_id ? ctx.pool_id : 'moumou')
@@ -2754,7 +3526,7 @@ export function getInsurerDashboard(ctx, query = {}) {
   return {
     pool_id: requestedPool,
     pool_name: isSuqian ? '宿迁市长护试点统筹区' : '某某市长护统筹区',
-    operator_org: isSuqian ? '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班' : '中国太平洋人寿保险股份有限公司 · 某某市长护险受托经办中心',
+    operator_org: isSuqian ? '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班' : '惠生人寿保险股份有限公司（演示）· 某某市长护险受托经办中心',
     kpis: {
       pending_intake: isSuqian ? 0 : pendingIntake,
       pending_dispatch: isSuqian ? 0 : pendingDispatch,
@@ -2803,6 +3575,72 @@ export function recordInsurerInspection(ctx, id, input = {}) {
   item.updated_at = nowIso8()
   persist()
   return item
+}
+
+// ==================== 失能评定机构与专家评审委员会工作大盘 (Assessor & Expert Platform) ====================
+export function getAssessorDashboard(ctx, query = {}) {
+  const requestedPool = query.pool_id || (ctx.data_scope === 'pool' && ctx.pool_id ? ctx.pool_id : (ctx.tenant_id === 'assessor_suqian' ? 'suqian' : 'suqian'))
+  const isSuqian = requestedPool === 'suqian'
+
+  const poolTasks = (state.tasks || []).filter((t) => isSuqian ? t.pool_id === 'suqian' : t.pool_id === 'moumou')
+  const poolSnapshots = (state.snapshots || []).filter((s) => isSuqian ? s.pool_id === 'suqian' : s.pool_id === 'moumou')
+  const poolInsights = (state.insights || []).filter((i) => isSuqian ? i.pool_id === 'suqian' : i.pool_id === 'moumou')
+
+  const assignedCount = poolTasks.filter((t) => t.status === 'assigned').length
+  const assessingCount = poolTasks.filter((t) => t.status === 'assessing').length
+  const pendingExpertCount = poolTasks.filter((t) => t.status === 'pending_expert_review').length
+  const completedCount = poolTasks.filter((t) => t.status === 'completed').length
+
+  const severeTasks = poolTasks.filter((t) => {
+    const lvl = t.assessor_level || t.preliminary_level || ''
+    return lvl.includes('重度')
+  }).length
+  const severeDisabilityRate = poolTasks.length ? Math.round((severeTasks / poolTasks.length) * 1000) / 10 : 23.5
+
+  const assessors = (state.assessors || []).filter((a) => isSuqian ? a.org_id === 'assessor_suqian' : a.org_id === 'assessor_org')
+  const assessmentOrgs = (state.assessmentOrgs || []).filter((o) => isSuqian ? o.org_id === 'assessor_suqian' : o.org_id === 'assessor_org')
+
+  return {
+    pool_id: requestedPool,
+    pool_title: isSuqian ? '宿迁市长期护理保险失能评定与专家评审工作台' : '某某市长期护理保险失能评定与专家评审工作台',
+    org_id: isSuqian ? 'assessor_suqian' : 'assessor_org',
+    org_name: isSuqian ? '宿迁市广济第三方失能等级评定中心' : '某某市明康第三方失能评定中心',
+    current_user: {
+      account_id: ctx.username,
+      name: ctx.staff_name || ctx.username,
+      role: ctx.role,
+      unified_role: ctx.unified_role,
+      assigned_title: ctx.assigned_title,
+    },
+    kpis: {
+      total_tasks: poolTasks.length,
+      assigned_count: assignedCount,
+      assessing_count: assessingCount,
+      pending_expert_count: pendingExpertCount,
+      completed_count: completedCount,
+      pending_insights_count: poolInsights.filter((i) => i.handling_status === 'pending').length,
+      severe_disability_rate: severeDisabilityRate,
+      city_normal_severe_rate: 23.8,
+      gaussian_status: isSuqian ? 'normal' : (severeDisabilityRate > 35.0 ? 'warning' : 'normal'),
+      dual_assessor_compliance_pct: 100.0,
+      dual_expert_compliance_pct: 100.0,
+      guardian_present_rate_pct: 100.0,
+      iot_telemetry_consistency_pct: 100.0,
+      total_elders_in_pool: isSuqian ? 3 : 4,
+    },
+    statutory_red_lines: {
+      dual_assessor_mandatory: true,
+      dual_expert_confirmation_mandatory: true,
+      guardian_presence_mandatory: true,
+      iot_telemetry_conclusion_frozen: null,
+      no_developer_jargon: true,
+    },
+    tasks: poolTasks,
+    snapshots: poolSnapshots,
+    insights: poolInsights,
+    assessors,
+    assessment_orgs: assessmentOrgs,
+  }
 }
 
 export function getSupervisionPenetration(ctx, query = {}) {
@@ -2963,7 +3801,7 @@ export function getSettlementVoucher(ctx, settlementId) {
       declared_amount: set.amount,
       deducted_amount: 0,
       actual_disbursement: set.amount,
-      insurer_org: '中国太平洋财产保险股份有限公司长护险经办部',
+      insurer_org: '惠生人寿保险股份有限公司（演示）长护险经办部',
       insurer_reviewed_by: set.pre_reviewed_by || 'insurer01',
       insurer_reviewed_at: set.pre_reviewed_at || nowIso8(),
       medical_org: isSq ? '宿迁市医疗保障局 / 宿迁长护险试点工作组' : '某某市医疗保障局 / 某某市长护险管理服务中心',
@@ -3777,6 +4615,58 @@ export function listWorkbenchTodos(ctx, query = {}) {
   return { list: all.slice(start, start + pageSize), total: all.length, page, page_size: pageSize }
 }
 
+// N16：当前登录角色的两级 SOP 流程树（LTC-WORKBENCH-SPEC §12.4 / API-CONTRACT §3.4.1）
+// 徽标计数 = summaryGroup 对应 N01 分组的实时待办计数（与 getWorkbenchSummary 同口径）；
+// 无 summaryGroup 的节点按实时状态派生（任务/申请/结算/飞检/督办）。
+export function getWorkbenchWorkflowTree(ctx, query = {}) {
+  assertWorkbenchRead(ctx)
+  const todos = collectWorkbenchTodos(ctx, query)
+  const groupTotals = {}
+  for (const t of todos) {
+    groupTotals[t.group] = (groupTotals[t.group] || 0) + 1
+  }
+
+  // 无 summaryGroup 节点的实时状态计数（仅按角色实际权限派生，无权限的域不触碰）
+  const derivedStats = {}
+  if (['insurer_operator', 'insurer_staff'].includes(ctx.role)) {
+    derivedStats.pending_settlements = listSettlements(ctx, {}).filter((s) => s.status === 'declared').length
+    derivedStats.iot_inspections = (state.insurerInspections || []).filter((i) => {
+      const pool = ctx.data_scope === 'pool' && ctx.pool_id ? ctx.pool_id : null
+      return i.status === 'pending_onsite' && (!pool || pool === 'all' || i.pool_id === pool)
+    }).length
+    derivedStats.clue_feedback = (state.supervisionClues || []).filter((c) => c.status === 'dispatched').length
+  }
+  if (['assessor', 'assessor_expert', 'assessor_admin'].includes(ctx.role)) {
+    const tasks = listAssessmentTasks(ctx, {})
+    derivedStats.pending_expert_review = tasks.filter((t) => t.status === 'pending_expert_review').length
+    derivedStats.dispute_hearing = tasks.filter((t) => t.status === 'returned').length
+  }
+
+  const summaryStats = {}
+  for (const [k, v] of Object.entries(groupTotals)) summaryStats[k] = v
+  Object.assign(summaryStats, derivedStats)
+
+  const tree = generateWorkflowTree({
+    role: ctx.role,
+    permissions: permissionsOf(ctx.role),
+    summaryStats,
+  })
+
+  // 有 summaryGroup 的节点徽标强制与 N01 分组计数对齐（前端可仅凭 N01 轮询刷新徽标）
+  for (const group of tree.groups) {
+    for (const item of group.items) {
+      if (item.summaryGroup && groupTotals[item.summaryGroup] !== undefined) {
+        item.badgeCount = groupTotals[item.summaryGroup]
+        item.badgeTone = item.badgeCount > 0
+          ? (item.stageKey.includes('reject') || item.stageKey.includes('fraud') ? 'danger' : 'warn')
+          : 'normal'
+      }
+    }
+  }
+
+  return { ...tree, as_of: nowIso8() }
+}
+
 
 function buildReceipt(objectId, stateVal, version, nextOwnerRole) {
   return {
@@ -4187,7 +5077,7 @@ export function getAppeal(ctx, appealId) {
   }
   assertPerm(ctx, 'application:read')
   const allowed = []
-  if (['insurer_operator', 'insurer_staff'].includes(ctx.role)) allowed.push('accept', 'assist')
+  if (isInsurerRole(ctx.role)) allowed.push('accept', 'assist')
   if (['medical_supervisor', 'medical_insurance_staff'].includes(ctx.role)) allowed.push('decide', 'publish')
   if (ctx.role === 'family_contact') allowed.push('supplement_self')
   return { ...ap, allowed_actions: allowed }
@@ -4254,13 +5144,13 @@ export function appealAction(ctx, appealId, input = {}) {
 
   if (action === 'accept') {
     assertPerm(ctx, 'application:read')
-    if (!['insurer_operator', 'insurer_staff'].includes(ctx.role)) throw new LtcError(403, '仅经办可受理申诉')
+    if (!isInsurerRole(ctx.role)) throw new LtcError(403, '仅经办可受理申诉')
     if (ap.state !== 'appeal_requested' && ap.state !== 'submitted') throw new LtcError(400, '当前状态不可受理')
     ap.state = 'appeal_reviewing'
     ap.next_owner_role = 'insurer'
   } else if (action === 'assist') {
     assertPerm(ctx, 'application:read')
-    if (!['insurer_operator', 'insurer_staff'].includes(ctx.role)) throw new LtcError(403, '仅经办可协办')
+    if (!isInsurerRole(ctx.role)) throw new LtcError(403, '仅经办可协办')
     if (ap.state !== 'appeal_reviewing') throw new LtcError(400, '当前状态不可协办')
     ap.assistance_note = reason || input.note || '协办核验中'
     ap.next_owner_role = 'medical'
@@ -4367,6 +5257,119 @@ export function listDeviceLabels(ctx, query = {}) {
 
 function getStateAssets() {
   return { DEVICE_ASSETS: typeof DEVICE_ASSETS !== 'undefined' ? DEVICE_ASSETS : [] }
+}
+
+// ---------- 设备资产 CRUD（PRD §2.3.2，N17-N19；存储沿用 seed.js DEVICE_ASSETS，审计写 DEVICE_LIFECYCLE_LOGS）----------
+const SUQIAN_PROTECTED_DEVICE_IDS = ['ASH01086', 'ASH01078', 'ASH01092']
+
+function findDeviceAsset(deviceId) {
+  return DEVICE_ASSETS.find((d) => d.device_id === deviceId || d.sn === deviceId)
+}
+
+function pushDeviceLifecycleLog(device, fromStatus, toStatus, ctx, remark) {
+  DEVICE_LIFECYCLE_LOGS.push({
+    log_id: 'LOG-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+    device_id: device.device_id || device.sn,
+    from_status: fromStatus,
+    to_status: toStatus,
+    operator_id: ctx.account_id || ctx.username,
+    organization_id: ctx.org_id || ctx.tenant_id,
+    occurred_at: nowIso8(),
+    location: device.device_placement_location || device.installation_site_id || '',
+    remark,
+  })
+}
+
+export function createDeviceAsset(ctx, body = {}) {
+  assertPerm(ctx, 'device:write')
+  const deviceId = String(body.device_id || '').trim()
+  if (!deviceId) throw new LtcError(400, 'device_id 必填')
+  if (findDeviceAsset(deviceId)) throw new LtcError(409, `device_id 已存在: ${deviceId}`)
+  const dev = {
+    ...body,
+    device_id: deviceId,
+    sn: body.sn || deviceId,
+    lifecycle_status: body.lifecycle_status || 'stocked',
+    online: body.online ?? false,
+    last_data_time: body.last_data_time ?? null,
+  }
+  DEVICE_ASSETS.push(dev)
+  pushDeviceLifecycleLog(dev, 'created', dev.lifecycle_status, ctx, '设备资产新增 (N17)')
+  return dev
+}
+
+export function updateDeviceAsset(ctx, deviceId, body = {}) {
+  assertPerm(ctx, 'device:write')
+  const dev = findDeviceAsset(deviceId)
+  if (!dev) throw new LtcError(404, '设备不存在')
+  const patchable = ['label', 'type']
+  const changed = patchable.filter((k) => body[k] !== undefined && body[k] !== dev[k])
+  if (changed.length === 0) throw new LtcError(400, '无可修改字段（支持 label/type）')
+  for (const k of changed) dev[k] = body[k]
+  pushDeviceLifecycleLog(dev, dev.lifecycle_status, dev.lifecycle_status, ctx, `设备资产修改 (N18): ${changed.join('/')}`)
+  return dev
+}
+
+export function deleteDeviceAsset(ctx, deviceId) {
+  assertPerm(ctx, 'device:write')
+  if (SUQIAN_PROTECTED_DEVICE_IDS.includes(deviceId)) {
+    throw new LtcError(403, '宿迁试点设备受保护，不可删除')
+  }
+  const dev = findDeviceAsset(deviceId)
+  if (!dev) throw new LtcError(404, '设备不存在')
+  const idx = DEVICE_ASSETS.indexOf(dev)
+  DEVICE_ASSETS.splice(idx, 1)
+  pushDeviceLifecycleLog(dev, dev.lifecycle_status, dev.lifecycle_status, ctx, '设备资产删除 (N19)')
+  return { device_id: dev.device_id || dev.sn, removed: true }
+}
+
+// ---------- 设备 ↔ 体验角色群 N:M 分配（PRD §2.3.2，N20；持久化于 state.deviceAssignments）----------
+function assignmentStore() {
+  return state.deviceAssignments || (state.deviceAssignments = [])
+}
+
+export function listDeviceAssignments(ctx, query = {}) {
+  assertPerm(ctx, 'device:read')
+  const store = assignmentStore()
+  const rows = query.device_id ? store.filter((a) => a.device_id === query.device_id) : [...store]
+  return { list: rows, total: rows.length }
+}
+
+export function createDeviceAssignment(ctx, body = {}) {
+  assertPerm(ctx, 'device:write')
+  const deviceId = String(body.device_id || '').trim()
+  const roleGroup = String(body.role_group || '').trim()
+  if (!deviceId || !roleGroup) throw new LtcError(400, 'device_id 与 role_group 必填')
+  if (SUQIAN_PROTECTED_DEVICE_IDS.includes(deviceId)) {
+    throw new LtcError(403, '宿迁试点设备仅限真实域，不可分配至体验角色群')
+  }
+  if (!findDeviceAsset(deviceId)) throw new LtcError(404, '设备不存在')
+  const store = assignmentStore()
+  if (store.some((a) => a.device_id === deviceId && a.role_group === roleGroup)) {
+    throw new LtcError(409, '该设备已分配至该角色群')
+  }
+  const assignment = {
+    assignment_id: 'DA-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+    device_id: deviceId,
+    role_group: roleGroup,
+    assigned_by: ctx.account_id || ctx.username,
+    assigned_at: nowIso8(),
+  }
+  store.push(assignment)
+  audit(ctx, 'device_assignment.create', deviceId, `role_group=${roleGroup}`)
+  persist()
+  return assignment
+}
+
+export function deleteDeviceAssignment(ctx, assignmentId) {
+  assertPerm(ctx, 'device:write')
+  const store = assignmentStore()
+  const idx = store.findIndex((a) => a.assignment_id === assignmentId)
+  if (idx === -1) throw new LtcError(404, '分配关系不存在')
+  const [removed] = store.splice(idx, 1)
+  audit(ctx, 'device_assignment.delete', removed.device_id, `role_group=${removed.role_group}`)
+  persist()
+  return { assignment_id: removed.assignment_id, removed: true }
 }
 
 export function patchDeviceLabels(ctx, deviceId, input = {}) {

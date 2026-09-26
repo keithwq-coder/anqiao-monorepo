@@ -67,10 +67,6 @@ test('账号工作台映射：各角色登录正确分流专属工作台与数�
     { username: 'demo_medical', role: 'medical_insurance_staff', workspace: 'medical_supervision', scope: 'pool' },
     { username: 'insurer01', role: 'insurer_staff', workspace: 'insurer_operations', scope: 'pool' },
     { username: 'assessor01', role: 'assessor', workspace: 'assessor_workspace', scope: 'task' },
-    { username: 'kaijian_admin', role: 'nursing_admin', workspace: 'nursing_home_admin', scope: 'org' },
-    { username: 'kaijian_nurse01', role: 'nursing_nurse', workspace: 'nursing_staff', scope: 'assigned' },
-    { username: 'kaijian_nurse02', role: 'nursing_nurse', workspace: 'nursing_staff', scope: 'assigned' },
-    { username: 'ward_4f_station', role: 'nursing_station', workspace: 'care_desk', scope: 'assigned' },
     { username: 'partner_admin', role: 'partner_admin', workspace: 'partner_operations', scope: 'channel' },
   ]
 
@@ -85,68 +81,8 @@ test('账号工作台映射：各角色登录正确分流专属工作台与数�
 
 // ==========================================
 // 2. 凯健护理院租户与护士 assigned 楼层数据隔离
+//    （凯健租户账号与楼层长者模拟数据已按 PRD §2.3.3 移除，楼层隔离用例于体验域数据验收后重建）
 // ==========================================
-test('护士楼层隔离：李晓芳(4F)与张晓敏(3F)仅见自身楼层长者，跨楼层详情 404', async () => {
-  const nurse01Token = (await postLogin('kaijian_nurse01')).body.data.token
-  const nurse02Token = (await postLogin('kaijian_nurse02')).body.data.token
-
-  // 1. 李晓芳 (4F) 获取长者列表
-  const res01 = await fetch(`${BASE}/v1/patients`, {
-    headers: { Authorization: `Bearer ${nurse01Token}` },
-  })
-  assert.equal(res01.status, 200)
-  const list01 = (await res01.json()).data.list
-  assert.ok(list01.length > 0, '李晓芳应看到分配楼层的长者')
-  for (const p of list01) {
-    assert.equal(p.floor, '4F', `李晓芳不应看到非 4F 长者 (看到 ${p.floor})`)
-  }
-
-  // 2. 张晓敏 (3F) 获取长者列表
-  const res02 = await fetch(`${BASE}/v1/patients`, {
-    headers: { Authorization: `Bearer ${nurse02Token}` },
-  })
-  assert.equal(res02.status, 200)
-  const list02 = (await res02.json()).data.list
-  assert.ok(list02.length > 0, '张晓敏应看到分配楼层的长者')
-  for (const p of list02) {
-    assert.equal(p.floor, '3F', `张晓敏不应看到非 3F 长者 (看到 ${p.floor})`)
-  }
-
-  // 3. 跨楼层访问详情：李晓芳查 4F 长者 P00001 成功，查 3F 长者 P00025 报 404
-  const res01Own = await fetch(`${BASE}/v1/patients/P00001`, {
-    headers: { Authorization: `Bearer ${nurse01Token}` },
-  })
-  assert.equal(res01Own.status, 200, '李晓芳访问 4F 长者 P00001 应 200')
-
-  const res01Other = await fetch(`${BASE}/v1/patients/P00025`, {
-    headers: { Authorization: `Bearer ${nurse01Token}` },
-  })
-  assert.equal(res01Other.status, 404, '李晓芳越权访问 3F 长者 P00025 应 404')
-
-  // 4. 张晓敏查 3F 长者 P00025 成功，查 4F 长者 P00001 报 404
-  const res02Own = await fetch(`${BASE}/v1/patients/P00025`, {
-    headers: { Authorization: `Bearer ${nurse02Token}` },
-  })
-  assert.equal(res02Own.status, 200, '张晓敏访问 3F 长者 P00025 应 200')
-
-  const res02Other = await fetch(`${BASE}/v1/patients/P00001`, {
-    headers: { Authorization: `Bearer ${nurse02Token}` },
-  })
-  assert.equal(res02Other.status, 404, '张晓敏越权访问 4F 长者 P00001 应 404')
-})
-
-test('护理院管理员：凯健管理员可查看全院长者（包含 3F 与 4F）', async () => {
-  const adminToken = (await postLogin('kaijian_admin')).body.data.token
-  const res = await fetch(`${BASE}/v1/patients`, {
-    headers: { Authorization: `Bearer ${adminToken}` },
-  })
-  assert.equal(res.status, 200)
-  const list = (await res.json()).data.list
-  const floors = new Set(list.map((p) => p.floor))
-  assert.ok(floors.has('3F'), '全院管理员应看到 3F 长者')
-  assert.ok(floors.has('4F'), '全院管理员应看到 4F 长者')
-})
-
 test('跨机构租户隔离：外部角色（经办、评估、渠道）查凯健内部长者详情报 404', async () => {
   for (const u of ['insurer01', 'assessor01', 'partner_admin']) {
     const token = (await postLogin(u)).body.data.token
@@ -182,9 +118,9 @@ test('设备资产：包含 7 维归属模型，渠道发展客户组织独立',
 
 test('生命周期状态机：合法流转成功并记录审计日志；非法跳跃拒绝（400）；无权变更拒绝（403）', async () => {
   const adminToken = (await postLogin('admin01')).body.data.token
-  const nurseToken = (await postLogin('kaijian_nurse01')).body.data.token
+  const nurseToken = (await postLogin('insurer01')).body.data.token
 
-  // 1. 无权角色 (nurse01) 变更状态 -> 403
+  // 1. 无权角色 (insurer01 无 device:lifecycle 能力) 变更状态 -> 403
   const resForbidden = await fetch(`${BASE}/v1/devices/ANCE00002/lifecycle`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${nurseToken}` },
@@ -326,9 +262,9 @@ test('设备介入红线：任务冻结快照证据 conclusion 恒为 null，严
 
 test('AI 助手洞察处置：仅评估师可闭环确认/采纳/驳回/人工核查，留痕操作原因', async () => {
   const assessorToken = (await postLogin('assessor01')).body.data.token
-  const nurseToken = (await postLogin('kaijian_nurse01')).body.data.token
+  const nurseToken = (await postLogin('insurer01')).body.data.token
 
-  // 1. 护士无权处置洞察 -> 403
+  // 1. 无权角色（insurer01 非评估师）处置洞察 -> 403
   const resForbidden = await fetch(`${BASE}/v1/ltc/insights/INSIGHT-20260920-001/handle`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${nurseToken}` },

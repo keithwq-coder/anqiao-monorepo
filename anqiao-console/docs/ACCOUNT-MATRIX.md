@@ -3,6 +3,8 @@
 > 取代旧演示账号体系（`nurse01` / `ops01` / `hq01` 已移除）。账号矩阵同时作为前端登录身份与后端授权基线。
 > 数据源：`server/seed.js` 的 `ACCOUNTS`（登录用）、`server/ltc.js` 的 `ROLES`/`ROLE_PERMISSIONS`/`ORGS`（角色与组织）。
 >
+> **体验域角色群账号于系统验收后统一制作（PRD §2.3.3）。**
+>
 > **初始密码：由部署环境变量 `SEED_ACCOUNT_PASSWORD` 注入（仓库不保存明文），仅用于首次部署后登录，上线后必须立即修改。**
 
 ## 1. 账号表
@@ -16,27 +18,8 @@
 | `insurer01` | `insurer_staff` 太平洋保险经办人员 | 太平洋保险经办人员 | 太平洋保险组织（insurer） | insurer | pool |
 | `assessor01` | `assessor` 长护险评估人员 | 长护险评估人员 | 评估机构 / 太平洋保险关联组织（assessor_org） | assessor_org | task |
 | `family_demo` | `family_contact` 家属（阶段 D 可登录） | 许丽家属 | bureau | bureau | applicant |
-| `station_master` | `elderly_care_admin` 居家养老总站站长 | 陆振东 站长 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | org |
-| `dispatch_center` | `home_dispatcher` 调度中枢坐席 | 苏智护调度中枢 (苏怡) | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | org |
-| `cg_canglang_01` | `grid_caregiver` 沧浪片区高级助老员 | 林小燕 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cg_canglang_02` | `grid_caregiver` 沧浪片区照护师 | 陈秀英 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cg_canglang_03` | `grid_caregiver` 沧浪机动助老员 | 黄建国 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cg_canglang_04` | `grid_caregiver` 沧浪初级助老员(轮休) | 周玉兰 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cg_shuangta_01` | `grid_team_leader` 双塔片区组长 | 王惠芬 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cg_shuangta_02` | `grid_caregiver` 双塔养老照护员 | 张伟民 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cg_sanxiang_01` | `grid_caregiver` 三香慢病照护员 | 何丽娜 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cg_sanxiang_02` | `grid_caregiver` 三香片区助老员 | 赵淑清 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
 | `assessor_liming` | `assessor` 上门失能评估师 | 李明 | 姑苏失能评估服务中心 (`assessor_org`) | assessor_org | task |
-| `rehab_chen` | `rehab_specialist` 康复理疗巡诊师 | 陈主任 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `nurse_shenyaping` | `home_nurse` 居家专职护师 (主管护师) | 沈雅萍 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `pt_chenjianxin` | `rehab_therapist` 居家康复治疗师 (PT主管) | 陈建新 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `dementia_zhufang` | `dementia_specialist` 记忆照护与认知症专护师 | 朱芳 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `cm_xumeiling` | `case_manager` 养老管家 / 个案管理师 | 徐美玲 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | org |
-| `tech_zhanghongbo` | `assistive_specialist` 适老化改造与辅具工程师 | 张洪波 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | assigned |
-| `qc_jiangguoqiang` | `quality_inspector` 质量督导部主管 | 蒋国强 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | org |
-| `biller_zhouliping` | `ltc_biller` 长护险结算与风控专员 | 周立平 | 苏州市姑苏区智护居家养老服务中心 (`home_care_gusu`) | home_care_gusu | org |
 
-- **居家养老服务机构（虚拟养老院）账号矩阵已全面落地**（详见 `docs/HOME-CARE-SPEC.md`）：全面支持片区网格化管理与入户工单；
 - **`family_contact` 自阶段 D 起支持可登录账号形态**（LTC-WORKBENCH-SPEC §0.3/§4.4）：种子 `family_demo` 已创建；绑定+本人/监护人授权有效后进入 `family_workspace`。data_scope 为 `applicant`。非登录联系人实体仍可用于档案展示。
 - 一个账号且仅属于一个组织（`tenant_id == org_id`）；`su` 直属系统组织（platform）。
 

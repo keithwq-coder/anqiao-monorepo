@@ -69,7 +69,7 @@ function gotoPage(delta: number) {
 }
 
 function openDetail(p: Patient) {
-  location.hash = `#/console/patients/${encodeURIComponent(p.patient_id)}`
+  location.hash = `#/patients/${encodeURIComponent(p.patient_id)}`
 }
 
 // ---------- 实时事件：vitals 更新当前页卡片；断线重连后全量补偿 ----------

@@ -119,7 +119,7 @@ function elapsedLabel(a: Alert): string {
 }
 
 function goPatient(p: Patient) {
-  location.hash = `#/console/patients/${encodeURIComponent(p.patient_id)}`
+  location.hash = `#/patients/${encodeURIComponent(p.patient_id)}`
 }
 
 const ABNORMAL_LABELS: Record<string, string> = {
