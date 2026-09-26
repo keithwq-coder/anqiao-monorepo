@@ -371,6 +371,7 @@ const PlatformOperationsApp = defineAsyncComponent(() => import('./workspaces/Pl
 const DeviceMonitoringApp = defineAsyncComponent(() => import('./workspaces/DeviceMonitoringApp.vue'))
 const ReportsCenterApp = defineAsyncComponent(() => import('./workspaces/ReportsCenterApp.vue'))
 import MedicalSupervisionApp from './workspaces/MedicalSupervisionApp.vue'
+import FacilityStudioApp from './workspaces/FacilityStudioApp.vue'
 const InsurerOperationsApp = defineAsyncComponent(() => import('./workspaces/InsurerOperationsApp.vue'))
 const AssessorApp = defineAsyncComponent(() => import('./workspaces/AssessorApp.vue'))
 const NursingHomeAdminApp = defineAsyncComponent(() => import('./workspaces/NursingHomeAdminApp.vue'))
@@ -454,6 +455,14 @@ const WORKSPACE_METAS: Record<string, { name: string; icon: string; desc: string
   nursing_staff: { name: '责任护工照护', icon: '🩺', desc: '楼层在床监护/体征异常处置/交接班记录' },
   partner_operations: { name: '合作伙伴渠道工作台', icon: '🤝', desc: '渠道拓展组织/出货装机/意向商机' },
   family_workspace: { name: '家属申报工作台', icon: '👪', desc: '申报/补正/进度/正式结果/申诉' },
+  facility_doctor_studio: { name: '医生工作台', icon: '🩺', desc: '健康档案/体征基线/查房与医嘱' },
+  facility_hr_studio: { name: '人事工作台', icon: '🧑‍💼', desc: '花名册/排班/考勤留痕' },
+  facility_finance_studio: { name: '财务工作台', icon: '💰', desc: '账册/长护申报确认/物联结算凭证' },
+  facility_marketing_studio: { name: '营销工作台', icon: '📣', desc: '实住率空床态势/入住咨询登记' },
+  facility_admin_studio: { name: '行政工作台', icon: '🗂️', desc: '行政事务台账/设备报修流转' },
+  facility_it_studio: { name: 'IT 工作台', icon: '🖥️', desc: '网络终端归因/平台支持请求' },
+  rehab_studio: { name: '康复治疗师工作台', icon: '🏃', desc: '康复处方/训练打卡/雷达评效' },
+  dementia_studio: { name: '认知症照护工作台', icon: '🧠', desc: 'MMSE 测评/围栏标定/非药物干预' },
 }
 
 const authorizedWs = computed(() => allowedWorkspaces(props.session))
@@ -831,6 +840,15 @@ const activeComponent = computed(() => {
     nursing_staff: NursingStaffApp,
     partner_operations: PartnerOperationsApp,
     family_workspace: FamilyWorkspace,
+    // 护理院职能/支撑席位工作台（多业态设计 §3.1A/§3.3）：同一外壳，按 session.workspace 选配置
+    facility_doctor_studio: FacilityStudioApp,
+    facility_hr_studio: FacilityStudioApp,
+    facility_finance_studio: FacilityStudioApp,
+    facility_marketing_studio: FacilityStudioApp,
+    facility_admin_studio: FacilityStudioApp,
+    facility_it_studio: FacilityStudioApp,
+    rehab_studio: FacilityStudioApp,
+    dementia_studio: FacilityStudioApp,
   }
   return map[selectedWorkspace.value] || PlatformOperationsApp
 })

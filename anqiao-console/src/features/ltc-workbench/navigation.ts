@@ -109,6 +109,19 @@ export const WORKSPACE_GROUPS_CATALOG: WorkspaceNavGroup[] = [
     ],
   },
   {
+    name: '护理院职能与支撑',
+    items: [
+      { key: 'facility_doctor_studio', name: '医生工作台', icon: '🩺', desc: '健康档案/体征基线/查房与医嘱' },
+      { key: 'facility_hr_studio', name: '人事工作台', icon: '🧑‍💼', desc: '花名册/排班/考勤留痕' },
+      { key: 'facility_finance_studio', name: '财务工作台', icon: '💰', desc: '账册/长护申报确认/物联结算凭证' },
+      { key: 'facility_marketing_studio', name: '营销工作台', icon: '📣', desc: '实住率空床态势/入住咨询登记' },
+      { key: 'facility_admin_studio', name: '行政工作台', icon: '🗂️', desc: '行政事务台账/设备报修流转' },
+      { key: 'facility_it_studio', name: 'IT 工作台', icon: '🖥️', desc: '网络终端归因/平台支持请求' },
+      { key: 'rehab_studio', name: '康复治疗师', icon: '🏃', desc: '康复处方/训练打卡/雷达评效' },
+      { key: 'dementia_studio', name: '认知症照护', icon: '🧠', desc: 'MMSE 测评/围栏标定/非药物干预' },
+    ],
+  },
+  {
     name: '平台运营与总控',
     items: [
       { key: 'system_admin', name: '系统超级管理员', icon: '⚙', desc: '全域租户/账号矩阵' },
