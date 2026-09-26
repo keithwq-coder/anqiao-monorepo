@@ -70,11 +70,11 @@ export async function POST(req: Request) {
     // CRM 有、wiki 无 → 自动建镜像（默认 internal_sales，映射见上）
     const r2 = await pool.query(
       `insert into users(username, password_hash, role, name, realname, idcard, phone, must_change_password, is_placeholder)
-       values($1,$2,$3,$4,'','','',false,false)
-       returning *`,
+       values(?,?,?,?,'','','',false,false)`,
       [crmUsername, "!crm-auth", defaultRoleForUsername(crmUsername), crmUser.display_name]
     );
-    user = r2.rows[0] as typeof user;
+    const mirror = await pool.query("select * from users where id = ?", [r2.insertId]);
+    user = mirror.rows[0] as typeof user;
   } else if (user.role === "admin" && defaultRoleForUsername(crmUsername) === "admin" && user.name !== crmUser.display_name) {
     // 显示名与 CRM 对齐（仅当本地为占位默认名时；不覆盖用户已填资料）
     await pool.query("update users set name=$1 where id=$2", [crmUser.display_name.slice(0, 40), user.id]).catch(() => {});

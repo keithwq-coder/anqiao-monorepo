@@ -171,18 +171,18 @@ export async function createUser(role: Role, name?: string): Promise<CreateUserR
   const password = "123"; // 初始口令统一 123（仅建号时展示一次；首登强制改密）
   const ins = await pool.query(
     `insert into users(username, password_hash, role, name, realname, idcard, phone, must_change_password, is_placeholder)
-     values($1,$2,$3,$4,'','','',true,false)
-     returning id`,
+     values(?,?,?,?,'','','',true,false)`,
     [username, CRM_AUTH_SENTINEL, role, displayName]
   );
+  const newId = ins.insertId as number;
   try {
     const created = await crmCreateUser(username, displayName, password);
     if (!created) {
-      await pool.query("delete from users where id=$1", [ins.rows[0].id]).catch(() => {});
+      await pool.query("delete from users where id=$1", [newId]).catch(() => {});
       throw new Error(`CRM 已存在同名账号「${username}」，未创建`);
     }
   } catch (e) {
-    await pool.query("delete from users where id=$1", [ins.rows[0].id]).catch(() => {});
+    await pool.query("delete from users where id=$1", [newId]).catch(() => {});
     throw e;
   }
   return { username, name: displayName, role, initialPassword: password };

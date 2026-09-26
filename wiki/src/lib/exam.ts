@@ -46,22 +46,14 @@ export async function createExam(
   const sres = await pool.query("select id from scenario_questions order by random() limit 2");
   const scenarioIds = sres.rows.map((r) => r.id);
 
-  const { rows } = await pool.query(
+  const ins = await pool.query(
     `insert into exams(title, question_ids, duration_minutes, passing_score, created_by, scenario_ids)
-     values($1,$2,$3,$4,$5,$6) returning *`,
+     values(?,?,?,?,?,?)`,
     [title, JSON.stringify(ids), duration, passing, adminId, JSON.stringify(scenarioIds)]
   );
-  const e = rows[0];
-  return {
-    id: e.id,
-    title: e.title,
-    question_ids: Array.isArray(e.question_ids) ? e.question_ids : JSON.parse(e.question_ids),
-    duration_minutes: e.duration_minutes,
-    passing_score: e.passing_score,
-    created_by: e.created_by,
-    created_at: e.created_at,
-    scenario_ids: e.scenario_ids ? (Array.isArray(e.scenario_ids) ? e.scenario_ids : JSON.parse(e.scenario_ids)) : [],
-  };
+  const created = await getExamById(ins.insertId!);
+  if (!created) throw new Error("考试创建失败");
+  return created;
 }
 
 export async function listExams(): Promise<ExamRow[]> {
@@ -191,7 +183,7 @@ export async function getExamAttempts(examId: number): Promise<ExamAttemptRow[]>
             ea.correct_count, ea.total_count, ea.scenario_answers, ea.submitted_at
        from exam_attempts ea join users u on u.id = ea.user_id
       where ea.exam_id = $1
-      order by ea.submitted_at desc nulls last, ea.id desc`,
+      order by ea.submitted_at is null, ea.submitted_at desc, ea.id desc`,
     [examId]
   );
   return rows.map((r) => ({
@@ -201,7 +193,7 @@ export async function getExamAttempts(examId: number): Promise<ExamAttemptRow[]>
     username: r.username,
     name: r.name,
     score: r.score,
-    passed: r.passed,
+    passed: Boolean(r.passed),
     correct_count: r.correct_count,
     total_count: r.total_count,
     scenario_answers: r.scenario_answers

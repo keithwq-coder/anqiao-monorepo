@@ -45,7 +45,7 @@ const isHistory = req.nextUrl.searchParams.get("history") === "true";
     return NextResponse.json({
       ok: true,
       history: rows.map((r) => ({
-        id: r.id, examId: r.exam_id, score: r.score, passed: r.passed,
+        id: r.id, examId: r.exam_id, score: r.score, passed: Boolean(r.passed),
         correct: r.correct_count, total: r.total_count, title: r.exam_title,
         submittedAt: r.submitted_at,
       })),
@@ -67,8 +67,8 @@ const isHistory = req.nextUrl.searchParams.get("history") === "true";
   const { rows: bonusCheck } = await pool.query(
     `select 1 from exam_attempts ea
      join exams e on e.id = ea.exam_id
-     where ea.user_id = $1 and e.created_by is null
-       and e.question_ids ? (select id::text from quiz_questions where module_id = 'BONUS' limit 1)
+     where ea.user_id = ? and e.created_by is null
+       and JSON_CONTAINS(e.question_ids, CAST((select id from quiz_questions where module_id = 'BONUS' limit 1) AS CHAR))
      limit 1`,
     [user.id]
   );
@@ -83,12 +83,12 @@ const isHistory = req.nextUrl.searchParams.get("history") === "true";
   }
 
   // 创建考试（限时 30 分钟）
-  const { rows: erows } = await pool.query(
+  const erows = await pool.query(
     `insert into exams(title, question_ids, duration_minutes, passing_score, created_by)
-     values('模拟测试', $1, 30, 80, null) returning *`,
+     values('模拟测试', ?, 30, 80, null)`,
     [JSON.stringify(allIds)]
   );
-  const exam = erows[0];
+  const exam = { id: erows.insertId!, title: "模拟测试" };
 
   const { rows: questions } = await pool.query(
     "select id, ordinal, question, options from quiz_questions where id = any($1::int[]) order by id",
