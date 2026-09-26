@@ -5590,9 +5590,15 @@ export function authorizedWorkspacesFor(role, account = null) {
     'facility_marketing_studio',
     'facility_admin_studio',
     'facility_it_studio',
+    'rehab_studio',
+    'dementia_studio',
   ]
   if (role === 'su' || role === 'platform_admin') return all
   if (role === 'family_contact') return ['family_workspace']
+  // 康宁席位按 account.workspace 校正业态归属（多业态设计 §3.1A-⑥）：康复/认知症席位进专属 studio
+  if (account && (account.workspace === 'rehab_studio' || account.workspace === 'dementia_studio')) {
+    return [account.workspace]
+  }
   if (account && (account.workspace === 'care_desk' || account.username?.endsWith('_station'))) {
     return ['care_desk', 'patient_dossier', 'device_monitoring', 'reports_center', 'nursing_staff']
   }
@@ -5647,6 +5653,8 @@ export function authorizedWorkspacesFor(role, account = null) {
     assistive_specialist: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
     // 销售席位（多业态设计 §6.2）：customer_view 专属，禁止错位回退到院长工作台
     business_user: ['customer_view'],
+    patient_dossier: ['patient_dossier', 'device_monitoring', 'reports_center'],
+    reports_center: ['reports_center'],
   }
   const list = extras[role] || [workspaceOf(role)]
   return list.filter((w, i, arr) => arr.indexOf(w) === i)

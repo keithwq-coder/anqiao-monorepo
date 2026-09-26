@@ -20,6 +20,10 @@ export const WORKSPACES = {
   FACILITY_MARKETING_STUDIO: 'facility_marketing_studio',
   FACILITY_ADMIN_STUDIO: 'facility_admin_studio',
   FACILITY_IT_STUDIO: 'facility_it_studio',
+  PATIENT_DOSSIER: 'patient_dossier',
+  REPORTS_CENTER: 'reports_center',
+  REHAB_STUDIO: 'rehab_studio',
+  DEMENTIA_STUDIO: 'dementia_studio',
 }
 
 export const ROLE_WORKSPACE_MAP = {
@@ -58,8 +62,6 @@ export const ROLE_WORKSPACE_MAP = {
   grid_team_leader: 'home_dispatch',
   rehab_specialist: 'home_dispatch',
   home_nurse: 'home_dispatch',
-  rehab_therapist: 'home_dispatch',
-  dementia_specialist: 'home_dispatch',
   case_manager: 'home_dispatch',
   quality_inspector: 'home_dispatch',
   ltc_biller: 'home_dispatch',
@@ -71,6 +73,11 @@ export const ROLE_WORKSPACE_MAP = {
   facility_marketing: WORKSPACES.FACILITY_MARKETING_STUDIO,
   facility_admin: WORKSPACES.FACILITY_ADMIN_STUDIO,
   facility_it: WORKSPACES.FACILITY_IT_STUDIO,
+  // PRD §4 支撑角色键补齐 + 康复/认知症默认工作台按 PRD 目标态校正（居家域账号以 account.workspace 覆盖，不受影响）
+  patient_dossier: WORKSPACES.PATIENT_DOSSIER,
+  reports_center: WORKSPACES.REPORTS_CENTER,
+  rehab_therapist: WORKSPACES.REHAB_STUDIO,
+  dementia_specialist: WORKSPACES.DEMENTIA_STUDIO,
 }
 
 export const ROLE_DATA_SCOPE_MAP = {
@@ -121,6 +128,8 @@ export const ROLE_DATA_SCOPE_MAP = {
   facility_marketing: 'org',
   facility_admin: 'org',
   facility_it: 'org',
+  patient_dossier: 'org',
+  reports_center: 'org',
 }
 
 export const ROLE_PERMISSIONS = {
@@ -407,6 +416,13 @@ export const ROLE_PERMISSIONS = {
   ],
   facility_it: [
     'device:read', 'network:read', 'account:read',
+  ],
+  // PRD §4 支撑角色（病案/报表；康复/认知症沿用 monitoring/patient 读面 + 专属动作）
+  patient_dossier: [
+    'patient:read', 'monitoring:read', 'evidence:read', 'report:read',
+  ],
+  reports_center: [
+    'report:read', 'report:generate', 'settlement:read', 'monitoring:read',
   ],
 }
 

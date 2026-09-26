@@ -90,3 +90,75 @@ test('销售席位授权修正：business_user/customer_view 不再错位回退�
   assert.ok(list.includes('customer_view'), `应含 customer_view，实际 ${JSON.stringify(list)}`)
   assert.ok(!list.includes('nursing_home_admin'), '不得错位回退到 nursing_home_admin')
 })
+
+test('PRD 支撑角色键齐备：patient_dossier/reports_center；康复/认知症默认工作台校正到专属 studio', async () => {
+  const { workspaceOf } = await import('./auth.js')
+  assert.equal(workspaceOf('patient_dossier'), 'patient_dossier')
+  assert.equal(workspaceOf('reports_center'), 'reports_center')
+  assert.equal(workspaceOf('rehab_therapist'), 'rehab_studio')
+  assert.equal(workspaceOf('dementia_specialist'), 'dementia_studio')
+})
+
+test('授权链按 account.workspace 校正业态归属：康宁席位进 studio，居家默认不受影响', async () => {
+  const { authorizedWorkspacesFor } = await import('./ltc.js')
+  assert.deepEqual(authorizedWorkspacesFor('rehab_therapist', { workspace: 'rehab_studio' }), ['rehab_studio'])
+  assert.deepEqual(authorizedWorkspacesFor('dementia_specialist', { workspace: 'dementia_studio' }), ['dementia_studio'])
+  assert.ok(authorizedWorkspacesFor('rehab_therapist', { workspace: 'home_dispatch' }).includes('home_dispatch'), '居家域账号保持既有授权')
+})
+
+test('康宁 16 演示席位：真实后端逐席登录，workspace/org 正确（设计 §3.1A 全栈）', async () => {
+  const { spawn } = await import('node:child_process')
+  const path = await import('node:path')
+  const { fileURLToPath } = await import('node:url')
+  const __dirname2 = path.dirname(fileURLToPath(import.meta.url))
+  const PORT2 = 2848
+  const SEED_PASS2 = `t-kn-${Date.now().toString(36)}`
+  const SEATS = [
+    ['kangning_station', 'nursing_station', 'care_desk'],
+    ['kangning_head', 'nursing_head', 'care_desk'],
+    ['kangning_nurse', 'nursing_nurse', 'nursing_staff'],
+    ['kangning_caregiver', 'nursing_caregiver', 'nursing_staff'],
+    ['kangning_admin', 'nursing_admin', 'nursing_home_admin'],
+    ['kangning_dossier', 'patient_dossier', 'patient_dossier'],
+    ['kangning_ops', 'device_user', 'device_monitoring'],
+    ['kangning_reports', 'reports_center', 'reports_center'],
+    ['kangning_rehab', 'rehab_therapist', 'rehab_studio'],
+    ['kangning_dementia', 'dementia_specialist', 'dementia_studio'],
+    ['kangning_doctor', 'facility_doctor', 'facility_doctor_studio'],
+    ['kangning_hr', 'facility_hr', 'facility_hr_studio'],
+    ['kangning_finance', 'facility_finance', 'facility_finance_studio'],
+    ['kangning_marketing', 'facility_marketing', 'facility_marketing_studio'],
+    ['kangning_affairs', 'facility_admin', 'facility_admin_studio'],
+    ['kangning_it', 'facility_it', 'facility_it_studio'],
+  ]
+  const child = spawn(process.execPath, [path.join(__dirname2, 'index.js')], {
+    env: { ...process.env, PORT: String(PORT2), TOKEN_SECRET: 'test-kangning-secret', SEED_ACCOUNT_PASSWORD: SEED_PASS2 },
+    stdio: ['ignore', 'pipe', 'inherit'],
+  })
+  try {
+    await new Promise((resolve, reject) => {
+      let buf = ''
+      const timer = setTimeout(() => reject(new Error('后端启动超时')), 15000)
+      child.stdout.on('data', (d) => {
+        buf += d.toString()
+        if (buf.includes('[server] 安守护')) { clearTimeout(timer); resolve() }
+      })
+      child.on('exit', () => { clearTimeout(timer); reject(new Error('后端提前退出')) })
+    })
+    for (const [username, role, workspace] of SEATS) {
+      const res = await fetch(`http://127.0.0.1:${PORT2}/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: SEED_PASS2 }),
+      })
+      const body = await res.json()
+      assert.equal(res.status, 200, `${username} 应登录成功`)
+      assert.equal(body.data.workspace, workspace, `${username} 工作台应为 ${workspace}`)
+      assert.equal(body.data.principal.org_id, 'kangning', `${username} 应归属康宁租户`)
+      assert.equal(body.data.principal.role, role, `${username} 角色应为 ${role}`)
+      assert.ok((body.data.permissions || []).length > 0, `${username} permissions 非空`)
+    }
+  } finally {
+    child.kill()
+  }
+})
