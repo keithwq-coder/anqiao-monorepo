@@ -1188,52 +1188,85 @@ function buildTenant(cfg) {
   return { cfg, patients, alerts, liveAlertSeq: 0 }
 }
 
-const TENANT_CONFIGS = {
+export const TENANT_CONFIGS = {
   platform: {
     name: '系统组织',
     kind: 'platform',
+    vertical: 'platform',
+    template: null,
+    deployment: 'saas',
   },
   anqiao: {
     name: '中科安樵 · 自营运营中心',
     kind: 'vendor', // 保持 vendor 兼容，auth 模块识别 anqiao_ops
+    vertical: 'platform',
+    template: null,
+    deployment: 'saas',
     seed: 20260920,
     alertIdBase: 80001,
   },
   bureau: {
     name: '中科安樵·全域医保监管协同中心',
     kind: 'medical_bureau',
+    vertical: 'ltc_ecosystem',
+    template: null,
+    deployment: 'saas',
   },
   bureau_suqian: {
     name: '宿迁市医疗保障局 / 宿迁长护险试点工作组',
     kind: 'medical_bureau',
+    vertical: 'ltc_ecosystem',
+    template: null,
+    deployment: 'saas',
   },
   bureau_moumou: {
     name: '某某市医疗保障局 / 某某市长护险管理服务中心',
     kind: 'medical_bureau',
+    vertical: 'ltc_ecosystem',
+    template: null,
+    deployment: 'saas',
   },
   insurer: {
     name: '惠生人寿保险股份有限公司（演示）· 某某市长护险受托经办中心',
     kind: 'insurer',
+    vertical: 'ltc_ecosystem',
+    template: null,
+    deployment: 'saas',
   },
   insurer_suqian: {
     name: '中国太平洋人寿保险股份有限公司 · 宿迁长护险商保经办专班',
     kind: 'insurer',
+    vertical: 'ltc_ecosystem',
+    template: null,
+    deployment: 'saas',
   },
   assessor_suqian: {
     name: '宿迁市广济第三方失能等级评定中心',
     kind: 'assessment_org',
+    vertical: 'ltc_ecosystem',
+    template: null,
+    deployment: 'saas',
   },
   assessor_org: {
     name: '某某市明康第三方失能评定中心',
     kind: 'assessment_org',
+    vertical: 'ltc_ecosystem',
+    template: null,
+    deployment: 'saas',
   },
   partner_p1: {
     name: '中科智护合作伙伴渠道',
     kind: 'partner',
+    vertical: 'partner',
+    template: null,
+    deployment: 'saas',
   },
   cust_org01: {
     name: '示范区康养示范中心',
     kind: 'customer_org',
+    vertical: 'nursing_home', // 康养示范中心归入护理院业态（业主如另划，改此行）
+    template: null,
+    deployment: 'saas',
   },
 }
 
@@ -1261,6 +1294,19 @@ export function getTenantName(tenantId) {
 
 export function getTenantKind(tenantId) {
   return TENANT_CONFIGS[tenantId]?.kind ?? 'nursing_home'
+}
+
+// ---------- 多业态租户模型字段（设计 §4.1）：业态 / 租户模板 / 部署形态 ----------
+export function getTenantVertical(tenantId) {
+  return TENANT_CONFIGS[tenantId]?.vertical ?? 'nursing_home'
+}
+
+export function getTenantTemplate(tenantId) {
+  return TENANT_CONFIGS[tenantId]?.template ?? null
+}
+
+export function getTenantDeployment(tenantId) {
+  return TENANT_CONFIGS[tenantId]?.deployment ?? 'saas'
 }
 
 // ---------- Overview 实时计算（含处置/新告警后的指标变化），不硬编码 ----------
