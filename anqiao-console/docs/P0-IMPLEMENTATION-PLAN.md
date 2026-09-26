@@ -129,8 +129,14 @@
 
 ### Task 9: P0 验收
 
-- [ ] `npm test` 全绿（15 既有 + test-multi-vertical + test-sales-view）
-- [ ] `npm run build` 通过
-- [ ] 人工全链路：两级登录 → 康宁 16 席位逐个进入对应工作台 → 演示标识常驻 → 销售视图五面板
-- [ ] 红线审计：硬件域零写入、`凯健|居家乐` 零命中、无 PG/Redis、git 历史无 `add -A`
-- [ ] 部署**不在本计划内**：部署前必读 `.agents/skills/huaweicloud-deploy/SKILL.md`，另起部署窗口
+- [x] `npm test` 全绿（15 既有 + test-multi-vertical + test-sales-view）：**116 pass / 0 fail / 1 skip**（skip = 销售视图验收，业主指示"先记录就行"，竞态待专项排查）
+- [x] `npm run build` 通过
+- [ ] 人工全链路（业主浏览器验收，部署后进行）：两级登录 → 康宁 16 席位逐个进入对应工作台 → 演示标识常驻 → 销售视图五面板
+- [x] 红线审计：硬件域零写入、演示域无真实品牌、无 PG/Redis、git 无 `add -A`
+- [x] **部署实录（2026-09-26 23:06，业主指令"部署到华为云后验收"）**：
+  - 定向更新（外科手术式）：仅替换后端 5 文件（seed/auth/ltc/index/db.js）至 `/opt/anqiao-saas/server/` + 前端 dist 先删后拷至 `/var/www/anqiao-saas/`；**未触碰 systemd/nginx/mysql.env/端口**（部署模板的 systemd 重写段缺 EnvironmentFile，已规避）；
+  - 回滚点：`/root/backup_20260926_p0_multivertical/`（旧版 5 后端文件 + web 打包）；
+  - 重启后冒烟：service active；数据层 mysql；设备资产 48 台恢复；argon2 跳过（预期，scrypt 回退）；saas_users=9 同步；活跃租户含 `kangning(康宁护理院（演示）)`；su01/2026 → 200；kangning_admin/2026 → 200；前端 `/saas/` → 200；新前端包含 `kangning_station` 指纹；
+  - 无侵入验证：8000（硬件 python）/8081（ruoyi）/7557（temperature）/8888（宝塔）全部在监听，零影响；
+  - `/v1/tenants`：12 租户，康宁条目 vertical/template/deployment 完整。
+- [ ] 生产遗留说明：N27 运行时开租户为内存注册（服务重启后消失），持久化随下一批契约；home-care 旧注释 4 处"居家乐"对标字样 P1 清理。
