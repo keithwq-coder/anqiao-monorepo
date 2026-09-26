@@ -12,7 +12,31 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ACCOUNTS, nowIso8, DEVICE_ASSETS, DEVICE_LIFECYCLE_LOGS } from './seed.js'
-import { saveLtcState, loadLtcState, dataLayerMode } from './db.js'
+
+// 阶段四：设备资产注册表持久化恢复（mysql/sqlite 模式；seed 引用数组原地替换保持引用一致）
+if (['sqlite', 'mysql'].includes(dataLayerMode())) {
+  loadDeviceRegistry()
+    .then((saved) => {
+      if (saved && Array.isArray(saved.assets)) {
+        DEVICE_ASSETS.length = 0
+        DEVICE_ASSETS.push(...saved.assets)
+        if (Array.isArray(saved.logs)) {
+          DEVICE_LIFECYCLE_LOGS.length = 0
+          DEVICE_LIFECYCLE_LOGS.push(...saved.logs)
+        }
+        console.log('[ltc] 设备资产注册表已从持久层恢复:', DEVICE_ASSETS.length, '台')
+      }
+    })
+    .catch((err) => console.error('[ltc] 设备注册表恢复失败:', err.message))
+}
+
+function persistDeviceRegistry() {
+  if (!['sqlite', 'mysql'].includes(dataLayerMode())) return
+  saveDeviceRegistry(DEVICE_ASSETS, DEVICE_LIFECYCLE_LOGS).catch((err) =>
+    console.error('[ltc] 设备注册表持久化失败:', err.message)
+  )
+}
+import { saveLtcState, loadLtcState, dataLayerMode, saveDeviceRegistry, loadDeviceRegistry } from './db.js'
 import { generateWorkflowTree } from './workbench-workflow-tree.js'
 import {
   ROLE_PERMISSIONS,
@@ -5295,6 +5319,7 @@ export function createDeviceAsset(ctx, body = {}) {
   }
   DEVICE_ASSETS.push(dev)
   pushDeviceLifecycleLog(dev, 'created', dev.lifecycle_status, ctx, '设备资产新增 (N17)')
+  persistDeviceRegistry()
   return dev
 }
 
@@ -5307,6 +5332,7 @@ export function updateDeviceAsset(ctx, deviceId, body = {}) {
   if (changed.length === 0) throw new LtcError(400, '无可修改字段（支持 label/type）')
   for (const k of changed) dev[k] = body[k]
   pushDeviceLifecycleLog(dev, dev.lifecycle_status, dev.lifecycle_status, ctx, `设备资产修改 (N18): ${changed.join('/')}`)
+  persistDeviceRegistry()
   return dev
 }
 
@@ -5320,6 +5346,7 @@ export function deleteDeviceAsset(ctx, deviceId) {
   const idx = DEVICE_ASSETS.indexOf(dev)
   DEVICE_ASSETS.splice(idx, 1)
   pushDeviceLifecycleLog(dev, dev.lifecycle_status, dev.lifecycle_status, ctx, '设备资产删除 (N19)')
+  persistDeviceRegistry()
   return { device_id: dev.device_id || dev.sn, removed: true }
 }
 

@@ -4,10 +4,11 @@
 // env WS_ALERT_FAST=1 可把 WS 新告警间隔从 45-75s 缩到 5-8s（供 server/test-ws.mjs 冒烟用）。
 
 import http from 'node:http'
-import { createHmac, createHash, timingSafeEqual } from 'node:crypto'
+import { createHmac, createHash, timingSafeEqual, randomBytes } from 'node:crypto'
 import {
   ACCOUNTS,
   verifyPassword,
+  hashPassword,
   upgradeSeedPasswordHashes,
   getTenantData,
   getTenantName,
@@ -1229,6 +1230,21 @@ const server = http.createServer(async (req, res) => {
 
       if (method === 'POST' && path === '/v1/auth/switch') {
         return await handleTenantSwitch(req, res, authPayload)
+      }
+      if (method === 'POST' && path === '/v1/auth/change-password') {
+        const body = await readBody(req).catch(() => ({}))
+        const oldP = typeof body.old_password === 'string' ? body.old_password : ''
+        const newP = typeof body.new_password === 'string' ? body.new_password : ''
+        if (!oldP || !newP) return badRequest(res, 'old_password/new_password 必填')
+        if (newP.length < 6) return badRequest(res, '新口令至少 6 位')
+        const account = ACCOUNTS.find((a) => a.username === authPayload.username)
+        if (!account) return notFound(res, '账号不存在')
+        if (!(await verifyPassword(oldP, account.password_hash))) {
+          return badRequest(res, '当前口令不正确')
+        }
+        account.password_hash = hashPassword(newP, randomBytes(16).toString('hex'))
+        await saveAccountHash(account.username, account.password_hash)
+        return ok(res, { username: account.username, changed: true })
       }
       if (method === 'GET' && path === '/v1/overview') {
 

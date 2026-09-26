@@ -137,11 +137,45 @@ async function ensureMysql() {
           updated_at VARCHAR(40) NOT NULL,
           PRIMARY KEY (tenant_id, patient_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS device_registry (
+          id INT NOT NULL PRIMARY KEY,
+          assets MEDIUMTEXT NOT NULL,
+          lifecycle_logs MEDIUMTEXT NOT NULL,
+          updated_at VARCHAR(40) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
       await mysqlPool.query("INSERT IGNORE INTO meta (`key`, `value`) VALUES ('schema_version', '1')")
       return mysqlPool
     })()
   }
   return mysqlReady
+}
+
+export async function saveDeviceRegistry(assets, logs) {
+  try {
+    const pool = await ensureMysql()
+    await pool.execute(
+      `INSERT INTO device_registry (id, assets, lifecycle_logs, updated_at) VALUES (1, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE assets = VALUES(assets), lifecycle_logs = VALUES(lifecycle_logs), updated_at = VALUES(updated_at)`,
+      [JSON.stringify(assets), JSON.stringify(logs), now()]
+    )
+    return true
+  } catch (err) {
+    console.error('[db] mysql saveDeviceRegistry failed:', err.message)
+    return false
+  }
+}
+
+export async function loadDeviceRegistry() {
+  try {
+    const pool = await ensureMysql()
+    const [rows] = await pool.execute('SELECT assets, lifecycle_logs FROM device_registry WHERE id = 1')
+    if (!rows.length) return null
+    return { assets: JSON.parse(rows[0].assets), logs: JSON.parse(rows[0].lifecycle_logs) }
+  } catch (err) {
+    console.error('[db] mysql loadDeviceRegistry failed:', err.message)
+    return null
+  }
 }
 
 export function closeDb() {
