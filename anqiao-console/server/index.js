@@ -43,6 +43,9 @@ import {
   saveLtcState,
   loadLtcState,
   saveTenantVitalsSnapshot,
+  saveSaaSUser,
+  loadSaaSUsers,
+  deleteSaaSUser,
 } from './db.js'
 import {
   hardwareConfigured,
@@ -168,11 +171,70 @@ const restoredHashes = await loadAccountHashes()
 for (const a of ACCOUNTS) {
   if (restoredHashes[a.username]) a.password_hash = restoredHashes[a.username]
 }
-const passwordUpgradeReady = upgradeSeedPasswordHashes().then(async () => {
-  if (['sqlite', 'mysql'].includes(dataLayerMode())) {
-    for (const a of ACCOUNTS) await saveAccountHash(a.username, a.password_hash)
+const passwordUpgradeReady = upgradeSeedPasswordHashes()
+  .catch((err) => {
+    // argon2 未安装等升级失败不致命：登录走 scrypt 回退（立即挂 catch，防止未处理拒绝杀进程）
+    console.error('[server] argon2id 口令升级跳过:', err.message)
+    return undefined
+  })
+  .then(async () => {
+    if (['sqlite', 'mysql'].includes(dataLayerMode())) {
+      for (const a of ACCOUNTS) await saveAccountHash(a.username, a.password_hash)
+    }
+  })
+  .catch((err) => console.error('[server] 账号哈希持久化失败:', err.message))
+
+// ---------- 中科安樵员工账号（与 CRM/wiki 同名同源；SaaS 为主管理，CRM 后续反向引入） ----------
+const EMPLOYEE_INIT_PASSWORD = '123'
+const EMPLOYEE_ACCOUNTS = [
+  { username: 'admin', display_name: '系统管理员', unified_role: 'system_admin', role: 'su', tenant_id: 'platform', workspace: 'system_admin', scope: 'global' },
+  { username: '赵', display_name: '赵', unified_role: 'platform_admin', role: 'admin', tenant_id: 'anqiao', workspace: 'platform_operations', scope: 'global' },
+  { username: '武', display_name: '武', unified_role: 'platform_admin', role: 'admin', tenant_id: 'anqiao', workspace: 'platform_operations', scope: 'global' },
+  { username: '吴', display_name: '吴', unified_role: 'platform_admin', role: 'admin', tenant_id: 'anqiao', workspace: 'platform_operations', scope: 'global' },
+  { username: '何丹', display_name: '何丹', unified_role: 'sales', role: 'business_user', tenant_id: 'anqiao', workspace: 'customer_view', scope: 'org' },
+  { username: '张楠', display_name: '张楠', unified_role: 'sales', role: 'business_user', tenant_id: 'anqiao', workspace: 'customer_view', scope: 'org' },
+  { username: 'ceshi', display_name: '测试', unified_role: 'sales', role: 'business_user', tenant_id: 'anqiao', workspace: 'customer_view', scope: 'org' },
+  { username: '王海燕', display_name: '王海燕', unified_role: 'sales', role: 'business_user', tenant_id: 'anqiao', workspace: 'customer_view', scope: 'org' },
+  { username: '周晶晶', display_name: '周晶晶', unified_role: 'sales', role: 'business_user', tenant_id: 'anqiao', workspace: 'customer_view', scope: 'org' },
+]
+
+async function ensureSaasAccounts() {
+  try {
+    const existing = await loadSaaSUsers()
+    const byName = new Map(existing.map((u) => [u.username, u]))
+    for (const e of EMPLOYEE_ACCOUNTS) {
+      if (!byName.has(e.username)) {
+        await saveSaaSUser({
+          ...e,
+          password_hash: hashPassword(EMPLOYEE_INIT_PASSWORD, randomBytes(16).toString('hex')),
+          is_seed: true,
+          created_by: 'seed',
+        })
+      }
+    }
+    const users = await loadSaaSUsers()
+    let added = 0
+    for (const u of users) {
+      if (ACCOUNTS.some((a) => a.username === u.username)) continue
+      ACCOUNTS.push({
+        username: u.username,
+        password_hash: u.password_hash,
+        staff_name: u.display_name || u.username,
+        role: u.role || 'business_user',
+        unified_role: u.unified_role || 'business_user',
+        tenant_id: u.tenant_id || 'anqiao',
+        org_id: u.tenant_id || 'anqiao',
+        workspace: u.workspace || 'platform_operations',
+        scope: u.scope || 'org',
+      })
+      added++
+    }
+    console.log(`[server] SaaS 账号库同步完成: saas_users=${users.length}, 本地新增=${added}`)
+  } catch (err) {
+    console.error('[server] SaaS 账号同步失败:', err.message)
   }
-})
+}
+await ensureSaasAccounts()
 
 function persistTenantAlerts(tenantId) {
   const d = getTenantData(tenantId)
@@ -1245,6 +1307,93 @@ const server = http.createServer(async (req, res) => {
         account.password_hash = hashPassword(newP, randomBytes(16).toString('hex'))
         await saveAccountHash(account.username, account.password_hash)
         return ok(res, { username: account.username, changed: true })
+      }
+
+      // ---------- 用户管理（生产口径：账号与权限分配统一由「吴」负责，业主指定） ----------
+      const isAllocator = authPayload.username === '吴'
+      if (isAllocator && path === '/v1/admin/users' && method === 'GET') {
+        return ok(res, {
+          list: ACCOUNTS.map((a) => ({
+            username: a.username,
+            display_name: a.staff_name,
+            unified_role: a.unified_role,
+            role: a.role,
+            tenant_id: a.tenant_id,
+            workspace: a.workspace,
+            scope: a.scope,
+          })),
+          total: ACCOUNTS.length,
+        })
+      }
+      if (isAllocator && path === '/v1/admin/users' && method === 'POST') {
+        const body = await readBody(req).catch(() => ({}))
+        const username = typeof body.username === 'string' ? body.username.trim() : ''
+        const password = typeof body.password === 'string' ? body.password : ''
+        if (!username || password.length < 6) return badRequest(res, 'username 必填，password 至少 6 位')
+        if (ACCOUNTS.some((a) => a.username === username)) {
+          return ok(res, { code: 409, msg: '用户名已存在', data: null })
+        }
+        const nu = {
+          username,
+          password_hash: hashPassword(password, randomBytes(16).toString('hex')),
+          staff_name: String(body.display_name || username).slice(0, 40),
+          role: String(body.role || 'business_user'),
+          unified_role: String(body.unified_role || body.role || 'business_user'),
+          tenant_id: String(body.tenant_id || 'anqiao'),
+          workspace: String(body.workspace || 'platform_operations'),
+          scope: String(body.scope || 'org'),
+        }
+        ACCOUNTS.push(nu)
+        await saveSaaSUser({
+          username,
+          password_hash: nu.password_hash,
+          display_name: nu.staff_name,
+          unified_role: nu.unified_role,
+          role: nu.role,
+          tenant_id: nu.tenant_id,
+          workspace: nu.workspace,
+          scope: nu.scope,
+          created_by: authPayload.username,
+        })
+        return ok(res, { username, created: true })
+      }
+      const adminUserMatch = /^\/v1\/admin\/users\/([A-Za-z0-9_-]+)$/.exec(path)
+      if (isAllocator && adminUserMatch) {
+        const target = adminUserMatch[1]
+        const acct = ACCOUNTS.find((a) => a.username === target)
+        if (!acct) return notFound(res, '用户不存在')
+        if (method === 'PATCH') {
+          const body = await readBody(req).catch(() => ({}))
+          if (typeof body.display_name === 'string' && body.display_name.trim()) acct.staff_name = body.display_name.trim().slice(0, 40)
+          if (typeof body.unified_role === 'string' && body.unified_role) acct.unified_role = body.unified_role
+          if (typeof body.workspace === 'string' && body.workspace) acct.workspace = body.workspace
+          if (typeof body.tenant_id === 'string' && body.tenant_id) {
+            acct.tenant_id = body.tenant_id
+            acct.org_id = body.tenant_id
+          }
+          if (typeof body.new_password === 'string' && body.new_password.length >= 6) {
+            acct.password_hash = hashPassword(body.new_password, randomBytes(16).toString('hex'))
+          }
+          await saveSaaSUser({
+            username: acct.username,
+            password_hash: acct.password_hash,
+            display_name: acct.staff_name,
+            unified_role: acct.unified_role,
+            role: acct.role,
+            tenant_id: acct.tenant_id,
+            workspace: acct.workspace,
+            scope: acct.scope || 'org',
+            created_by: authPayload.username,
+          })
+          return ok(res, { username: target, updated: true })
+        }
+        if (method === 'DELETE') {
+          if (['su01', 'admin01', 'admin'].includes(target)) return badRequest(res, '核心管理账号不可停用')
+          await deleteSaaSUser(target)
+          const idx = ACCOUNTS.findIndex((a) => a.username === target)
+          if (idx >= 0) ACCOUNTS.splice(idx, 1)
+          return ok(res, { username: target, deactivated: true })
+        }
       }
       if (method === 'GET' && path === '/v1/overview') {
 

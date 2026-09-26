@@ -43,7 +43,7 @@ const verifiedCount = computed(() => store.workOrders.value.filter((w) => w.stat
 const showDispatchModal = ref(false)
 const newOrderElderId = ref('SZ-ELD-10001')
 const newOrderService = ref('LTC-01')
-const newOrderCaregiver = ref('cg_canglang_01')
+const newOrderCaregiver = ref('demo_grid_caregiver_01')
 
 function submitDispatch() {
   const targetElder = store.elders.value.find((e) => e.elderly_id === newOrderElderId.value)
@@ -98,7 +98,7 @@ function handleViewElder(elderId: string) {
         <span class="pulse-indicator"></span>
         <div class="brand-titles">
           <h3>苏智护 · 居家指挥调度中枢</h3>
-          <p>苏州市姑苏区智护居家养老服务中心 · 7×24H 应急坐席值守中 (坐席: 苏怡)</p>
+          <p>演示·暖阳居家养老服务中心（模拟机构） · 7×24H 应急坐席值守中 (坐席: 苏怡)</p>
         </div>
       </div>
 

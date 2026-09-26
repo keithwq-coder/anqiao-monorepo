@@ -64,7 +64,7 @@ export async function login(username: string, password: string): Promise<LoginRe
 // 真实 API 仅限控制台路由(#/console):token 存于 localStorage,按源共享,
 // 大屏(/dash/ 或本地开发)与控制台同部署源时会被误判"已登录"而请求不存在的 /v1,
 // 因此大屏一律走 mock;控制台内真实接口失败时读接口回退 mock 兜底,写接口不兜底。
-// 例外:vendor(厂商)租户与护理院数据域完全隔离——接口失败一律不回退凯健 mock,
+// 例外:vendor(厂商)租户与护理院数据域完全隔离——接口失败一律不回退演示·康宁 mock,
 // 列表/概览返回空结构(UI 走空态),单对象详情直接抛错(UI 走错误态),避免虚构长者数据串租户泄漏。
 const isConsole = () => true
 const useLocalMock = () =>
@@ -146,7 +146,7 @@ export function getPatients(params?: PatientsParams): Promise<Paged<Patient>> {
 export function getPatient(patientId: string, date?: string): Promise<Patient> {
   if (!useRealApi()) return mock.getPatient(patientId, date)
   const req = http.get<Patient>(`/v1/patients/${encodeURIComponent(patientId)}`)
-  // vendor 租户无长者数据域：失败直接抛错，绝不回退凯健 mock
+  // vendor 租户无长者数据域：失败直接抛错，绝不回退演示·康宁 mock
   return isVendorTenant() ? req : req.catch(() => mock.getPatient(patientId, date))
 }
 
@@ -185,7 +185,7 @@ export function claimAlert(alertId: string): Promise<Alert> {
   return http.post<Alert>(`/v1/alerts/${encodeURIComponent(alertId)}/claim`)
 }
 
-// 班次卡（值班工作台用）；vendor 租户无护理班次，失败返回空结构而非凯健 mock
+// 班次卡（值班工作台用）；vendor 租户无护理班次，失败返回空结构而非演示·康宁 mock
 export function getShift(): Promise<ShiftInfo> {
   const vendor = isVendorTenant()
   return http.get<ShiftInfo>('/v1/shift').catch(() => (vendor ? emptyShift() : mock.getShift()))

@@ -30,7 +30,7 @@ function handleSelectElder(elderlyId: string) {
         <div class="title-block">
           <h2>在管长者全景档案</h2>
           <span class="subtitle-desc">
-            苏州市姑苏区智护居家养老服务中心 · 辖区在管长者 <strong>{{ store.elders.value.length }}</strong> 位全景感知
+            演示·暖阳居家养老服务中心（模拟机构） · 辖区在管长者 <strong>{{ store.elders.value.length }}</strong> 位全景感知
           </span>
         </div>
 

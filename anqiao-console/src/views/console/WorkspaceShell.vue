@@ -485,7 +485,7 @@ const platformTitle = computed(() => {
   if (t === 'kaijian' || r.startsWith('nursing_')) {
     return {
       main: '智慧康养机构综合运营平台',
-      sub: '上海凯健国际康养中心 · 院区智慧照护中枢',
+      sub: '演示·康宁康养中心（模拟机构） · 院区智慧照护中枢',
     }
   }
   if (t === 'bureau_suqian') {

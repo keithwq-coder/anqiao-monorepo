@@ -156,7 +156,7 @@
           <div class="arch-points">
             <div>• <code>all</code>: 超级管理员与自营总控全域穿透</div>
             <div>• <code>pool</code>: 统筹区监管范围（医保局统筹区全量监管数据）</div>
-            <div>• <code>tenant</code>: 单租户机构边界（如凯健护理院内数据）</div>
+            <div>• <code>tenant</code>: 单租户机构边界（如演示·康宁护理院（模拟机构）内数据）</div>
             <div>• <code>assigned</code>: 细粒度分配边界（责任护工分配楼层）</div>
             <div>• <code>partner_lead</code>: 渠道引荐潜客边界（严禁跨客户访问）</div>
           </div>
@@ -206,11 +206,11 @@ const qualityEvents = ref<QualityEvent[]>([])
 
 const tenants = [
   { tenant_id: 'anqiao', name: '中科安樵·自营运营中心', kind: 'vendor', scope: '全国设备资产与平台总控', isolation: '全局系统级' },
-  { tenant_id: 'kaijian', name: '凯健国际护理院', kind: 'nursing_home', scope: '苏州市吴江区凯健院内', isolation: '租户内部隔离 (按楼层分级)' },
+  { tenant_id: 'kaijian', name: '演示·康宁护理院（模拟机构）', kind: 'nursing_home', scope: '苏州市吴江区演示·康宁院内', isolation: '租户内部隔离 (按楼层分级)' },
   { tenant_id: 'xiangcheng_care', name: '相城康养示范中心', kind: 'nursing_home', scope: '苏州市相城区康养院区', isolation: '租户内部隔离' },
   { tenant_id: 'medical_bureau', name: '苏州市医疗保障局', kind: 'medical_insurance', scope: '苏州市市区长护险统筹区', isolation: '统筹区监管级 (Pool: bureau)' },
   { tenant_id: 'cpic_ltc', name: '惠生人寿保险（演示）· 苏州长护经办', kind: 'commercial_insurer', scope: '苏州市区委托长护经办业务', isolation: '委托经办级 (Pool: bureau)' },
-  { tenant_id: 'gusu_assessment', name: '苏州市姑苏区长护险失能评估中心', kind: 'assessment_agency', scope: '失能上门与现场鉴定', isolation: '评估任务级' },
+  { tenant_id: 'gusu_assessment', name: '演示市城南示范区长护险失能评估中心', kind: 'assessment_agency', scope: '失能上门与现场鉴定', isolation: '评估任务级' },
   { tenant_id: 'jianan_care', name: '苏州健安养老服务有限公司', kind: 'elderly_care', scope: '社区居家照护与日照中心', isolation: '定点服务级' },
   { tenant_id: 'smartcare_iot', name: '智护健康物联科技 (渠道伙伴)', kind: 'partner', scope: '智能睡眠设备渠道引荐', isolation: '渠道线索级 (Partner)' },
 ]
@@ -221,10 +221,10 @@ const accounts = [
   { username: 'user01', name: '设备监测技术员', org: '中科安樵·自营运营中心', role: 'device_user', workspace: 'device_monitoring', scope: 'tenant' },
   { username: 'medical01', name: '医保监管专员', org: '苏州市医疗保障局', role: 'medical_supervisor', workspace: 'medical_supervision', scope: 'pool' },
   { username: 'insurer01', name: '商保经办专员', org: '惠生人寿苏州经办机构（演示）', role: 'insurer_operator', workspace: 'insurer_operations', scope: 'pool' },
-  { username: 'assessor01', name: '注册失能评估师', org: '姑苏评估中心', role: 'assessor', workspace: 'assessor_workspace', scope: 'assigned' },
-  { username: 'kaijian_admin', name: '护理院院长', org: '凯健国际护理院', role: 'nursing_admin', workspace: 'nursing_home_admin', scope: 'tenant' },
-  { username: 'kaijian_nurse01', name: '3F责任护工', org: '凯健国际护理院', role: 'nursing_nurse', workspace: 'nursing_staff', scope: 'assigned (3F)' },
-  { username: 'kaijian_nurse02', name: '4F责任护工', org: '凯健国际护理院', role: 'nursing_nurse', workspace: 'nursing_staff', scope: 'assigned (4F)' },
+  { username: 'assessor01', name: '注册失能评估师', org: '演示评估中心', role: 'assessor', workspace: 'assessor_workspace', scope: 'assigned' },
+  { username: 'demo_nh_admin', name: '护理院院长', org: '演示·康宁护理院（模拟机构）', role: 'nursing_admin', workspace: 'nursing_home_admin', scope: 'tenant' },
+  { username: 'demo_nh_nurse01', name: '3F责任护工', org: '演示·康宁护理院（模拟机构）', role: 'nursing_nurse', workspace: 'nursing_staff', scope: 'assigned (3F)' },
+  { username: 'kaijian_nurse02', name: '4F责任护工', org: '演示·康宁护理院（模拟机构）', role: 'nursing_nurse', workspace: 'nursing_staff', scope: 'assigned (4F)' },
   { username: 'partner_admin', name: '渠道业务总监', org: '智护健康物联科技', role: 'partner_admin', workspace: 'partner_operations', scope: 'partner_lead' },
 ]
 

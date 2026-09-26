@@ -1,4 +1,4 @@
-// 本文件为凯健护理院（kaijian）演示口径 mock，与 anqiao 真实设备数据严格分离
+// 本文件为演示·康宁护理院（模拟机构）（kaijian）演示口径 mock，与 anqiao 真实设备数据严格分离
 import {
   GEO_HIERARCHY,
   type CityHierarchy,
@@ -339,7 +339,7 @@ export function getWards(floor?: string): Promise<WardInfo[]> {
 export function getOverview(): Promise<Overview> {
   const male = PATIENTS.filter(p => p.gender === 'male').length
   const inBed = PATIENTS.filter(p => p.vitals.in_bed).length
-  const deviceTotal = 139 // 守护仪 87 + 跌倒报警器 52（凯健口径）
+  const deviceTotal = 139 // 守护仪 87 + 跌倒报警器 52（演示·康宁口径）
   const deviceOnline = 136 // 在线 136 / 离线 3 → 97.8%
   return Promise.resolve({
     device_total: deviceTotal,

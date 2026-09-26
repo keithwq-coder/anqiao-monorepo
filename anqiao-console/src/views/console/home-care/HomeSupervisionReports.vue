@@ -128,7 +128,7 @@ const totalCompletedServices = computed(() => {
 const exportNotice = ref('')
 
 function handleExport(type: string) {
-  exportNotice.value = `正在生成【苏州市姑苏区智护居家养老 - ${type}】合规审计导出文件 (PDF/Excel)...`
+  exportNotice.value = `正在生成【演示市城南示范区智护居家养老 - ${type}】合规审计导出文件 (PDF/Excel)...`
   setTimeout(() => {
     exportNotice.value = `导出成功！报告已就绪：SZ_HOME_LTC_${new Date().toISOString().slice(0, 10)}.xlsx`
   }, 1200)
@@ -143,7 +143,7 @@ function handleExport(type: string) {
         <span class="rep-icon">📊</span>
         <div>
           <h3>服务与监管报告系统</h3>
-          <p>苏州市姑苏区智护居家养老服务中心 · 长护险定点服务履约核销与合规审计</p>
+          <p>演示·暖阳居家养老服务中心（模拟机构） · 长护险定点服务履约核销与合规审计</p>
         </div>
       </div>
 

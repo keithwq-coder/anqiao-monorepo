@@ -501,7 +501,7 @@
         <div class="report-document printable-content" id="patientReportPrintArea">
           <!-- 红头 -->
           <div class="doc-header">
-            <div class="doc-org-title">凯健国际护理院 · 中科安樵智能健康监测中心</div>
+            <div class="doc-org-title">演示·康宁护理院（模拟机构） · 中科安樵智能健康监测中心</div>
             <div class="doc-org-sub">KAIJIAN INTERNATIONAL CARE HOME · CLINICAL TELEMETRY REPORT</div>
             <div class="doc-red-line"></div>
             <div class="doc-sub-red-line"></div>
@@ -593,7 +593,7 @@
                 <path id="patStampPath" d="M 22 80 A 58 58 0 0 1 138 80" fill="none" />
                 <text fill="#dc2626" font-size="11.5" font-weight="bold" letter-spacing="2">
                   <textPath href="#patStampPath" startOffset="50%" text-anchor="middle">
-                    凯健国际护理院
+                    演示·康宁护理院（模拟机构）
                   </textPath>
                 </text>
                 <text x="80" y="118" fill="#dc2626" font-size="11" font-weight="bold" text-anchor="middle" letter-spacing="1">

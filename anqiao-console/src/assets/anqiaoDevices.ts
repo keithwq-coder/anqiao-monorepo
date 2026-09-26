@@ -31,10 +31,10 @@ export interface AnqiaoDevice {
 export const ANQIAO_DEVICES: AnqiaoDevice[] = [
   {
     "sn": "ANCE00001",
-    "label": "凯健国际·404",
+    "label": "演示·康宁国际·404",
     "city": "苏州市",
     "district": "吴中区",
-    "address": "苏州市吴中区凯健护理院4F-404-01床",
+    "address": "苏州市吴中区演示·康宁护理院（模拟机构）4F-404-01床",
     "lon": 120.612,
     "lat": 31.305,
     "ip": "58.211.134.52",

@@ -89,7 +89,7 @@ const filteredDeviceElders = computed(() => {
         <span class="sensor-icon">📡</span>
         <div>
           <h3>居家安居设备 · 智能感知大盘</h3>
-          <p>苏州市姑苏区智护居家养老服务中心 · 72 户安居适老化物联终端在网运行</p>
+          <p>演示·暖阳居家养老服务中心（模拟机构） · 72 户安居适老化物联终端在网运行</p>
         </div>
       </div>
 

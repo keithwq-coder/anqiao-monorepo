@@ -48,7 +48,7 @@ const filteredElders = computed(() => {
         if (elder.assigned_caregiver_id !== activeCaregiver.value.id) {
           return false
         }
-      } else if (activeCaregiver.value.id === 'nurse_shenyaping') {
+      } else if (activeCaregiver.value.id === 'demo_nurse_shen') {
         // 专职护师：重点关注重度失能、慢性创面与管路护理长者
         if (elder.ltc_level !== '重度失能') return false
       } else if (activeCaregiver.value.id === 'pt_chenjianxin') {

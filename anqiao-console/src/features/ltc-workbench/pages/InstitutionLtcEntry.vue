@@ -55,7 +55,7 @@ async function submitOnBehalf() {
       type: 'first_apply',
       application_level: '重度失能Ⅱ级',
       tenant_id: 'kaijian',
-      submitter: { role: 'nursing_admin', account_id: 'kaijian_admin', name: '机构代办', tenant_id: 'kaijian' },
+      submitter: { role: 'nursing_admin', account_id: 'demo_nh_admin', name: '机构代办', tenant_id: 'kaijian' },
     } as any)
     await submitLtcApplication(app.application_id)
     receipt.value = {

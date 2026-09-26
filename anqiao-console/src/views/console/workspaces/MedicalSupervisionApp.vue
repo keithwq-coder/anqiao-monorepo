@@ -2088,7 +2088,7 @@ function formatServiceOrg(orgId: string) {
     org_mm_02: '某某市颐养天年护理院',
     org_mm_03: '某某市博爱养老养护中心',
     org_mm_04: '某某市社区日间照料示范中心',
-    kaijian: '上海凯健国际康养中心',
+    kaijian: '演示·康宁康养中心（模拟机构）',
     cust_org01: '某某市康泰居家照护中心',
     gusu_assessment: '某某市定点评估中心',
     jianan_care: '某某市颐养天年护理院',

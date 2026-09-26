@@ -242,7 +242,7 @@ function handleFinishService() {
               </div>
             </div>
             <div class="geo-verify-badge">
-              <span>卫星锁定：苏州姑苏区沧浪街道 (31.2982° N, 120.5841° E)</span>
+              <span>卫星锁定：苏州演示·城南沧浪街道 (31.2982° N, 120.5841° E)</span>
             </div>
             <button class="btn-action-primary" :disabled="isSubmitting" @click="handleCheckin">
               {{ isSubmitting ? '核验基站与人脸中...' : '到达长者住所 · 一键入户打卡 ➔' }}

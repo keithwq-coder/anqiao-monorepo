@@ -144,11 +144,70 @@ async function ensureMysql() {
           lifecycle_logs MEDIUMTEXT NOT NULL,
           updated_at VARCHAR(40) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS saas_users (
+          username VARCHAR(64) NOT NULL PRIMARY KEY,
+          password_hash VARCHAR(255) NOT NULL,
+          display_name VARCHAR(64) NOT NULL DEFAULT '',
+          unified_role VARCHAR(32) NOT NULL DEFAULT '',
+          role VARCHAR(32) NOT NULL DEFAULT '',
+          tenant_id VARCHAR(64) NOT NULL DEFAULT 'anqiao',
+          workspace VARCHAR(64) NOT NULL DEFAULT '',
+          scope VARCHAR(16) NOT NULL DEFAULT 'org',
+          pool_id VARCHAR(64) NULL,
+          is_seed TINYINT(1) NOT NULL DEFAULT 0,
+          is_active TINYINT(1) NOT NULL DEFAULT 1,
+          created_by VARCHAR(64) NOT NULL DEFAULT 'seed',
+          updated_at VARCHAR(40) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
       await mysqlPool.query("INSERT IGNORE INTO meta (`key`, `value`) VALUES ('schema_version', '1')")
       return mysqlPool
     })()
   }
   return mysqlReady
+}
+
+export async function saveSaaSUser(u) {
+  try {
+    const pool = await ensureMysql()
+    await pool.execute(
+      `INSERT INTO saas_users (username, password_hash, display_name, unified_role, role, tenant_id, workspace, scope, pool_id, is_seed, is_active, created_by, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+       ON DUPLICATE KEY UPDATE password_hash = IF(VALUES(password_hash) = '', password_hash, VALUES(password_hash)),
+         display_name = VALUES(display_name), unified_role = VALUES(unified_role), role = VALUES(role),
+         tenant_id = VALUES(tenant_id), workspace = VALUES(workspace), scope = VALUES(scope),
+         pool_id = VALUES(pool_id), is_active = VALUES(is_active), updated_at = VALUES(updated_at)`,
+      [u.username, u.password_hash || '', u.display_name || '', u.unified_role || '', u.role || '',
+       u.tenant_id || 'anqiao', u.workspace || '', u.scope || 'org', u.pool_id || null,
+       u.is_seed ? 1 : 0, u.is_active === false ? 0 : 1, u.created_by || 'seed', now()]
+    )
+    return true
+  } catch (err) {
+    console.error('[db] mysql saveSaaSUser failed:', err.message)
+    return false
+  }
+}
+
+export async function loadSaaSUsers() {
+  try {
+    const pool = await ensureMysql()
+    const [rows] = await pool.execute('SELECT * FROM saas_users WHERE is_active = 1 ORDER BY username')
+    return rows
+  } catch (err) {
+    console.error('[db] mysql loadSaaSUsers failed:', err.message)
+    return []
+  }
+}
+
+export async function deleteSaaSUser(username) {
+  try {
+    const pool = await ensureMysql()
+    await pool.execute('UPDATE saas_users SET is_active = 0, updated_at = ? WHERE username = ?', [now(), username])
+    return true
+  } catch (err) {
+    console.error('[db] mysql deleteSaaSUser failed:', err.message)
+    return false
+  }
 }
 
 export async function saveDeviceRegistry(assets, logs) {

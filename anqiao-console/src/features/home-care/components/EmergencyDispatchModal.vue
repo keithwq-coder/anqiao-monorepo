@@ -50,7 +50,7 @@ function handleConfirmResolved() {
           <span class="siren-icon">🚨</span>
           <div>
             <h3>苏智护 12349 · 突发跌倒与 SOS 应急指挥调度中枢</h3>
-            <p>苏州市姑苏区智护居家养老服务中心 · 7×24H 智慧安居秒级出警中枢</p>
+            <p>演示·暖阳居家养老服务中心（模拟机构） · 7×24H 智慧安居秒级出警中枢</p>
           </div>
         </div>
         <button class="btn-close" @click="store.closeEmergencyModal()" title="关闭">✕</button>
