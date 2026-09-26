@@ -372,6 +372,7 @@ const DeviceMonitoringApp = defineAsyncComponent(() => import('./workspaces/Devi
 const ReportsCenterApp = defineAsyncComponent(() => import('./workspaces/ReportsCenterApp.vue'))
 import MedicalSupervisionApp from './workspaces/MedicalSupervisionApp.vue'
 import FacilityStudioApp from './workspaces/FacilityStudioApp.vue'
+import CustomerViewApp from './workspaces/CustomerViewApp.vue'
 const InsurerOperationsApp = defineAsyncComponent(() => import('./workspaces/InsurerOperationsApp.vue'))
 const AssessorApp = defineAsyncComponent(() => import('./workspaces/AssessorApp.vue'))
 const NursingHomeAdminApp = defineAsyncComponent(() => import('./workspaces/NursingHomeAdminApp.vue'))
@@ -463,6 +464,7 @@ const WORKSPACE_METAS: Record<string, { name: string; icon: string; desc: string
   facility_it_studio: { name: 'IT 工作台', icon: '🖥️', desc: '网络终端归因/平台支持请求' },
   rehab_studio: { name: '康复治疗师工作台', icon: '🏃', desc: '康复处方/训练打卡/雷达评效' },
   dementia_studio: { name: '认知症照护工作台', icon: '🧠', desc: 'MMSE 测评/围栏标定/非药物干预' },
+  customer_view: { name: '客户资产视图', icon: '🤝', desc: '名下客户机构/设备在线/脱敏体征/遥测' },
 }
 
 const authorizedWs = computed(() => allowedWorkspaces(props.session))
@@ -849,6 +851,7 @@ const activeComponent = computed(() => {
     facility_it_studio: FacilityStudioApp,
     rehab_studio: FacilityStudioApp,
     dementia_studio: FacilityStudioApp,
+    customer_view: CustomerViewApp,
   }
   return map[selectedWorkspace.value] || PlatformOperationsApp
 })

@@ -74,6 +74,21 @@ async function ensureDb() {
           updated_at TEXT NOT NULL,
           PRIMARY KEY (tenant_id, patient_id)
         );
+        CREATE TABLE IF NOT EXISTS saas_users (
+          username TEXT PRIMARY KEY,
+          password_hash TEXT NOT NULL DEFAULT '',
+          display_name TEXT NOT NULL DEFAULT '',
+          unified_role TEXT NOT NULL DEFAULT '',
+          role TEXT NOT NULL DEFAULT '',
+          tenant_id TEXT NOT NULL DEFAULT 'anqiao',
+          workspace TEXT NOT NULL DEFAULT '',
+          scope TEXT NOT NULL DEFAULT 'org',
+          pool_id TEXT,
+          is_seed INTEGER NOT NULL DEFAULT 0,
+          is_active INTEGER NOT NULL DEFAULT 1,
+          created_by TEXT NOT NULL DEFAULT 'seed',
+          updated_at TEXT NOT NULL
+        );
       `)
       db.prepare("INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', '1')").run()
       return db
@@ -169,6 +184,20 @@ async function ensureMysql() {
 
 export async function saveSaaSUser(u) {
   try {
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      d.prepare(`INSERT INTO saas_users (username, password_hash, display_name, unified_role, role, tenant_id, workspace, scope, pool_id, is_seed, is_active, created_by, updated_at)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(username) DO UPDATE SET
+          password_hash = CASE WHEN excluded.password_hash = '' THEN saas_users.password_hash ELSE excluded.password_hash END,
+          display_name = excluded.display_name, unified_role = excluded.unified_role, role = excluded.role,
+          tenant_id = excluded.tenant_id, workspace = excluded.workspace, scope = excluded.scope,
+          pool_id = excluded.pool_id, is_active = excluded.is_active, updated_at = excluded.updated_at`)
+        .run(u.username, u.password_hash || '', u.display_name || '', u.unified_role || '', u.role || '',
+          u.tenant_id || 'anqiao', u.workspace || '', u.scope || 'org', u.pool_id || null,
+          u.is_seed ? 1 : 0, u.is_active === false ? 0 : 1, u.created_by || 'seed', now())
+      return true
+    }
     const pool = await ensureMysql()
     await pool.execute(
       `INSERT INTO saas_users (username, password_hash, display_name, unified_role, role, tenant_id, workspace, scope, pool_id, is_seed, is_active, created_by, updated_at)
@@ -190,17 +219,26 @@ export async function saveSaaSUser(u) {
 
 export async function loadSaaSUsers() {
   try {
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      return d.prepare('SELECT * FROM saas_users WHERE is_active = 1 ORDER BY username').all()
+    }
     const pool = await ensureMysql()
     const [rows] = await pool.execute('SELECT * FROM saas_users WHERE is_active = 1 ORDER BY username')
     return rows
   } catch (err) {
-    console.error('[db] mysql loadSaaSUsers failed:', err.message)
+    console.error('[db] loadSaaSUsers failed:', err.message)
     return []
   }
 }
 
 export async function deleteSaaSUser(username) {
   try {
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      d.prepare('UPDATE saas_users SET is_active = 0, updated_at = ? WHERE username = ?').run(now(), username)
+      return true
+    }
     const pool = await ensureMysql()
     await pool.execute('UPDATE saas_users SET is_active = 0, updated_at = ? WHERE username = ?', [now(), username])
     return true

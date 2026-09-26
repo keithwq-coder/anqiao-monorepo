@@ -1355,6 +1355,27 @@ export function getTenantDeployment(tenantId) {
   return TENANT_CONFIGS[tenantId]?.deployment ?? 'saas'
 }
 
+// ---------- 运行时开租户（N27）：按业态模板注册空机构（诚实空态，零假数据） ----------
+const VERTICAL_TEMPLATE_FACTORIES = {
+  nursing_home_v1: (name, seedBase) => ({
+    name, kind: 'nursing_home', vertical: 'nursing_home', template: 'nursing_home_v1', deployment: 'saas',
+    seed: seedBase, alertIdBase: 90001,
+    occupiedBeds: [], vacantBeds: [], floorWards: {}, floorCare: {},
+    nurses: 0, inBedRatio: 0, abnormalPlan: [], patientTotal: 0, alertTypes: [], alertStatuses: [],
+  }),
+}
+
+export function registerTenant(tenantId, { name, vertical, template }) {
+  if (TENANT_CONFIGS[tenantId]) return null
+  const tpl = template || (vertical === 'nursing_home' ? 'nursing_home_v1' : '')
+  const factory = VERTICAL_TEMPLATE_FACTORIES[tpl]
+  if (!factory) return null
+  const cfg = factory(name, Date.now() % 100000000)
+  TENANT_CONFIGS[tenantId] = cfg
+  TENANT_DATA[tenantId] = buildTenant(cfg)
+  return cfg
+}
+
 // ---------- Overview 实时计算（含处置/新告警后的指标变化），不硬编码 ----------
 export function computeOverview(tenantId) {
   const d = TENANT_DATA[tenantId]

@@ -32,6 +32,8 @@ import {
   getDemographics,
   getRankings,
   getProjectConfig,
+  TENANT_CONFIGS,
+  registerTenant,
 } from './seed.js'
 import { saveState, loadState } from './store.js'
 import {
@@ -644,6 +646,124 @@ function handleDevicesList(req, res, authPayload, url) {
     list = list.filter((d) => d.customer_org_id === account.org_id)
   }
   return ok(res, { list, total: list.length })
+}
+
+// ---------- 路由：销售客户资产视图（N21–N25，多业态设计 §6） ----------
+// 机构主数据以 SaaS 侧 device_registry 的 customer_org_id 归属为权威（CRM 为边缘实验项目，仅可选镜像，不做硬依赖）。
+// 归属规则：设备带 sales_owner 时仅归属销售与平台侧可见；未分配机构对所有销售可见（与现网行为一致）。
+function salesVisibleDevices(account) {
+  const isPlatform = ['admin', 'su'].includes(account?.role)
+  return DEVICE_ASSETS.filter((d) => {
+    if (!d.customer_org_id) return false
+    if (isPlatform) return true
+    return !d.sales_owner || d.sales_owner === account.username
+  })
+}
+
+function salesAccountOr404(res, authPayload) {
+  const account = ACCOUNTS.find((a) => a.username === authPayload.username)
+  if (!account || !['business_user', 'admin', 'su'].includes(account.role)) {
+    notFound(res, '无该数据面')
+    return null
+  }
+  return account
+}
+
+function salesDeviceSummary(d) {
+  return {
+    device_id: d.device_id,
+    sn: d.sn,
+    label: d.label,
+    type: d.type,
+    online: !!d.online,
+    lifecycle_status: d.lifecycle_status,
+    last_data_time: d.last_data_time ?? null,
+    sales_owner: d.sales_owner ?? null,
+  }
+}
+
+/** N21 GET /v1/sales/institutions */
+function handleSalesInstitutions(req, res, authPayload) {
+  const account = salesAccountOr404(res, authPayload)
+  if (!account) return
+  const devices = salesVisibleDevices(account)
+  const map = new Map()
+  for (const d of devices) {
+    const org = d.customer_org_id
+    if (!map.has(org)) {
+      map.set(org, { org_id: org, site: d.installation_site_id || d.device_placement_location || org, devices_count: 0, online_count: 0 })
+    }
+    const e = map.get(org)
+    e.devices_count += 1
+    if (d.online) e.online_count += 1
+  }
+  const list = [...map.values()]
+  return ok(res, { list, total: list.length })
+}
+
+/** N22 GET /v1/sales/institutions/{org}/devices */
+function handleSalesOrgDevices(req, res, authPayload, orgId) {
+  const account = salesAccountOr404(res, authPayload)
+  if (!account) return
+  const exists = DEVICE_ASSETS.some((d) => d.customer_org_id === orgId)
+  const devices = salesVisibleDevices(account).filter((d) => d.customer_org_id === orgId)
+  if (!exists) return notFound(res, '机构不存在或无权访问')
+  return ok(res, { org_id: orgId, list: devices.map(salesDeviceSummary), total: devices.length })
+}
+
+/** N23 GET /v1/sales/institutions/{org}/vitals-summary —— 脱敏：设备维度遥测，无身份档案字段 */
+async function handleSalesOrgVitals(req, res, authPayload, orgId) {
+  const account = salesAccountOr404(res, authPayload)
+  if (!account) return
+  const exists = DEVICE_ASSETS.some((d) => d.customer_org_id === orgId)
+  const devices = salesVisibleDevices(account).filter((d) => d.customer_org_id === orgId)
+  if (!exists) return notFound(res, '机构不存在或无权访问')
+  const list = []
+  for (const d of devices.slice(0, 10)) {
+    if (!hardwareConfigured()) {
+      list.push({ device_id: d.device_id, label: d.label, vitals: null, reason: '硬件云凭据未注入（HW_*）' })
+      continue
+    }
+    try {
+      const raw = await getLatestData(d.sn)
+      list.push({ device_id: d.device_id, label: d.label, vitals: raw ?? null })
+    } catch (err) {
+      list.push({ device_id: d.device_id, label: d.label, vitals: null, reason: err.message || '遥测拉取失败' })
+    }
+  }
+  return ok(res, { org_id: orgId, list })
+}
+
+/** N24 GET /v1/sales/institutions/{org}/alerts —— 告警按设备维度的 SN 映射未定前，诚实返回待映射，严禁跨机构泄漏 */
+function handleSalesOrgAlerts(req, res, authPayload, orgId) {
+  const account = salesAccountOr404(res, authPayload)
+  if (!account) return
+  const exists = DEVICE_ASSETS.some((d) => d.customer_org_id === orgId)
+  if (!exists) return notFound(res, '机构不存在或无权访问')
+  return ok(res, {
+    org_id: orgId,
+    alarms: null,
+    reason: '硬件告警 SN→设备映射确认后启用（避免跨机构告警泄漏）',
+  })
+}
+
+/** N25 GET /v1/sales/institutions/{org}/telemetry?device_id=&range=today|sleep —— 硬件代理只读转发 */
+async function handleSalesOrgTelemetry(req, res, authPayload, orgId, url) {
+  const account = salesAccountOr404(res, authPayload)
+  if (!account) return
+  const deviceId = url.searchParams.get('device_id')
+  if (!deviceId) return badRequest(res, 'device_id 必填')
+  const dev = salesVisibleDevices(account).find((d) => d.customer_org_id === orgId && (d.device_id === deviceId || d.sn === deviceId))
+  if (!dev) return notFound(res, '设备不存在或不属于该机构')
+  if (!hardwareConfigured()) return send(res, 503, 503, '硬件云凭据未注入（HW_*），遥测不可用；禁止静默 mock')
+  const range = url.searchParams.get('range') || 'today'
+  try {
+    const data = range === 'sleep' ? await getSleepStats(dev.sn) : await getTodayData(dev.sn)
+    return ok(res, { device_id: dev.device_id, range, data: data ?? null })
+  } catch (err) {
+    const status = err.status || 502
+    return send(res, status, status, err.message || '硬件云代理失败')
+  }
 }
 
 async function handleDeviceLifecycle(req, res, authPayload, deviceId) {
@@ -1439,6 +1559,50 @@ const server = http.createServer(async (req, res) => {
         } catch (err) {
           return mapLtcError(res, err)
         }
+      }
+      // ---------- 销售客户资产视图（N21–N25）与租户管理（N26–N27，多业态设计 §4/§6） ----------
+      if (method === 'GET' && path === '/v1/sales/institutions') {
+        return handleSalesInstitutions(req, res, authPayload)
+      }
+      const salesOrgMatch = /^\/v1\/sales\/institutions\/([A-Za-z0-9_-]+)\/(devices|vitals-summary|alerts|telemetry)$/.exec(path)
+      if (method === 'GET' && salesOrgMatch) {
+        const [, salesOrgId, salesSub] = salesOrgMatch
+        if (salesSub === 'devices') return handleSalesOrgDevices(req, res, authPayload, salesOrgId)
+        if (salesSub === 'vitals-summary') return await handleSalesOrgVitals(req, res, authPayload, salesOrgId)
+        if (salesSub === 'alerts') return handleSalesOrgAlerts(req, res, authPayload, salesOrgId)
+        return await handleSalesOrgTelemetry(req, res, authPayload, salesOrgId, url)
+      }
+      if (method === 'GET' && path === '/v1/tenants') {
+        const tenantViewer = ACCOUNTS.find((a) => a.username === authPayload.username)
+        if (!tenantViewer || !['admin', 'su'].includes(tenantViewer.role)) return notFound(res, '无该数据面')
+        return ok(res, {
+          list: Object.entries(TENANT_CONFIGS).map(([tenant_id, c]) => ({
+            tenant_id, name: c.name, kind: c.kind, vertical: c.vertical, template: c.template, deployment: c.deployment,
+          })),
+        })
+      }
+      if (method === 'POST' && path === '/v1/admin/tenants') {
+        if (authPayload.username !== '吴') return send(res, 403, 403, '仅平台开号席位（吴）可开租户')
+        let body
+        try {
+          body = await readBody(req)
+        } catch {
+          return badRequest(res, '请求体格式错误')
+        }
+        const newTenantId = String(body?.tenant_id || '').trim()
+        const newTenantName = String(body?.name || '').trim()
+        const newTenantVertical = String(body?.vertical || '').trim()
+        const newTenantTemplate = String(body?.template || '').trim()
+        if (!/^[a-z0-9_]{3,64}$/.test(newTenantId)) return badRequest(res, 'tenant_id 格式非法（3-64 位小写字母/数字/下划线）')
+        if (!newTenantName) return badRequest(res, 'name 必填')
+        if (!['nursing_home', 'senior_community', 'home_care', 'health_wellness'].includes(newTenantVertical)) {
+          return badRequest(res, 'vertical 必须为四业态之一')
+        }
+        const createdCfg = registerTenant(newTenantId, { name: newTenantName, vertical: newTenantVertical, template: newTenantTemplate })
+        if (!createdCfg) return send(res, 409, 409, '租户已存在或该业态模板未上线')
+        return ok(res, {
+          tenant_id: newTenantId, name: createdCfg.name, vertical: createdCfg.vertical, template: createdCfg.template, deployment: createdCfg.deployment,
+        })
       }
       const devAssetMatch = /^\/v1\/devices\/([A-Za-z0-9_-]+)$/.exec(path)
       if (devAssetMatch && (method === 'PATCH' || method === 'DELETE')) {

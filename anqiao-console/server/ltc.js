@@ -5327,7 +5327,7 @@ export function updateDeviceAsset(ctx, deviceId, body = {}) {
   assertPerm(ctx, 'device:write')
   const dev = findDeviceAsset(deviceId)
   if (!dev) throw new LtcError(404, '设备不存在')
-  const patchable = ['label', 'type']
+  const patchable = ['label', 'type', 'sales_owner'] // sales_owner：销售归属（N21 过滤依据，多业态设计 §6）
   const changed = patchable.filter((k) => body[k] !== undefined && body[k] !== dev[k])
   if (changed.length === 0) throw new LtcError(400, '无可修改字段（支持 label/type）')
   for (const k of changed) dev[k] = body[k]
