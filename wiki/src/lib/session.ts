@@ -42,7 +42,7 @@ export async function getSessionUser(): Promise<{ user: UserRow; sid: string } |
   const { rows } = await pool.query(
     `select u.* from sessions s
        join users u on u.id = s.user_id
-      where s.id = $1 and s.expires_at > now()`,
+      where s.id = ? and s.expires_at > UTC_TIMESTAMP()`,
     [sid]
   );
   if (rows.length === 0) return null;
