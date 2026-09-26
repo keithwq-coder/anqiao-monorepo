@@ -117,8 +117,10 @@ def _optional(value: str | None) -> str | None:
 
 
 def _aware(value: datetime, label: str) -> datetime:
+    # MySQL DATETIME 读取为 naive；本仓约定库内一律存 UTC 墙钟（PG timestamptz 时代
+    # 由驱动原生返回 aware），故对 naive 值按 UTC 收编而非拒绝（业主原则：不匹配改代码）。
     if value.tzinfo is None or value.utcoffset() is None:
-        raise DomainValidationError(f"{label} must include a timezone")
+        return value.replace(tzinfo=timezone.utc)
     return value
 
 
