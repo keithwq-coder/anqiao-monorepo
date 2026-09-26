@@ -6,6 +6,44 @@
 > **Architecture:** 在既有授权链（auth.js → ltc.js authorizedWorkspacesFor → index.js 登录发放）与租户注册表（seed.js TENANT_CONFIGS/TENANT_DATA）上做**加法扩展**，不重构；前端在 ConsoleLogin/WorkspaceShell 既有结构上扩展。
 > **Tech Stack:** Node 20 ESM + node:test（spawn 真实后端实测）、Vue 3 SFC、MySQL（mysql2，双模式）。
 
+## 全系统工作台完成度矩阵（2026-09-26 全量审计，业主要求，覆盖全部用户群）
+
+> 证据口径：组件行数 / npm test 覆盖 / 账号矩阵席位可达性（seed.js+index.js grep 实测）。
+
+### 长护险生态（21 席位在产，全部存量实装 + 测试覆盖）
+
+| 工作台 | 组件 | 证据 | 状态 |
+|---|---|---|---|
+| 医保长护监管 | MedicalSupervisionApp（3219 行，全系统最大） | test-medical-supervision.mjs | ✅ 实装 |
+| 长护险经办 | InsurerOperationsApp（1469 行） | test-insurer-operations.mjs | ✅ 实装 |
+| 失能评估师 | AssessorApp（1815 行） | test-workbench-sop-studio / test-assessor-expert | ✅ 实装 |
+| 结算报表 | ReportsCenterApp（1416 行） | npm test 覆盖 | ✅ 实装 |
+| 家属申报 | FamilyWorkspace（ltc-workbench/pages） | test-phase-d.mjs | ✅ 实装 |
+
+### 中科安樵自营（14 席位在产，存量实装）
+
+| 工作台 | 组件 | 状态 |
+|---|---|---|
+| 平台运营 | PlatformOperationsApp（552 行 + 大型异步分块） | ✅ 实装 |
+| 系统管理 | SystemAdminApp（481 行） | ✅ 实装 |
+| 设备监测 | DeviceMonitoringApp（971 行） | ✅ 实装 |
+| 渠道合作 | PartnerOperationsApp（362 行） | ✅ 实装 |
+| 客户资产视图 | CustomerViewApp（179 行，本轮新增） | ⚠️ 实现入库、验收挂起（业主指示记录态） |
+
+### 护理院（16 席位，P0 打样）——见前文 A/B/C 三级矩阵
+
+### 居家养老（⛔ 孤儿状态——本次审计暴露的最大缺口）
+
+- home_dispatch / home_elderly_dossier / home_device_monitoring / home_supervision_reports 四个工作台组件 + `features/home-care` 共 **6418 行实装代码**存在；
+- 但**账号矩阵中席位为 0**（`elderly_care_admin/home_dispatcher/grid_*/home_care_gusu` 在 seed.js 与 index.js 中 grep 均为 0）：居家时代组件成建制保留，数据域与席位从未接入现网；
+- 登录页居家养老组显示"席位随 P1 开通"占位是诚实行为；**P1 工作量 = 建居家演示租户 + 席位 + 数据域接通，并补齐该业态 §3.1A 同模式功能规格**。
+
+### 养老社区 / 大健康：◻️ 占位（业主裁定：角色栈定义后启动）
+
+### 汇总：19 个工作台组件 = 15 个席位可达（14 存量实装 + 1 记录态）+ 4 个居家孤儿 + 大健康/养老社区按裁定占位。护理院深度缺口（给药闭环/任务下发/结构化交接班/计划审批/质控抽查/六职能写表单 N28–N33/PIN 秒切）见前文 C 表，未做即说未做。
+
+---
+
 ## Global Constraints（每个任务隐含遵守）
 
 - 硬件库 `api_health_track`（37 表）与硬件 API 8000 **只读零影响**；不重启 8000/8081/7557/8888；本地 vite 进程（PID 8332/37344 等）勿杀；
