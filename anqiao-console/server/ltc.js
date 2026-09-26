@@ -5584,6 +5584,12 @@ export function authorizedWorkspacesFor(role, account = null) {
     'nursing_staff',
     'partner_operations',
     'family_workspace',
+    'facility_doctor_studio',
+    'facility_hr_studio',
+    'facility_finance_studio',
+    'facility_marketing_studio',
+    'facility_admin_studio',
+    'facility_it_studio',
   ]
   if (role === 'su' || role === 'platform_admin') return all
   if (role === 'family_contact') return ['family_workspace']
@@ -5639,6 +5645,8 @@ export function authorizedWorkspacesFor(role, account = null) {
     quality_inspector: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
     ltc_biller: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
     assistive_specialist: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
+    // 销售席位（多业态设计 §6.2）：customer_view 专属，禁止错位回退到院长工作台
+    business_user: ['customer_view'],
   }
   const list = extras[role] || [workspaceOf(role)]
   return list.filter((w, i, arr) => arr.indexOf(w) === i)

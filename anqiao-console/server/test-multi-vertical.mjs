@@ -66,3 +66,27 @@ test('康宁床位呈现：occupied + vacant 双态（listBeds）', () => {
   assert.ok(beds.some((b) => b.status === 'vacant'), '应存在诚实空床态')
   assert.ok(beds.some((b) => b.status === 'occupied' && b.patient_id), '在住床位应挂长者')
 })
+
+test('六职能角色：workspace/permissions/scope 定义齐备（§3.3）', async () => {
+  const { workspaceOf, permissionsOf, dataScopeOf } = await import('./auth.js')
+  const roles = [
+    ['facility_doctor', 'facility_doctor_studio'],
+    ['facility_hr', 'facility_hr_studio'],
+    ['facility_finance', 'facility_finance_studio'],
+    ['facility_marketing', 'facility_marketing_studio'],
+    ['facility_admin', 'facility_admin_studio'],
+    ['facility_it', 'facility_it_studio'],
+  ]
+  for (const [role, ws] of roles) {
+    assert.equal(workspaceOf(role), ws, `${role} 应映射 ${ws}`)
+    assert.ok(permissionsOf(role).length > 0, `${role} permissions 不得为空`)
+    assert.equal(dataScopeOf(role), 'org', `${role} data_scope 应为 org`)
+  }
+})
+
+test('销售席位授权修正：business_user/customer_view 不再错位回退到院长工作台', async () => {
+  const { authorizedWorkspacesFor } = await import('./ltc.js')
+  const list = authorizedWorkspacesFor('business_user', { workspace: 'customer_view', username: '何丹' })
+  assert.ok(list.includes('customer_view'), `应含 customer_view，实际 ${JSON.stringify(list)}`)
+  assert.ok(!list.includes('nursing_home_admin'), '不得错位回退到 nursing_home_admin')
+})

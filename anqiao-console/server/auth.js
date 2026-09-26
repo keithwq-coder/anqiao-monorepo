@@ -14,6 +14,12 @@ export const WORKSPACES = {
   NURSING_STAFF: 'nursing_staff',
   PARTNER_OPERATIONS: 'partner_operations',
   FAMILY_WORKSPACE: 'family_workspace',
+  FACILITY_DOCTOR_STUDIO: 'facility_doctor_studio',
+  FACILITY_HR_STUDIO: 'facility_hr_studio',
+  FACILITY_FINANCE_STUDIO: 'facility_finance_studio',
+  FACILITY_MARKETING_STUDIO: 'facility_marketing_studio',
+  FACILITY_ADMIN_STUDIO: 'facility_admin_studio',
+  FACILITY_IT_STUDIO: 'facility_it_studio',
 }
 
 export const ROLE_WORKSPACE_MAP = {
@@ -58,6 +64,13 @@ export const ROLE_WORKSPACE_MAP = {
   quality_inspector: 'home_dispatch',
   ltc_biller: 'home_dispatch',
   assistive_specialist: 'home_dispatch',
+  // 护理院职能席位（多业态设计 §3.3，独立账号类）
+  facility_doctor: WORKSPACES.FACILITY_DOCTOR_STUDIO,
+  facility_hr: WORKSPACES.FACILITY_HR_STUDIO,
+  facility_finance: WORKSPACES.FACILITY_FINANCE_STUDIO,
+  facility_marketing: WORKSPACES.FACILITY_MARKETING_STUDIO,
+  facility_admin: WORKSPACES.FACILITY_ADMIN_STUDIO,
+  facility_it: WORKSPACES.FACILITY_IT_STUDIO,
 }
 
 export const ROLE_DATA_SCOPE_MAP = {
@@ -102,6 +115,12 @@ export const ROLE_DATA_SCOPE_MAP = {
   quality_inspector: 'org',
   ltc_biller: 'org',
   assistive_specialist: 'assigned',
+  facility_doctor: 'org',
+  facility_hr: 'org',
+  facility_finance: 'org',
+  facility_marketing: 'org',
+  facility_admin: 'org',
+  facility_it: 'org',
 }
 
 export const ROLE_PERMISSIONS = {
@@ -369,6 +388,25 @@ export const ROLE_PERMISSIONS = {
     'patient:read', 'device:read', 'device:write',
     'assistive_device:read', 'assistive_device:write',
     'work_order:read', 'work_order:operate', 'monitoring:read',
+  ],
+  // 护理院职能席位（多业态设计 §3.3；新域动作 rounds/order/staff/shift/attendance/bill/admission/affairs/network 随 N21+ 契约落地）
+  facility_doctor: [
+    'patient:read', 'monitoring:read', 'evidence:read', 'rounds:write', 'order:write',
+  ],
+  facility_hr: [
+    'staff:read', 'staff:write', 'shift:read', 'shift:write', 'attendance:read',
+  ],
+  facility_finance: [
+    'bill:read', 'settlement:read', 'settlement:review', 'report:read', 'monitoring:read',
+  ],
+  facility_marketing: [
+    'beds:read', 'admission:write', 'report:read',
+  ],
+  facility_admin: [
+    'affairs:write', 'work_order:read', 'work_order:operate', 'device:read',
+  ],
+  facility_it: [
+    'device:read', 'network:read', 'account:read',
   ],
 }
 
