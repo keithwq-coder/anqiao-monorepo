@@ -1179,6 +1179,10 @@ function buildTenant(cfg) {
   if (cfg.kind === 'vendor') {
     return { cfg, patients: [], devices: buildVendorDevices(), alerts: buildVendorAlerts(cfg), liveAlertSeq: 0 }
   }
+  if (!cfg.occupiedBeds) {
+    // 监管/平台型租户：无病房结构与在床长者，注册存在性即可（池内数据按 pool_id 跨租户读取）
+    return { cfg, patients: [], alerts: [], liveAlertSeq: 0 }
+  }
   const patients = buildPatients(cfg)
   const alerts = buildAlerts(cfg)
   return { cfg, patients, alerts, liveAlertSeq: 0 }
@@ -1234,8 +1238,14 @@ const TENANT_CONFIGS = {
 }
 
 // 租户数据为可变内存态（处置写操作、WS 新告警会直接改 alerts 数组），生产换 DB。
+// 全部有账号的租户都必须注册（bureau_suqian 为真实宿迁试点，此前长期缺失导致宿迁数据面 404）
 const TENANT_DATA = {
+  platform: buildTenant(TENANT_CONFIGS.platform),
   anqiao: buildTenant(TENANT_CONFIGS.anqiao),
+  bureau: buildTenant(TENANT_CONFIGS.bureau),
+  bureau_suqian: buildTenant(TENANT_CONFIGS.bureau_suqian),
+  bureau_moumou: buildTenant(TENANT_CONFIGS.bureau_moumou),
+  insurer: buildTenant(TENANT_CONFIGS.insurer),
 }
 
 
