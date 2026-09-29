@@ -13,7 +13,7 @@
 
 ```
 硬件设备 → 安樵平台 API（现有，api.health-track.anqiaokj.com）
-                ↓ 数据同步/聚合（目标态：业务后端服务端持有凭据，见 §5）
+                ↓ 数据同步/聚合（目标态：业务后端按 V1.0 代理，见 §3.5 / §5）
         护理院业务后端（= anqiao-console/server，本契约定义）
                 ↓ REST + WebSocket
         管理控制台前端 / 凯健大屏 / 宿迁大屏 / 家属端（预留）
@@ -166,24 +166,26 @@
 | `GET /v1/partner/channels` | ✅ | 合作伙伴渠道域，字段见 §3.2 |
 | `GET /v1/project/config` | ✅ | 项目配置下发，字段定义见 §3.3；suqian `cloudScanMode=compare_only`、devices 恒 3 台 |
 | `/v1/ltc/*` 长护险全家桶 | ✅ | 路由全集见 §3.4；流程/状态机以 `docs/LTC-INSURANCE-SPEC.md` 为唯一来源 |
-| `GET /v1/hardware/*` 硬件云代理 | ✅ | 服务端持有凭据转发（§5.1）；浏览器不直连硬件云 |
+| `GET /v1/hardware/*` 硬件云代理 | ✅ | 服务端按《AI 健康守护仪对接API V1.0》转发（§3.5）；浏览器不直连硬件云 |
 
 ### 3.5 硬件云服务端代理（v0.4 / 阶段四）
 
-> 目标态：硬件云凭据仅存业务后端 env（`HW_API_BASE` / `HW_ACCOUNT` / `HW_PASSWORD` / `HW_TOKEN` / `HW_USER_ID`），上层前端只带业务 `Authorization: Bearer` 访问本表路由；**禁止**前端直连 `api.health-track.anqiaokj.com` 或持有硬件云口令/长期 JWT（INTEGRATION-SPEC §6-1、§8 阶段四）。未注入硬件云凭据时返回 503，不得静默 mock。
+> 上游以《AI 健康守护仪对接API（V1.0）》为准。上层前端只带**业务** `Authorization: Bearer` 访问本表路由；**禁止**前端直连 `api.health-track.anqiaokj.com` 或持有硬件云口令/长期 JWT。
+>
+> 2.8 硬件数据查询（2.8.2–2.8.6）请求体只有 `device_id`（夜间接口另加 `date`）。账号/密码属于 2.4.2 用户登录，**不是** 2.8 的入参，代理不得因缺少 `HW_ACCOUNT` / `HW_PASSWORD` 返回 503。2.8.1 upload 是设备上报，本代理不转发写接口。V1.0 未定义的上游路径（如 `/api/v1/hardware/status`）不代理。
 
 | 方法 | 路径 | 转发上游 | 关键参数 |
 |---|---|---|---|
-| GET | `/v1/hardware/devices` | `POST /api/v1/device/list` | `user_id`（默认 env `HW_USER_ID`） |
-| GET | `/v1/hardware/devices/raw` | 同上（原始包，云扫描容错） | `user_id` |
-| GET | `/v1/hardware/status` | `POST /api/v1/hardware/status` | `page_size`,`page_current` |
-| GET | `/v1/hardware/latest` | `POST /api/v1/hardware/latest_data` | `device_id` |
-| GET | `/v1/hardware/today` | `POST /api/v1/hardware/today_data` | `device_id` |
-| GET | `/v1/hardware/sleep` | `POST /api/v1/hardware/sleep_stats` | `device_id`,`date` |
-| GET | `/v1/hardware/report-dates` | `POST /api/v1/hardware/report_dates` | `device_id` |
-| GET | `/v1/hardware/alarms` | `POST /api/v1/alarm/list` | `user_id`,`page`,`page_size` |
+| GET | `/v1/hardware/devices` | `POST /api/v1/device/list`（2.5.1） | `user_id` 必填 |
+| GET | `/v1/hardware/devices/raw` | 同上（原始包） | `user_id` 必填 |
+| GET | `/v1/hardware/latest` | `POST /api/v1/hardware/latest_data`（2.8.2） | `device_id` 必填（宿迁在册：ASH01086 / ASH01078 / ASH01092） |
+| GET | `/v1/hardware/daily` | `POST /api/v1/hardware/daily_data`（2.8.3） | `device_id`、`date` 必填（夜间窗：前一日 20:00 至当日 08:00） |
+| GET | `/v1/hardware/today` | `POST /api/v1/hardware/today_data`（2.8.4） | `device_id` 必填 |
+| GET | `/v1/hardware/sleep` | `POST /api/v1/hardware/sleep_stats`（2.8.5） | `device_id` 必填；`date` 为夜间窗结束日 |
+| GET | `/v1/hardware/report-dates` | `POST /api/v1/hardware/report_dates`（2.8.6） | `device_id` 必填 |
+| GET | `/v1/hardware/alarms` | `POST /api/v1/alarm/list`（2.7.4） | `device_id` 可选（不传则查全部）、`status` 可选、`page`、`page_size` |
 
-统一响应包 `{code,msg,data}`；`data` 为上游业务字段（或本契约包装后的列表）。权限：登录后任意有效令牌可读（与大屏/控制台既有数据域一致）；写回硬件云不在本表（suqian `cloudScanMode=compare_only` 红线不变）。
+统一响应包 `{code,msg,data}`；`data` 为上游业务字段（或本契约包装后的列表）。权限：登录席位持 `device:read` 可读本表；公屏 `screen_viewer` **仅**可 GET 2.8 查询与 2.7.4 告警，且 `device_id` 必须在册（宿迁公屏锁定 ASH01086 / ASH01078 / ASH01092；安樵公屏锁定 `DEVICE_ASSETS`）。`/v1/hardware/devices`、无 `device_id` 的告警、文档未定义路径对公屏一律 403。写回硬件云不在本表（suqian `cloudScanMode=compare_only` 红线不变）。
 
 ### 3.2 设备资产与合作伙伴渠道（v0.3 固化）
 
@@ -254,11 +256,11 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
 |---|---|---|---|---|
 | N21 | GET `/v1/sales/institutions` | `business_user`（销售）与 `admin`/`su` | 客户机构列表：按 `DEVICE_ASSETS.customer_org_id` 派生（计数/在线数/点位）；越权数据面 404 | 已实现（验收挂起，见 test-sales-view skip 说明） |
 | N22 | GET `/v1/sales/institutions/{org}/devices` | 同 N21 | 机构设备与在线状态（只读；宿迁 3 台不在此面） | 已实现（同上） |
-| N23 | GET `/v1/sales/institutions/{org}/vitals-summary` | 同 N21 | 脱敏体征摘要：设备维度遥测（无身份档案字段）；HW_* 未注入时 `vitals: null` + reason 诚实降级 | 已实现（同上） |
+| N23 | GET `/v1/sales/institutions/{org}/vitals-summary` | 同 N21 | 脱敏体征摘要：设备维度遥测（无身份档案字段）；上游失败时 `vitals: null` + reason 诚实降级，不静默 mock | 已实现（同上） |
 | N24 | GET `/v1/sales/institutions/{org}/alerts` | 同 N21 | 告警历史：硬件告警 SN→设备映射确认前返回 `alarms: null` + reason（严禁跨机构告警泄漏） | 已实现（诚实降级态） |
-| N25 | GET `/v1/sales/institutions/{org}/telemetry?device_id=&range=today\|sleep` | 同 N21 | 遥测曲线：硬件云代理只读转发（设备 SN 校验属机构）；HW_* 未注入 503 | 已实现（同上） |
+| N25 | GET `/v1/sales/institutions/{org}/telemetry?device_id=&range=today\|sleep` | 同 N21 | 遥测曲线：硬件云代理只读转发（设备 SN 校验属机构）；按 2.8 只转发 `device_id`，上游失败 502 | 已实现（同上） |
 | N26 | GET `/v1/tenants` | `su`/`platform_admin` | 租户注册表：含 `vertical`/`template`/`deployment` 三字段（seed.js TENANT_CONFIGS） | 已实现 |
-| N27 | POST `/v1/admin/tenants` | 守卫 `authPayload.username === '吴'`（与 `/v1/admin/users` 同守卫） | 选业态模板开租户（运行时注册，`registerTenant`）：重复 409、非法业态 400 | 已实现 |
+| N27 | POST `/v1/admin/tenants` | 守卫 `role === 'su'`（与 `/v1/admin/users` 同守卫 `canAllocateUsers`；禁止按中文名硬编码） | 选业态模板开租户（运行时注册，`registerTenant`）：重复 409、非法业态 400 | 已实现 |
 
 > 红线：CRM 域（若接入镜像）**只读**，严禁任何写操作；宿迁 3 设备 3 长者真实数据只读且不得进入无权席位任何视图；越权读 404、无权操作 403（沿用账号矩阵 §4 规则）。
 
@@ -414,7 +416,7 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
 
 ## 5. 与安樵平台现有 API 的对应关系
 
-> **目标态口径（v0.2 新增）**：硬件云凭据由业务后端**服务端持有**，平台数据的拉取/订阅、聚合与缓存均在服务端完成，上层前端一律经本契约 `/v1` 获取数据，浏览器不直连硬件云、不持有平台凭据（切换规范与安全基线见 INTEGRATION-SPEC §2/§6）。过渡期内的演示构建若保留浏览器直连，严禁硬编码任何凭据。
+> **目标态口径**：浏览器不直连硬件云、不持有平台口令/长期 JWT。2.8 查询由业务后端按 V1.0 原样转发 `device_id`（夜间另加 `date`）；账号/密码属于 2.4.2，不是 2.8 入参。上层前端一律经本契约 `/v1` 获取数据。
 
 | 本契约数据 | 平台 API 来源 |
 |---|---|

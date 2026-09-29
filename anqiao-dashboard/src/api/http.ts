@@ -36,9 +36,12 @@ export function setSession(token: string, session: SessionInfo): void {
   localStorage.setItem(SESSION_KEY, JSON.stringify(session))
 }
 
+const SCREEN_USER_KEY = 'anqiao_saas_screen_user'
+
 export function clearSession(): void {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(SESSION_KEY)
+  localStorage.removeItem(SCREEN_USER_KEY)
 }
 
 // 空 baseURL 时走同源相对路径（本地 vite proxy /v1 -> 8080；生产经 nginx 同域反代）
@@ -56,9 +59,76 @@ export function wsBase(): string {
   return `${proto}://${location.host}${BASE}`
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  const token = getToken()
+// 静默大屏会话防抖承诺（多个并发请求共享同一个静默登录过程）
+let silentAuthPromise: Promise<string | null> | null = null
+
+/** 当前公屏租户：宿迁大屏 bureau_suqian，其余 anqiao。不携带口令。 */
+export function getScreenTenant(): string {
+  const isSuqian =
+    (typeof location !== 'undefined' && (location.pathname.includes('suqian') || location.hash.includes('suqian'))) ||
+    (typeof __VITE_PROJECT__ !== 'undefined' && __VITE_PROJECT__ === 'suqian')
+  return isSuqian ? 'bureau_suqian' : 'anqiao'
+}
+
+function screenUsername(tenant: string): string {
+  return tenant === 'bureau_suqian' ? 'sq' : 'gp'
+}
+
+/**
+ * 电视墙/展厅一体机无人值守会话：POST /v1/auth/screen 换受限 screen_viewer 令牌。
+ * 前端不再内嵌用户名/密码。
+ */
+export async function ensureScreenSession(force = false): Promise<string | null> {
+  const tenant = getScreenTenant()
+  const username = screenUsername(tenant)
+  const currentToken = getToken()
+  const currentScreenUser = localStorage.getItem(SCREEN_USER_KEY)
+
+  if (!force && currentToken && currentScreenUser === username) {
+    return currentToken
+  }
+
+  if (silentAuthPromise) return silentAuthPromise
+
+  silentAuthPromise = (async () => {
+    try {
+      const res = await fetch(`${BASE}/v1/auth/screen`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Screen-Tenant': tenant,
+        },
+        body: JSON.stringify({ tenant }),
+      })
+      const body = await res.json()
+      if (body.code === 200 && body.data?.token) {
+        setSession(body.data.token, { staff: body.data.staff, tenant: body.data.tenant })
+        localStorage.setItem(SCREEN_USER_KEY, username)
+        return body.data.token as string
+      } else {
+        console.warn(`[screenSession] 公屏会话响应:`, body.msg)
+      }
+    } catch (err) {
+      console.warn(`[screenSession] 公屏会话网络异常:`, err)
+    } finally {
+      silentAuthPromise = null
+    }
+    return null
+  })()
+
+  return silentAuthPromise
+}
+
+async function request<T>(path: string, init?: RequestInit, retry = true): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'X-Screen-Tenant': getScreenTenant(),
+  }
+  let token = getToken()
+  const isAuthPath = path === '/v1/auth/login' || path === '/v1/auth/screen'
+  if (!token && !isAuthPath) {
+    token = await ensureScreenSession().catch(() => null)
+  }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   let resp: Response
@@ -77,7 +147,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (body.code === 401) {
     clearSession()
-    if (!location.hash.startsWith('#/console')) location.hash = '#/console'
+    if (retry && !isAuthPath) {
+      const refreshedToken = await ensureScreenSession(true).catch(() => null)
+      if (refreshedToken) {
+        return request<T>(path, init, false)
+      }
+    }
     throw new ApiError(401, body.msg || '登录已过期，请重新登录')
   }
   if (body.code !== 200) {
@@ -91,3 +166,4 @@ export const http = {
   post: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(data ?? {}) }),
 }
+

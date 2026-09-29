@@ -50,15 +50,13 @@ import {
   deleteSaaSUser,
 } from './db.js'
 import {
-  hardwareConfigured,
   getDeviceList,
-  getDeviceStatus,
   getLatestData,
+  getDailyData,
   getTodayData,
   getSleepStats,
   getReportDates,
   getAlarms,
-  defaultUserId,
 } from './hw.js'
 import {
   LtcError,
@@ -187,7 +185,8 @@ const passwordUpgradeReady = upgradeSeedPasswordHashes()
   .catch((err) => console.error('[server] 账号哈希持久化失败:', err.message))
 
 // ---------- 中科安樵员工账号（与 CRM/wiki 同名同源；SaaS 为主管理，CRM 后续反向引入） ----------
-const EMPLOYEE_INIT_PASSWORD = '123'
+// 员工播种口令必须经 env 注入，仓库内禁止明文（INTEGRATION-SPEC §6-4）
+const EMPLOYEE_INIT_PASSWORD = process.env.EMPLOYEE_INIT_PASSWORD || process.env.SEED_ACCOUNT_PASSWORD || ''
 const EMPLOYEE_ACCOUNTS = [
   { username: 'admin', display_name: '系统管理员', unified_role: 'system_admin', role: 'su', tenant_id: 'platform', workspace: 'system_admin', scope: 'global' },
   { username: '赵', display_name: '赵', unified_role: 'platform_admin', role: 'admin', tenant_id: 'anqiao', workspace: 'platform_operations', scope: 'global' },
@@ -204,8 +203,12 @@ async function ensureSaasAccounts() {
   try {
     const existing = await loadSaaSUsers()
     const byName = new Map(existing.map((u) => [u.username, u]))
+    if (!EMPLOYEE_INIT_PASSWORD) {
+      console.warn('[server] EMPLOYEE_INIT_PASSWORD / SEED_ACCOUNT_PASSWORD 未注入，跳过员工账号播种')
+    }
     for (const e of EMPLOYEE_ACCOUNTS) {
       if (!byName.has(e.username)) {
+        if (!EMPLOYEE_INIT_PASSWORD) continue
         await saveSaaSUser({
           ...e,
           password_hash: hashPassword(EMPLOYEE_INIT_PASSWORD, randomBytes(16).toString('hex')),
@@ -339,7 +342,7 @@ function send(res, httpStatus, code, msg, data = null, req = null) {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': corsOrigin(req),
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Screen-Tenant',
   })
   res.end(body)
 }
@@ -720,10 +723,6 @@ async function handleSalesOrgVitals(req, res, authPayload, orgId) {
   if (!exists) return notFound(res, '机构不存在或无权访问')
   const list = []
   for (const d of devices.slice(0, 10)) {
-    if (!hardwareConfigured()) {
-      list.push({ device_id: d.device_id, label: d.label, vitals: null, reason: '硬件云凭据未注入（HW_*）' })
-      continue
-    }
     try {
       const raw = await getLatestData(d.sn)
       list.push({ device_id: d.device_id, label: d.label, vitals: raw ?? null })
@@ -755,7 +754,6 @@ async function handleSalesOrgTelemetry(req, res, authPayload, orgId, url) {
   if (!deviceId) return badRequest(res, 'device_id 必填')
   const dev = salesVisibleDevices(account).find((d) => d.customer_org_id === orgId && (d.device_id === deviceId || d.sn === deviceId))
   if (!dev) return notFound(res, '设备不存在或不属于该机构')
-  if (!hardwareConfigured()) return send(res, 503, 503, '硬件云凭据未注入（HW_*），遥测不可用；禁止静默 mock')
   const range = url.searchParams.get('range') || 'today'
   try {
     const data = range === 'sleep' ? await getSleepStats(dev.sn) : await getTodayData(dev.sn)
@@ -806,15 +804,52 @@ function handlePartnerChannels(req, res, authPayload) {
   })
 }
 
-/** GET /v1/hardware/* — 服务端代理（API-CONTRACT §3.5），凭据仅 env */
+const SCREEN_HARDWARE_READONLY = new Set([
+  '/v1/hardware/latest',
+  '/v1/hardware/daily',
+  '/v1/hardware/today',
+  '/v1/hardware/sleep',
+  '/v1/hardware/report-dates',
+  '/v1/hardware/alarms',
+])
+const SUQIAN_SCREEN_DEVICE_IDS = ['ASH01086', 'ASH01078', 'ASH01092']
+
+function isScreenViewer(authPayload) {
+  return !!(authPayload?.kiosk || authPayload?.role === 'screen_viewer' || authPayload?.unified_role === 'screen_viewer')
+}
+
+function screenAllowedDeviceIds(authPayload) {
+  if (authPayload?.tenant_id === 'bureau_suqian' || authPayload?.pool_id === 'suqian') {
+    return SUQIAN_SCREEN_DEVICE_IDS
+  }
+  return DEVICE_ASSETS.map((d) => d.sn || d.device_id).filter(Boolean)
+}
+
+function screenMayReadHardware(authPayload, path, deviceId) {
+  if (!SCREEN_HARDWARE_READONLY.has(path)) return false
+  if (!deviceId) return false
+  return screenAllowedDeviceIds(authPayload).includes(deviceId)
+}
+
+/** GET /v1/hardware/* — 服务端代理。2.8 查询按文档只转发 device_id（夜间另加 date），不要求 HW_*。 */
 async function handleHardwareProxy(req, res, authPayload, url, path) {
-  if (!hardwareConfigured()) {
-    return send(res, 503, 503, '硬件云凭据未注入（HW_*），代理不可用；禁止静默 mock')
+  const screen = isScreenViewer(authPayload)
+  if (screen) {
+    if (!SCREEN_HARDWARE_READONLY.has(path)) {
+      return send(res, 403, 403, '公屏只读会话不得访问硬件管理接口')
+    }
+  } else {
+    const authRes = authorize(authPayload, 'device:read')
+    if (!authRes.allow) {
+      return send(res, authRes.status, authRes.status, authRes.message)
+    }
   }
   try {
-    const userId = url.searchParams.get('user_id') || defaultUserId()
-    if (path === '/v1/hardware/devices') {
+    if (path === '/v1/hardware/devices' || path === '/v1/hardware/devices/raw') {
+      const userId = url.searchParams.get('user_id')
+      if (!userId) return badRequest(res, 'user_id 必填（对接 API 2.5.1）')
       const data = await getDeviceList(userId)
+      if (path === '/v1/hardware/devices/raw') return ok(res, data)
       const list = [
         ...(data?.healthDevice_List || []),
         ...(data?.fallDevice_List || []),
@@ -822,40 +857,58 @@ async function handleHardwareProxy(req, res, authPayload, url, path) {
       ]
       return ok(res, list)
     }
-    if (path === '/v1/hardware/devices/raw') {
-      return ok(res, await getDeviceList(userId))
-    }
-    if (path === '/v1/hardware/status') {
-      const pageSize = Number(url.searchParams.get('page_size') || 200)
-      const pageCurrent = Number(url.searchParams.get('page_current') || 1)
-      const data = await getDeviceStatus(pageSize, pageCurrent)
-      return ok(res, Array.isArray(data) ? data : (data?.list ?? []))
-    }
     if (path === '/v1/hardware/latest') {
       const deviceId = url.searchParams.get('device_id')
-      if (!deviceId) return badRequest(res, 'device_id 必填')
+      if (!deviceId) return badRequest(res, 'device_id 必填（对接 API 2.8.2）')
+      if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
+        return send(res, 403, 403, '公屏只能查询在册设备体征')
+      }
       return ok(res, await getLatestData(deviceId))
+    }
+    if (path === '/v1/hardware/daily') {
+      const deviceId = url.searchParams.get('device_id')
+      if (!deviceId) return badRequest(res, 'device_id 必填（对接 API 2.8.3）')
+      const date = url.searchParams.get('date')
+      if (!date) return badRequest(res, 'date 必填（对接 API 2.8.3，YYYY-MM-DD）')
+      if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
+        return send(res, 403, 403, '公屏只能查询在册设备体征')
+      }
+      return ok(res, await getDailyData(deviceId, date))
     }
     if (path === '/v1/hardware/today') {
       const deviceId = url.searchParams.get('device_id')
-      if (!deviceId) return badRequest(res, 'device_id 必填')
+      if (!deviceId) return badRequest(res, 'device_id 必填（对接 API 2.8.4）')
+      if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
+        return send(res, 403, 403, '公屏只能查询在册设备体征')
+      }
       return ok(res, await getTodayData(deviceId))
     }
     if (path === '/v1/hardware/sleep') {
       const deviceId = url.searchParams.get('device_id')
-      if (!deviceId) return badRequest(res, 'device_id 必填')
+      if (!deviceId) return badRequest(res, 'device_id 必填（对接 API 2.8.5）')
+      if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
+        return send(res, 403, 403, '公屏只能查询在册设备体征')
+      }
       return ok(res, await getSleepStats(deviceId, url.searchParams.get('date') || undefined))
     }
     if (path === '/v1/hardware/report-dates') {
       const deviceId = url.searchParams.get('device_id')
-      if (!deviceId) return badRequest(res, 'device_id 必填')
+      if (!deviceId) return badRequest(res, 'device_id 必填（对接 API 2.8.6）')
+      if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
+        return send(res, 403, 403, '公屏只能查询在册设备体征')
+      }
       const dates = await getReportDates(deviceId)
       return ok(res, Array.isArray(dates) ? dates : [])
     }
     if (path === '/v1/hardware/alarms') {
+      const deviceId = url.searchParams.get('device_id') || undefined
+      if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
+        return send(res, 403, 403, '公屏只能查询在册设备告警')
+      }
       const page = Number(url.searchParams.get('page') || 1)
       const pageSize = Number(url.searchParams.get('page_size') || 20)
-      const data = await getAlarms(userId, page, pageSize)
+      const status = url.searchParams.get('status') || undefined
+      const data = await getAlarms(deviceId, page, pageSize, status)
       return ok(res, data || { items: [], total: 0 })
     }
     return notFound(res, '硬件代理接口不存在')
@@ -1309,13 +1362,110 @@ function attachWsParser(socket, onClose) {
   })
 }
 
+// ---------- 公屏 kiosk 只读投影（禁止冒充医保席位；硬件/LTC/管理面一律要真令牌） ----------
+const SCREEN_GET_EXACT = new Set([
+  '/v1/overview',
+  '/v1/floors',
+  '/v1/wards',
+  '/v1/beds',
+  '/v1/shift',
+  '/v1/project/config',
+  '/v1/patients',
+  '/v1/alerts',
+  '/v1/devices',
+])
+const SCREEN_GET_PREFIX = ['/v1/stats/', '/v1/geo/']
+const SCREEN_GET_DETAIL = [
+  /^\/v1\/patients\/[A-Za-z0-9_-]+$/,
+  /^\/v1\/alerts\/[A-Za-z0-9_-]+$/,
+]
+
+function isSuqianScreenRequest(req, url) {
+  const referer = String(req.headers.referer || req.headers.origin || '')
+  const screenTenant = String(req.headers['x-screen-tenant'] || url?.searchParams?.get('tenant') || '')
+  return (
+    screenTenant === 'bureau_suqian' ||
+    referer.includes('suqian') ||
+    url?.searchParams?.get('pool') === 'suqian' ||
+    String(url?.pathname || '').includes('suqian')
+  )
+}
+
+function screenViewerAuth(req, url) {
+  const suqian = isSuqianScreenRequest(req, url)
+  if (suqian) {
+    return {
+      tenant_id: 'bureau_suqian',
+      username: 'sq',
+      staff_name: '宿迁长护险公屏',
+      role: 'screen_viewer',
+      unified_role: 'screen_viewer',
+      workspace: 'device_monitoring',
+      pool_id: 'suqian',
+      scope: 'pool',
+      data_scope: 'pool',
+      kiosk: true,
+    }
+  }
+  return {
+    tenant_id: 'anqiao',
+    username: 'gp',
+    staff_name: '中科安樵公屏',
+    role: 'screen_viewer',
+    unified_role: 'screen_viewer',
+    workspace: 'device_monitoring',
+    pool_id: null,
+    scope: 'org',
+    data_scope: 'org',
+    kiosk: true,
+  }
+}
+
+function isScreenPublicGet(method, path) {
+  if (method !== 'GET') return false
+  if (
+    path.startsWith('/v1/ltc/') ||
+    path.startsWith('/v1/hardware/') ||
+    path.startsWith('/v1/admin/') ||
+    path.startsWith('/v1/auth/') ||
+    path.startsWith('/v1/partner/') ||
+    path.startsWith('/v1/sales/') ||
+    path === '/v1/tenants'
+  ) {
+    return false
+  }
+  if (SCREEN_GET_EXACT.has(path)) return true
+  if (SCREEN_GET_PREFIX.some((p) => path.startsWith(p))) return true
+  return SCREEN_GET_DETAIL.some((re) => re.test(path))
+}
+
+function canAllocateUsers(authPayload) {
+  return authPayload?.role === 'su' || authPayload?.unified_role === 'su'
+}
+
+function handleScreenAuth(req, res, url) {
+  const payload = {
+    ...screenViewerAuth(req, url),
+    exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS,
+  }
+  return ok(res, {
+    token: signToken(payload),
+    staff: { name: payload.staff_name, role: payload.role, unified_role: payload.unified_role },
+    tenant: { tenant_id: payload.tenant_id, name: getTenantName(payload.tenant_id), kind: getTenantKind(payload.tenant_id) },
+    workspace: payload.workspace,
+    pool_id: payload.pool_id,
+    permissions: permissionsOf(payload.role),
+    data_scope: payload.data_scope,
+  })
+}
+
 function handleWsUpgrade(req, socket) {
   const url = new URL(req.url ?? '/', 'http://localhost')
   if (url.pathname !== '/v1/ws') {
     socket.destroy()
     return
   }
-  // 鉴权：握手 URL query 携带 ?token=（与 REST 同令牌），无效直接 401 关闭
+  // 鉴权：必须带有效 token；禁止无令牌 / 无效令牌握手
   const payload = verifyToken(url.searchParams.get('token') ?? '')
   const key = req.headers['sec-websocket-key']
   if (!payload || !key) {
@@ -1361,12 +1511,18 @@ setInterval(() => {
 }, 3000)
 
 // alert：低频新告警（45-75s；WS_ALERT_FAST=1 时 5-8s），插入租户数据并广播 + 推 overview
+// 模拟器故障只记日志，绝不允许杀死 API 进程（2026-09-27 生产 502 事故教训）
 const ALERT_INTERVAL_RANGE = process.env.WS_ALERT_FAST ? [5000, 8000] : [45000, 75000]
 function scheduleLiveAlert(tenantId) {
   const [min, max] = ALERT_INTERVAL_RANGE
   const delay = min + Math.random() * (max - min)
   setTimeout(() => {
-    const alert = generateLiveAlert(tenantId)
+    let alert = null
+    try {
+      alert = generateLiveAlert(tenantId)
+    } catch (err) {
+      console.error('[ws] 实时告警生成失败（跳过本轮，服务不受影响）:', err && err.message)
+    }
     if (alert && wsClients.has(tenantId)) {
       broadcast(tenantId, 'alert', alert)
       broadcast(tenantId, 'overview', computeOverview(tenantId))
@@ -1394,7 +1550,7 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': corsOrigin(req),
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Screen-Tenant',
       'Access-Control-Max-Age': '86400',
     })
     return res.end()
@@ -1404,11 +1560,19 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && path === '/v1/auth/login') {
       return await handleLogin(req, res)
     }
+    if (method === 'POST' && path === '/v1/auth/screen') {
+      return handleScreenAuth(req, res, url)
+    }
 
-    // 以下接口全部要求 Bearer 令牌
+    // 以下接口要求 Bearer 令牌。公屏只读 GET 可注入受限 screen_viewer，禁止冒充医保/LTC；硬件仅在册 2.8 只读。
     if (path.startsWith('/v1/')) {
-      const authPayload = auth(req)
-      if (!authPayload) return unauthorized(res)
+      let authPayload = auth(req)
+      if (!authPayload) {
+        if (!isScreenPublicGet(method, path)) {
+          return unauthorized(res)
+        }
+        authPayload = screenViewerAuth(req, url)
+      }
 
       if (method === 'POST' && path === '/v1/auth/switch') {
         return await handleTenantSwitch(req, res, authPayload)
@@ -1429,8 +1593,8 @@ const server = http.createServer(async (req, res) => {
         return ok(res, { username: account.username, changed: true })
       }
 
-      // ---------- 用户管理（生产口径：账号与权限分配统一由「吴」负责，业主指定） ----------
-      const isAllocator = authPayload.username === '吴'
+      // ---------- 用户管理（生产口径：仅 su 角色可开号，禁止按中文名硬编码门闩） ----------
+      const isAllocator = canAllocateUsers(authPayload)
       if (isAllocator && path === '/v1/admin/users' && method === 'GET') {
         return ok(res, {
           list: ACCOUNTS.map((a) => ({
@@ -1582,7 +1746,7 @@ const server = http.createServer(async (req, res) => {
         })
       }
       if (method === 'POST' && path === '/v1/admin/tenants') {
-        if (authPayload.username !== '吴') return send(res, 403, 403, '仅平台开号席位（吴）可开租户')
+        if (!canAllocateUsers(authPayload)) return send(res, 403, 403, '仅平台超管（su）可开租户')
         let body
         try {
           body = await readBody(req)
@@ -1657,7 +1821,7 @@ const server = http.createServer(async (req, res) => {
       if (method === 'GET' && path === '/v1/partner/channels') {
         return handlePartnerChannels(req, res, authPayload)
       }
-      // 硬件云服务端代理（API-CONTRACT §3.5；凭据仅 env，禁止前端直连）
+      // 硬件云服务端代理（API-CONTRACT §3.5）。公屏仅 2.8/2.7.4 在册 SN 只读，管理接口仍 403。
       if (path.startsWith('/v1/hardware/')) {
         return await handleHardwareProxy(req, res, authPayload, url, path)
       }
@@ -1698,6 +1862,9 @@ const server = http.createServer(async (req, res) => {
         return badRequest(res, 'WebSocket 通道请使用 Upgrade 握手')
       }
       if (path.startsWith('/v1/ltc/')) {
+        if (authPayload.kiosk || authPayload.role === 'screen_viewer' || authPayload.unified_role === 'screen_viewer') {
+          return send(res, 403, 403, '公屏只读会话不得访问长护险数据面')
+        }
         return await routeLtc(req, res, ltcCtx(authPayload), url).catch((err) => mapLtcError(res, err))
       }
       return notFound(res, '接口不存在')
@@ -1729,6 +1896,6 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`[server] 活跃租户: ${TENANT_IDS.map((id) => `${id}(${getTenantName(id)})`).join(', ')}`)
   console.log(`[server] WS 通道: ws://127.0.0.1:${PORT}/v1/ws?token=... (vitals 3s / alert ${ALERT_INTERVAL_RANGE[0] / 1000}-${ALERT_INTERVAL_RANGE[1] / 1000}s / overview 30s)`)
   console.log(`[server] 数据层: ${dataLayerMode()}${dataLayerMode() === 'sqlite' ? ` (db=${process.env.DB_PATH || 'server/anqiao.sqlite'})` : ' (store.json 回滚/种子模式)'}`)
-  console.log(`[server] 硬件云代理: ${hardwareConfigured() ? '已注入 HW_*' : '未注入（/v1/hardware/* → 503）'}`)
+  console.log(`[server] 硬件云代理: 2.8 按 device_id 转发（不要求 HW_ACCOUNT）`)
 })
 

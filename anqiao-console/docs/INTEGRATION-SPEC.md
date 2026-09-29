@@ -37,7 +37,7 @@
 
 ```
 硬件设备 → 安樵硬件云 API（api.health-track.anqiaokj.com）
-                ↑ 服务端持有凭据，定时拉取/代理（server/hw.js，HW_* 环境变量）
+                ↑ 服务端只读代理（server/hw.js；2.8 按文档只转发 device_id）
         anqiao-console server（唯一业务后端与底座，127.0.0.1:2831）
                 │ REST /v1 + WebSocket /v1/ws（统一 Bearer 鉴权，支持双端消费）
         ┌───────┴─────────────────────────────┬───────────────────────────┐
@@ -50,7 +50,7 @@
 
 - **双底座统一供给**：`anqiao-console/server/` 为 `anqiao-console` 管理端与 `suqian-dashboard` / `anqiao-dashboard` 大屏端提供同源数据底座。大屏所需的所有数据接口（`/v1/project/config`、`/v1/floors`、`/v1/wards`、`/v1/beds`、`/v1/stats/*`、`/v1/overview`、`/v1/patients`、`/v1/alerts`、`/v1/ws`）全部由 `server/index.js` 统一实现与响应。
 - 大屏前端与 console 前端**同域部署**，经 nginx 同源反代访问 `/v1`，前端 `VITE_API_BASE` 默认为空串（同源相对路径）。
-- 浏览器**禁止直连硬件云**：服务端通过 `server/hw.js` 持有凭据并代理 `/v1/hardware/*`。
+- 浏览器**禁止直连硬件云**：服务端通过 `server/hw.js` 按 V1.0 代理 `/v1/hardware/*`（2.8 只转发 `device_id`）。
 - 契约层不变更：`/v1` 路由、响应包、WS 协议以 `docs/API-CONTRACT.md` 为唯一来源。
 
 ### 2.2 端口与服务分配（生产就绪态）
@@ -148,7 +148,7 @@
 
 | # | 缺陷 | 位置 | 处置 |
 |---|---|---|---|
-| 1 | 硬件云兜底账号 `admin/123456` 与长期 JWT 硬编码于前端 | `*/src/api/hardwareApi.ts:91-93` | 立即吊销该 token、修改平台密码；前端删除硬编码；目标态由 console 服务端持有凭据（阶段四）。**代码已实施（stage4）**：大屏改走 `/v1/hardware/*`，凭据仅服务端 `HW_*`；**运维待办：吊销旧 token、轮换平台口令** |
+| 1 | 硬件云兜底账号 `admin/123456` 与长期 JWT 硬编码于前端 | `*/src/api/hardwareApi.ts:91-93` | 立即吊销该 token、修改平台密码；前端删除硬编码。**代码已实施（stage4）**：大屏改走 `/v1/hardware/*`；2.8 查询按 V1.0 只转发 `device_id`，不要求服务端 `HW_ACCOUNT`；**运维待办：吊销旧 token、轮换平台口令** |
 | 2 | 生产服务器 SSH 明文密码硬编码 | `deploy_production.py`、多个 `scripts/*.py` | 改为 SSH 密钥/agent，凭据移出仓库。**已实施**：各仓 `ssh_auth.py`（密钥/agent，`SSH_KEY_PATH` 可选），sudo 走 `sudo -n`（目标机需 NOPASSWD） |
 | 3 | `TOKEN_SECRET` 存在开发默认值 | `server/index.js` | 移除默认值，未注入时启动即失败；密钥由 systemd EnvironmentFile 注入。**已实施**：`TOKEN_SECRET` 与 `SEED_ACCOUNT_PASSWORD` 均未注入即拒绝启动 |
 | 4 | 登录页直接展示预设账号与初始密码 | `src/views/console/ConsoleLogin.vue` | 移除展示；种子账号密码统一轮换（现状统一 `2026`）。**已实施**：登录页预设账号面板/初始密码提示已撤；种子口令不再入库，统一由 env `SEED_ACCOUNT_PASSWORD` 注入（测试用随机口令），上线后运维侧轮换该环境变量值 |
@@ -231,6 +231,6 @@
 |---|---|---|---|
 | 1 | 电视墙大屏的鉴权形态 | 暂行 | 生产大屏前端通过专用只读 token 或同域同源访问 `/v1`；电视墙无人值守模式优先使用只读大屏会话，禁止包含业务写操作。 |
 | 2 | API 入口最终口径 | **已决议** | 统一为 `/v1/` 直挂（反代至 2831），旧 `/saas/api/` 保持剥前缀兼容器平滑过渡。 |
-| 3 | 硬件云数据获取方式 | **已决议** | 由服务端 `server/hw.js` 统一接管（`HW_*` 凭据），前端彻底禁用浏览器直连凭据。 |
+| 3 | 硬件云数据获取方式 | **已决议** | 由服务端 `server/hw.js` 按《AI 健康守护仪对接API V1.0》统一接管；2.8 查询入参只有 `device_id`（夜间另加 `date`），不要求 `HW_ACCOUNT`；前端彻底禁用浏览器直连凭据。 |
 | 4 | `suqian-dashboard` 归档 | **已决议** | 阶段三合流已验收，窗口 E 已完成验证，仓库正式归档只读。 |
 | 5 | 家属端形态 | **已决议** | 自 LTC-WORKBENCH-SPEC 阶段 D 起，家属端作为可登录账号形态（`family_workspace`，数据范围 `applicant`），统一由 console 承载。 |

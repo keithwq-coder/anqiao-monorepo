@@ -5,11 +5,20 @@ import vue from '@vitejs/plugin-vue'
 // VITE_API_BASE：API 基路径，默认同源相对（生产 nginx /v1 反代 console:2831）
 // VITE_MOCK=1：仅本地开发显式 mock；生产禁止（INTEGRATION-SPEC 硬性基线 5）
 export default defineConfig(({ mode }) => {
-  const project = process.env.VITE_PROJECT ?? 'kaijian'
+  const project = process.env.VITE_PROJECT ?? (mode === 'suqian' ? 'suqian' : 'kaijian')
   const base = process.env.VITE_BASE ?? (project === 'suqian' ? '/suqian-dash/' : '/dash/')
   return {
     base,
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      {
+        name: 'html-title-transform',
+        transformIndexHtml(html) {
+          const title = project === 'suqian' ? '宿迁医保局长护险首批试点' : '中科安樵·智慧养老生命体征监控中心'
+          return html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
+        },
+      },
+    ],
     define: {
       __VITE_PROJECT__: JSON.stringify(project),
     },

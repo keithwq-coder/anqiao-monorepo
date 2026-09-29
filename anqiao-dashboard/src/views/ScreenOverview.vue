@@ -723,8 +723,18 @@ onMounted(async () => {
   } else {
     // 中科安樵（anqiao）：设备口径，不发任何机构 mock 请求；仅尝试拉取真实云端设备告警
     try {
-      const res = await getHardwareAlarms(55, 1, 10)
-      const items = (res.items || []).filter((a) => !!getAnqiaoDevice(a.device_id))
+      const deviceIds = [...new Set(ANQIAO_DEVICES.map((d) => d.sn).filter(Boolean))]
+      const batches = await Promise.all(deviceIds.map((sn) => getHardwareAlarms(sn, 1, 10)))
+      const seen = new Set<number | string>()
+      const items = batches
+        .flatMap((res) => res.items || [])
+        .filter((a) => {
+          if (!getAnqiaoDevice(a.device_id)) return false
+          const key = a.id ?? `${a.device_id}:${a.trigger_time}`
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
       anqiaoAlarms.value = items
       const today = new Date().toISOString().slice(0, 10)
       anqiaoAlarmCount.value = items.filter((a) => (a.trigger_time || '').startsWith(today)).length
@@ -948,7 +958,7 @@ onBeforeUnmount(() => {
 
             <div class="s1-age-box">
               <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--txt-secondary); margin-bottom:2px;">
-                <span>点位区域分布</span>
+                <span>设备区域分布</span>
                 <span style="color:var(--amber); font-family:var(--font-mono); font-size:10px;">吴中区 4 台 · 工业园区 3 台</span>
               </div>
               <div class="s1-age-spectrum-chart">
@@ -1093,7 +1103,7 @@ onBeforeUnmount(() => {
         <div class="rankings-trio-grid">
           <div class="rank-col-box">
             <div class="rank-col-head"><span class="chevron">»</span><span>{{ isNational ? '设备在线状态榜' : '睡眠健康指数排行榜' }}</span></div>
-            <div class="rank-table-header"><span>排名</span><span>{{ isNational ? '设备SN / 点位' : '床位 / 姓名' }}</span><span style="text-align:right;padding-right:6px">{{ isNational ? '状态' : '得分' }}</span><span style="text-align:center">趋势</span></div>
+            <div class="rank-table-header"><span>排名</span><span>{{ isNational ? '设备SN / 归属地' : '床位 / 姓名' }}</span><span style="text-align:right;padding-right:6px">{{ isNational ? '状态' : '得分' }}</span><span style="text-align:center">趋势</span></div>
             <div class="rank-table-body">
               <div v-for="(r, i) in effectiveRankings.sleep" :key="r.patient_id" class="rank-table-row">
                 <span class="rank-num" :class="rankCls(i)">{{ i + 1 }}</span>
@@ -1106,7 +1116,7 @@ onBeforeUnmount(() => {
 
           <div class="rank-col-box">
             <div class="rank-col-head"><span class="chevron" style="color:var(--crimson)">»</span><span>{{ isNational ? '数据通道质量榜' : '跌倒高危预警排行榜' }}</span></div>
-            <div class="rank-table-header"><span>排名</span><span>{{ isNational ? '设备SN / 点位' : '床位 / 姓名' }}</span><span style="text-align:right;padding-right:6px">{{ isNational ? '质量分' : '指数' }}</span><span style="text-align:center">状态</span></div>
+            <div class="rank-table-header"><span>排名</span><span>{{ isNational ? '设备SN / 归属地' : '床位 / 姓名' }}</span><span style="text-align:right;padding-right:6px">{{ isNational ? '质量分' : '指数' }}</span><span style="text-align:center">状态</span></div>
             <div class="rank-table-body">
               <div v-for="(r, i) in effectiveRankings.fall_risk" :key="r.patient_id" class="rank-table-row">
                 <span class="rank-num" :class="rankCls(i)">{{ i + 1 }}</span>
@@ -1119,7 +1129,7 @@ onBeforeUnmount(() => {
 
           <div class="rank-col-box">
             <div class="rank-col-head"><span class="chevron" style="color:var(--amber)">»</span><span>{{ isNational ? '遥测采样活跃榜' : '生命体征波动排行榜' }}</span></div>
-            <div class="rank-table-header"><span>排名</span><span>{{ isNational ? '设备SN / 点位' : '床位 / 姓名' }}</span><span style="text-align:right;padding-right:6px">{{ isNational ? '遥测' : '体征' }}</span><span style="text-align:center">状态</span></div>
+            <div class="rank-table-header"><span>排名</span><span>{{ isNational ? '设备SN / 归属地' : '床位 / 姓名' }}</span><span style="text-align:right;padding-right:6px">{{ isNational ? '遥测' : '体征' }}</span><span style="text-align:center">状态</span></div>
             <div class="rank-table-body">
               <div v-for="(r, i) in effectiveRankings.vitals" :key="r.patient_id" class="rank-table-row">
                 <span class="rank-num" :class="rankCls(i)">{{ i + 1 }}</span>

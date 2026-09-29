@@ -1,7 +1,7 @@
 // SaaS 切片 WebSocket 实时通道（契约 §4）：
 // 连接 (ws 协议)//host/v1/ws?token=...（走 vite proxy），断线指数退避自动重连，
 // 重连成功后派发 'reconnected' 事件，由各视图重新拉一次 REST 全量补偿。
-import { getToken, wsBase } from './http'
+import { getToken, wsBase, getScreenTenant, ensureScreenSession } from './http'
 import type { Alert, Overview, VitalsEvent } from './types'
 
 export interface RealtimeEventMap {
@@ -49,9 +49,27 @@ function scheduleReconnect() {
 }
 
 function connect() {
+  if (!started) return
   const token = getToken()
-  if (!token || !started) return
-  const socket = new WebSocket(`${wsBase()}/v1/ws?token=${encodeURIComponent(token)}`)
+  if (!token) {
+    void ensureScreenSession()
+      .then((issued) => {
+        if (!issued) {
+          scheduleReconnect()
+          return
+        }
+        connect()
+      })
+      .catch(() => scheduleReconnect())
+    return
+  }
+  const tenant = getScreenTenant()
+  const params = new URLSearchParams()
+  params.set('token', token)
+  params.set('tenant', tenant)
+  if (tenant === 'bureau_suqian') params.set('pool', 'suqian')
+  const qs = params.toString()
+  const socket = new WebSocket(`${wsBase()}/v1/ws?${qs}`)
   ws = socket
 
   socket.onopen = () => {

@@ -9,14 +9,8 @@ export default defineConfig({
   server: {
     proxy: {
       // SaaS 切片后端（npm run server，127.0.0.1:8080）；ws:true 转发 /v1/ws WebSocket 握手
+      // 硬件云一律经 /v1/hardware/* 服务端代理；冻结仓禁止开发代理直连
       '/v1': { target: 'http://localhost:8080', changeOrigin: true, ws: true },
-      // 安樵 AI健康守护仪 官方硬件 API 反向代理
-      '/hardware-api': {
-        target: 'https://api.health-track.anqiaokj.com',
-        changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/hardware-api/, ''),
-        secure: false,
-      },
     },
   },
 })

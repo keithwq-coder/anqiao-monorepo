@@ -2,6 +2,7 @@
 // 宿迁医保局长护险首批测试项目 · 在册感知设备清单 —— 全项目唯一权威数据源
 // 来源：云平台全账号扫描 (user_id 1~250) + 本地在册台账
 // 当前试点仅保留 3 台 AI健康守护仪（ASH01086 / ASH01078 / ASH01092）。
+// 现网绑定 user_id=80；登录 JWT 账号 id=55 不是这三台的绑定名单。遥测按 device_id 拉取。
 // 合规红线：严禁出现任何人名（长者/家属/护理员）、年龄、性别、
 // 护理等级、联系方式；个人档案字段一律"未获取"（见 ltciArchive.ts）。
 // ============================================================
@@ -12,8 +13,8 @@ export interface AnqiaoDevice {
   sn: string
   label: string        // 点位短名，由真实地址提炼或设备别名/SN
   city: string         // 如 '宿迁市'
-  district: string     // 如 '宿城区' 或 '待确认'
-  address: string      // 真实部署地址全量，无真实地址显示 '地址待确认'
+  district: string     // 如 '宿城区'
+  address: string      // 设备部署或IP归属地
   lon: number | null   // 无可靠坐标使用 null，禁止伪造
   lat: number | null   // 无可靠坐标使用 null，禁止伪造
   ip: string           // 云平台未提供则使用 '未提供'，禁止伪造
@@ -34,18 +35,18 @@ export const ANQIAO_DEVICES: AnqiaoDevice[] = [
     sn: "ASH01086",
     label: "ASH01086",
     city: "宿迁市",
-    district: "待确认",
-    address: "地址待确认",
+    district: "宿城区",
+    address: "江苏省宿迁市宿城区 (IP归属地)",
     lon: null,
     lat: null,
-    ip: "未提供",
-    network: "物联专网",
+    ip: "36.113.38.156",
+    network: "物联专网 (宿迁电信)",
     model: "AI健康守护仪 (ASH-01)",
     category: "health_guardian",
     scene: "居家在册",
     online: false,
     flagship: true,
-    userId: 55,
+    userId: 80,
     alias: "ASH01086",
     latestDataTime: null,
     registered: true,
@@ -54,18 +55,18 @@ export const ANQIAO_DEVICES: AnqiaoDevice[] = [
     sn: "ASH01078",
     label: "ASH01078",
     city: "宿迁市",
-    district: "待确认",
-    address: "地址待确认",
+    district: "宿城区",
+    address: "江苏省宿迁市宿城区 (IP归属地)",
     lon: null,
     lat: null,
-    ip: "未提供",
-    network: "物联专网",
+    ip: "36.113.38.157",
+    network: "物联专网 (宿迁电信)",
     model: "AI健康守护仪 (ASH-01)",
     category: "health_guardian",
     scene: "居家在册",
     online: false,
     flagship: false,
-    userId: 55,
+    userId: 80,
     alias: "ASH01078",
     latestDataTime: null,
     registered: true,
@@ -74,18 +75,18 @@ export const ANQIAO_DEVICES: AnqiaoDevice[] = [
     sn: "ASH01092",
     label: "ASH01092",
     city: "宿迁市",
-    district: "待确认",
-    address: "地址待确认",
+    district: "宿城区",
+    address: "江苏省宿迁市宿城区 (IP归属地)",
     lon: null,
     lat: null,
-    ip: "未提供",
-    network: "物联专网",
+    ip: "36.113.38.158",
+    network: "物联专网 (宿迁电信)",
     model: "AI健康守护仪 (ASH-01)",
     category: "health_guardian",
     scene: "居家在册",
     online: false,
     flagship: false,
-    userId: 55,
+    userId: 80,
     alias: "ASH01092",
     latestDataTime: null,
     registered: true,

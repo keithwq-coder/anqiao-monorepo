@@ -41,6 +41,11 @@ export function clearSession(): void {
   localStorage.removeItem(SESSION_KEY)
 }
 
+/** 宿迁公屏租户：冻结仓仅服务 bureau_suqian。 */
+export function getScreenTenant(): string {
+  return 'bureau_suqian'
+}
+
 // 空 baseURL 时走同源相对路径（本地 vite proxy /v1 -> 8080；生产经 nginx 同域反代）
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
@@ -56,9 +61,47 @@ export function wsBase(): string {
   return `${proto}://${location.host}${BASE}`
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+// 静默大屏会话防抖承诺（多个并发请求共享同一个静默登录过程）
+let silentAuthPromise: Promise<string | null> | null = null
+
+export async function ensureScreenSession(force = false): Promise<string | null> {
+  const currentToken = getToken()
+  if (!force && currentToken) return currentToken
+
+  if (silentAuthPromise) return silentAuthPromise
+
+  silentAuthPromise = (async () => {
+    try {
+      const res = await fetch(`${BASE}/v1/auth/screen`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Screen-Tenant': 'bureau_suqian',
+        },
+        body: JSON.stringify({ tenant: 'bureau_suqian' }),
+      })
+      const body = await res.json()
+      if (body.code === 200 && body.data?.token) {
+        setSession(body.data.token, { staff: body.data.staff, tenant: body.data.tenant })
+        return body.data.token as string
+      }
+    } catch (err) {
+      console.warn('[screenSession] 宿迁大屏静默鉴权异常:', err)
+    } finally {
+      silentAuthPromise = null
+    }
+    return null
+  })()
+
+  return silentAuthPromise
+}
+
+async function request<T>(path: string, init?: RequestInit, retry = true): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  const token = getToken()
+  let token = getToken()
+  if (!token && path !== '/v1/auth/login' && path !== '/v1/auth/screen') {
+    token = await ensureScreenSession()
+  }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   let resp: Response
@@ -77,7 +120,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (body.code === 401) {
     clearSession()
-    if (!location.hash.startsWith('#/console')) location.hash = '#/console'
+    if (retry && path !== '/v1/auth/login') {
+      const refreshedToken = await ensureScreenSession(true)
+      if (refreshedToken) {
+        return request<T>(path, init, false)
+      }
+    }
     throw new ApiError(401, body.msg || '登录已过期，请重新登录')
   }
   if (body.code !== 200) {

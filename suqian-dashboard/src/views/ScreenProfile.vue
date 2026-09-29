@@ -95,7 +95,7 @@ const realHwLoading = ref(false)
 // ======================= 长护险参保档案（字段结构完整保留；个人字段未拿到真实数据，一律"未获取"，严禁模拟/编造） =======================
 const ltciArchive = computed(() => getLtciArchive(realDeviceId.value || currentId.value))
 
-// 档案建档状态标签：全缺失 → "参保档案未获取"；部分字段已确认（如 ASH01092 丁志坤）→ "档案部分建档"
+// 档案建档状态标签：全缺失 → "参保档案未获取"；部分字段已确认 → "档案部分建档"
 const archiveStatusTag = computed(() => {
   const st = archiveStatusOf(ltciArchive.value)
   if (st === 'pending') return { text: `参保档案${MISSING_TEXT}`, cls: 'missing-tag', hint: MISSING_HINT }
@@ -986,9 +986,8 @@ async function loadRealHardwareData(devId: string) {
         selectedReportDate.value = dates[0]
       }
     }).catch(e => console.warn('hw dates err', e))
-    const alarmPromise = getHardwareAlarms(55, 1, 10).then(res => {
-      // 只保留首批试点 3 台在册设备的真实告警，非在册设备（云账号下其他设备）不上屏
-      realAlarms.value = (res.items || []).filter((a) => !!getAnqiaoDevice(a.device_id))
+    const alarmPromise = getHardwareAlarms(devId, 1, 10).then(res => {
+      realAlarms.value = (res.items || []).filter((a) => a.device_id === devId)
     }).catch(e => console.warn('hw alarms err', e))
 
     await Promise.allSettled([streamPromise, datesPromise, alarmPromise])
@@ -1452,7 +1451,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <MedicalHologramFigure :live="vitalsLive" :alert="holoAlert" :heart-cycle="gHeartCycle" :breathe-cycle="gBreatheCycle" variant="sensor"
+        <MedicalHologramFigure v-if="active" :live="vitalsLive" :alert="holoAlert" :heart-cycle="gHeartCycle" :breathe-cycle="gBreatheCycle" variant="sensor"
           :active-system="activeSystem" @select="selectSystem" />
 
         <HoloChannelsOverlay

@@ -346,8 +346,18 @@ function onResize() {
 onMounted(async () => {
   // 设备口径，不发任何机构 mock 请求；仅尝试拉取真实云端设备告警
   try {
-    const res = await getHardwareAlarms(55, 1, 10)
-    anqiaoAlarms.value = (res.items || []).filter((a) => !!getAnqiaoDevice(a.device_id))
+    const deviceIds = [...new Set(ANQIAO_DEVICES.map((d) => d.sn).filter(Boolean))]
+    const batches = await Promise.all(deviceIds.map((sn) => getHardwareAlarms(sn, 1, 10)))
+    const seen = new Set<number | string>()
+    anqiaoAlarms.value = batches
+      .flatMap((res) => res.items || [])
+      .filter((a) => {
+        if (!getAnqiaoDevice(a.device_id)) return false
+        const key = a.id ?? `${a.device_id}:${a.trigger_time}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
   } catch {
     anqiaoAlarms.value = []
   }

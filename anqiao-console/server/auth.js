@@ -78,6 +78,7 @@ export const ROLE_WORKSPACE_MAP = {
   reports_center: WORKSPACES.REPORTS_CENTER,
   rehab_therapist: WORKSPACES.REHAB_STUDIO,
   dementia_specialist: WORKSPACES.DEMENTIA_STUDIO,
+  screen_viewer: WORKSPACES.DEVICE_MONITORING,
 }
 
 export const ROLE_DATA_SCOPE_MAP = {
@@ -130,6 +131,7 @@ export const ROLE_DATA_SCOPE_MAP = {
   facility_it: 'org',
   patient_dossier: 'org',
   reports_center: 'org',
+  screen_viewer: 'org',
 }
 
 export const ROLE_PERMISSIONS = {
@@ -424,6 +426,12 @@ export const ROLE_PERMISSIONS = {
   reports_center: [
     'report:read', 'report:generate', 'settlement:read', 'monitoring:read',
   ],
+  // 公屏 kiosk：只读投影，禁止长护险写面 / 账号管理 / 结算
+  screen_viewer: [
+    'overview:read', 'geo:read', 'device:read',
+    'patient:read', 'alert:read', 'vitals:read',
+    'monitoring:read', 'shift:read', 'bed:read', 'report:read',
+  ],
 }
 
 export function permissionsOf(role) {
@@ -496,8 +504,10 @@ export function authorize(principal, action, resource = null, context = {}) {
 
     // 统筹区池 (医保监管、商保经办)
     if (scope === 'pool') {
-      // 统筹区内数据允许，跨统筹区 404
-      if (resource.pool_id && principal.pool_id && resource.pool_id !== principal.pool_id) {
+      if (!principal.pool_id) {
+        return { allow: false, status: 403, message: '主体缺少统筹区范围，拒绝访问' }
+      }
+      if (resource.pool_id && resource.pool_id !== principal.pool_id) {
         return { allow: false, status: 404, message: '资源不存在（跨统筹区）' }
       }
       return { allow: true, status: 200, message: 'ok' }
@@ -578,6 +588,9 @@ export function authorize(principal, action, resource = null, context = {}) {
       }
       return { allow: true, status: 200, message: 'ok' }
     }
+
+    // 未知 data_scope：有资源时 fail-closed，禁止默认放行
+    return { allow: false, status: 403, message: `未知数据范围 [${scope}]，拒绝访问` }
   }
 
   return { allow: true, status: 200, message: 'ok' }

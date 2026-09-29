@@ -10,6 +10,7 @@ import ScreenLtci from './views/ScreenLtci.vue'
 import { ORG_PROFILES, PROJECT } from './projects'
 import { ANQIAO_DEVICES } from './projects'
 import { cloudGatewayHealth, liveDeviceCount, startDeviceTelemetryPolling, stopDeviceTelemetryPolling } from './api/deviceTelemetry'
+import { ensureScreenSession } from './api/http'
 import anqiaoLogoUrl from './assets/logo.png'
 
 // 屏幕集合按项目配置裁剪：suqian 才有第六屏长护险监管（INTEGRATION-SPEC §5）
@@ -39,7 +40,7 @@ const ORGS = [
     short: '中科安樵',
     icon: '🌐',
     badge: '47台在册',
-    title: '中科安樵',
+    title: '中科安樵·智慧养老生命体征监控中心',
     sub: 'ANQIAO HOME GUARDIAN IOT · TELEMETRY OPERATIONS CENTER',
     coords: 'GRID: 31.2990° N, 120.5853° E · SUZHOU CORE · 47 SENSORS ACTIVE',
     // 跑马灯实时在线台数由共享遥测 store 实算（见 anqiaoTicker），此静态串仅作兜底
@@ -118,9 +119,15 @@ function syncFromUrl() {
 
   const screenParam = searchParams.get('screen') || hashParams.get('screen')
   const screenHash = hash.replace(/^#\/?/, '').split('?')[0]
-  const targetScreen = (screenParam ? SCREEN_NAME_MAP[screenParam] : undefined) || SCREEN_NAME_MAP[screenHash || '']
-  if (targetScreen) {
-    currentScreen.value = targetScreen
+  if (screenHash === 'console') {
+    // 兼容历史脏路由或书签：大屏无 console 路由，规范化回显默认首页
+    currentScreen.value = 'screen-1'
+    updateUrl()
+  } else {
+    const targetScreen = (screenParam ? SCREEN_NAME_MAP[screenParam] : undefined) || SCREEN_NAME_MAP[screenHash || '']
+    if (targetScreen) {
+      currentScreen.value = targetScreen
+    }
   }
 
   const patientParam = searchParams.get('patient') || hashParams.get('patient')
@@ -133,7 +140,9 @@ function syncFromUrl() {
   }
 
   tickerOverride.value = null
-  document.title = `${PROJECT.projectTitle} · ${currentOrg.value.title}`
+  document.title = currentOrg.value.title === PROJECT.projectTitle
+    ? currentOrg.value.title
+    : `${PROJECT.projectTitle} · ${currentOrg.value.title}`
 }
 
 function updateUrl() {
@@ -147,7 +156,9 @@ function updateUrl() {
 
 function onOrgChange() {
   tickerOverride.value = null
-  document.title = `${PROJECT.projectTitle} · ${currentOrg.value.title}`
+  document.title = currentOrg.value.title === PROJECT.projectTitle
+    ? currentOrg.value.title
+    : `${PROJECT.projectTitle} · ${currentOrg.value.title}`
   // 画像 ID 口径：机构类（凯健）为患者 ID；居家类（中科安樵）为设备 SN
   selectedPatientId.value = currentOrgId.value === 'anqiao' ? 'ASH01146' : 'P00001'
   updateUrl()
@@ -156,7 +167,9 @@ function onOrgChange() {
 function selectOrg(orgId: string) {
   currentOrgId.value = orgId
   tickerOverride.value = null
-  document.title = `${PROJECT.projectTitle} · ${currentOrg.value.title}`
+  document.title = currentOrg.value.title === PROJECT.projectTitle
+    ? currentOrg.value.title
+    : `${PROJECT.projectTitle} · ${currentOrg.value.title}`
   selectedPatientId.value = orgId === 'anqiao' ? 'ASH01146' : 'P00001'
   updateUrl()
 }
@@ -330,12 +343,15 @@ function initParticleCanvas() {
 
 let canvasCleanup: (() => void) | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  ensureScreenSession().catch(() => null)
   syncFromUrl()
   window.addEventListener('hashchange', syncFromUrl)
   window.addEventListener('popstate', syncFromUrl)
   window.addEventListener('click', closeOrgMenu)
-  document.title = `${PROJECT.projectTitle} · ${currentOrg.value.title}`
+  document.title = currentOrg.value.title === PROJECT.projectTitle
+    ? currentOrg.value.title
+    : `${PROJECT.projectTitle} · ${currentOrg.value.title}`
   autoScaleViewport()
   window.addEventListener('resize', autoScaleViewport)
   window.addEventListener('orientationchange', autoScaleViewport)
@@ -414,10 +430,6 @@ onBeforeUnmount(() => {
 
     <div class="telemetry-zone">
       <div class="hud-actions">
-        <button class="hud-btn danger-btn" :class="{ active: alarmSimulated }" title="应急演练模式" @click="toggleAlarmSim">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          应急演练
-        </button>
         <button class="hud-btn" title="全屏显示" @click="toggleFullscreen">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           全屏
@@ -462,7 +474,7 @@ onBeforeUnmount(() => {
   <nav class="command-dock">
     <button class="dock-btn" :class="{ active: currentScreen === 'screen-1' }" @click="onDockClick('screen-1')"><span>全域态势</span></button>
     <button class="dock-btn" :class="{ active: currentScreen === 'screen-0' }" @click="onDockClick('screen-0')">
-      <span>{{ ORG_PROFILES[currentOrgId]?.kind === 'home' ? '点位孪生' : '空间孪生' }}</span>
+      <span>{{ ORG_PROFILES[currentOrgId]?.kind === 'home' ? '设备孪生' : '空间孪生' }}</span>
     </button>
     <button class="dock-btn" :class="{ active: currentScreen === 'screen-2' }" @click="onDockClick('screen-2')">
       <span>管理巡查</span>

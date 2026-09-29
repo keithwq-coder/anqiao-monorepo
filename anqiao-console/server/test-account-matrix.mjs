@@ -137,9 +137,86 @@ test('组织内账号可访问受保护接口（admin01/user01 GET /v1/overview 
   }
 })
 
-test('无令牌访问受保护接口被拒（401）', async () => {
-  const res = await fetch(`${BASE}/v1/overview`)
-  assert.equal(res.status, 401)
+test('无令牌访问受保护写接口被拒（401），大屏只读接口免登放行（200）', async () => {
+  const readRes = await fetch(`${BASE}/v1/overview`)
+  assert.equal(readRes.status, 200, '公屏免登打开网址就能看，GET /v1/overview 应 200')
+  const writeRes = await fetch(`${BASE}/v1/alerts/A001/handle`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ note: 'test' }),
+  })
+  assert.equal(writeRes.status, 401, '无令牌写操作必须 401')
+})
+
+test('无令牌访问 LTC / hardware 被拒；公屏会话签发 screen_viewer', async () => {
+  const ltcRes = await fetch(`${BASE}/v1/ltc/assessed-persons`)
+  assert.equal(ltcRes.status, 401, '匿名不得访问 /v1/ltc')
+  const hwRes = await fetch(`${BASE}/v1/hardware/devices`)
+  assert.equal(hwRes.status, 401, '匿名不得访问 /v1/hardware')
+  const screenRes = await fetch(`${BASE}/v1/auth/screen`, { method: 'POST' })
+  assert.equal(screenRes.status, 200, 'POST /v1/auth/screen 应签发公屏令牌')
+  const screenBody = await screenRes.json()
+  assert.equal(screenBody.data.staff.role, 'screen_viewer')
+  const token = screenBody.data.token
+  const hwDevices = await fetch(`${BASE}/v1/hardware/devices`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.equal(hwDevices.status, 403, 'screen_viewer 不得走 2.5.1 设备列表')
+  const hwLatest = await fetch(`${BASE}/v1/hardware/latest?device_id=ASH01086`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.notEqual(hwLatest.status, 403, '公屏应能查在册 SN 的 2.8 latest')
+  assert.ok([200, 502].includes(hwLatest.status), `公屏 latest 应为 200 或上游 502，实为 ${hwLatest.status}`)
+  const hwForeign = await fetch(`${BASE}/v1/hardware/latest?device_id=NOT-A-DEVICE`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.equal(hwForeign.status, 403, '公屏不得查不在册 SN')
+  const hwAlarmsBare = await fetch(`${BASE}/v1/hardware/alarms`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.equal(hwAlarmsBare.status, 403, '公屏不得无 device_id 拉全量告警')
+  const suqianScreenRes = await fetch(`${BASE}/v1/auth/screen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Screen-Tenant': 'bureau_suqian' },
+    body: JSON.stringify({ tenant: 'bureau_suqian' }),
+  })
+  assert.equal(suqianScreenRes.status, 200)
+  const suqianToken = (await suqianScreenRes.json()).data.token
+  const sqLatest = await fetch(`${BASE}/v1/hardware/latest?device_id=ASH01086`, {
+    headers: { Authorization: `Bearer ${suqianToken}`, 'X-Screen-Tenant': 'bureau_suqian' },
+  })
+  assert.notEqual(sqLatest.status, 403, '宿迁公屏应能查 ASH01086')
+  const sqForeign = await fetch(`${BASE}/v1/hardware/latest?device_id=ASH01146`, {
+    headers: { Authorization: `Bearer ${suqianToken}`, 'X-Screen-Tenant': 'bureau_suqian' },
+  })
+  assert.equal(sqForeign.status, 403, '宿迁公屏不得查非试点 SN')
+  const ltcWithScreen = await fetch(`${BASE}/v1/ltc/assessed-persons`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.ok([401, 403].includes(ltcWithScreen.status), 'screen_viewer 不得进入长护险数据面')
+})
+
+test('登录席位走 2.8 latest 不得因缺少 HW_* 返回 503；缺 device_id 400；文档未定义的 status 404', async () => {
+  const { httpStatus, body } = await postLogin('admin01', SEED_PASS)
+  assert.equal(httpStatus, 200)
+  const token = body.data.token
+  const missing = await fetch(`${BASE}/v1/hardware/latest`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.equal(missing.status, 400, '2.8.2 缺 device_id 应 400')
+  const latest = await fetch(`${BASE}/v1/hardware/latest?device_id=ASH01086`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.notEqual(latest.status, 503, '2.8 查询不得因缺少 HW_ACCOUNT 返回 503')
+  assert.ok([200, 502].includes(latest.status), `latest 应为 200 或上游 502，实为 ${latest.status}`)
+  const dailyMissingDate = await fetch(`${BASE}/v1/hardware/daily?device_id=ASH01086`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.equal(dailyMissingDate.status, 400, '2.8.3 缺 date 应 400')
+  const statusRes = await fetch(`${BASE}/v1/hardware/status`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  assert.equal(statusRes.status, 404, 'V1.0 未定义 hardware/status，不得代理')
 })
 
 test('project/config：kaijian/suqian 字段按契约，suqian 恒 compare_only 且 devices 恒 3 台', async () => {

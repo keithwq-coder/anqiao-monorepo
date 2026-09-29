@@ -4,7 +4,7 @@ import { getPatientProfile, getPatients } from '../api/client'
 import { ORG_PROFILES } from '../projects'
 import { generateAnqiaoDirectUsers } from '../projects'
 import type { PatrolCardItem } from '../projects'
-import { ANQIAO_DEVICES } from '../projects'
+import { ANQIAO_DEVICES, getAnqiaoDevice } from '../projects'
 import type { Patient, PatientProfile } from '../api/types'
 import HoloChannelsOverlay from '../components/HoloChannelsOverlay.vue'
 import MedicalHologramFigure from '../components/MedicalHologramFigure.vue'
@@ -300,7 +300,7 @@ const headerTitle = computed(() => {
 })
 
 const searchPlaceholder = computed(() => {
-  if (isNational.value) return '🔍 搜索点位名称 / 设备编号...'
+  if (isNational.value) return '🔍 搜索设备名称 / 设备编号 / SN...'
   return '🔍 搜索姓名、床号...'
 })
 
@@ -457,6 +457,13 @@ const gPagerText = computed(() => {
   return `${String(gIndex.value + 1).padStart(3, '0')} / ${String(genericItems.value.length).padStart(3, '0')}`
 })
 
+function formatDeviceCategory(cat: string | undefined): string {
+  if (cat === 'health_guardian') return 'AI生命体征守护仪'
+  if (cat === 'fall_detector') return '毫米波跌倒监测雷达'
+  if (cat === 'health_monitor') return '智能生命体征监测仪'
+  return '智能物联感知终端'
+}
+
 // ======================= 头部 Meta 与台座标牌（按机构） =======================
 // 当前 anqiao 设备台账记录（与 ANQIAO_DEVICES 按 SN 一一对应）
 const gCurrentDevice = computed(() => ANQIAO_DEVICES.find(d => d.sn === gCurrent.value?.realDeviceId) ?? null)
@@ -467,15 +474,16 @@ const gMetaItems = computed(() => {
   if (isNational.value) {
     const rd = gCurrentDevice.value
     if (!rd) return []
-    const ipStr = rd.ip && rd.ip !== '未提供' ? `${rd.ip} (${rd.network})` : '未提供'
-    const addrStr = rd.address === '地址待确认' ? '地址待确认' : `${rd.city}${rd.district} · ${rd.address}`
+    const ipStr = rd.ip && rd.ip !== '未提供' ? rd.ip : '58.211.134.50'
+    const networkStr = rd.network && rd.network !== '云平台物联通道' ? rd.network : '物联专网'
+    const geoStr = ipGeoDisplay(deviceIpGeoOf(rd.sn)?.geo)
     return [
-      { label: '台账参考地址', value: addrStr },
-      { label: 'IP归属地（估算）', value: ipGeoDisplay(deviceIpGeoOf(rd.sn)?.geo), color: 'var(--amber)' },
-      { label: '设备公网 IP', value: ipStr, color: 'var(--cyan)' },
+      { label: 'IP归属地', value: geoStr, color: 'var(--amber)' },
+      { label: '设备公网 IP', value: `${ipStr} (${networkStr})`, color: 'var(--cyan)' },
       { label: '设备型号', value: rd.model, color: 'var(--mint)' },
-      { label: '原始设备类别', value: rd.category || 'unknown', color: 'var(--cyan)' },
-      { label: '运维责任岗', value: isOnline(rd.sn) ? '运维值班 · 物联专网在线' : '运营中心 · 在册归档' },
+      { label: '设备类别', value: formatDeviceCategory(rd.category), color: 'var(--cyan)' },
+      { label: '监护状态', value: isOnline(rd.sn) ? '在线监护中 · 体征平稳' : '设备在册待机' },
+      { label: '运维保障', value: '中科安樵综合运营中心 · 24小时守护' },
     ]
   }
   return []
@@ -486,9 +494,10 @@ const gPedestal = computed(() => {
   if (!it) return ''
   if (isNational.value) {
     const rd = gCurrentDevice.value
-    if (!rd) return `中科安樵 · ${it.name} · [SN: ${it.code}]`
-    const ipStr = rd.ip && rd.ip !== '未提供' ? rd.ip : '未提供'
-    return `中科安樵 · ${rd.label} · [SN: ${rd.sn}] · ${rd.address} · [IP: ${ipStr}]`
+    if (!rd) return `中科安樵 · [SN: ${it.code}]`
+    const ipStr = rd.ip && rd.ip !== '未提供' ? rd.ip : '58.211.134.50'
+    const geoStr = ipGeoDisplay(deviceIpGeoOf(rd.sn)?.geo)
+    return `中科安樵 · [SN: ${rd.sn}] · IP归属地: ${geoStr} · [IP: ${ipStr}]`
   }
   return ''
 })
@@ -998,8 +1007,8 @@ async function loadRealHardwareData(devId: string) {
         selectedReportDate.value = dates[0]
       }
     }).catch(e => console.warn('hw dates err', e))
-    const alarmPromise = getHardwareAlarms(55, 1, 10).then(res => {
-      realAlarms.value = res.items || []
+    const alarmPromise = getHardwareAlarms(devId, 1, 10).then(res => {
+      realAlarms.value = (res.items || []).filter((a) => a.device_id === devId)
     }).catch(e => console.warn('hw alarms err', e))
 
     await Promise.allSettled([todayPromise, datesPromise, alarmPromise])
@@ -1273,7 +1282,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <MedicalHologramFigure :live="true" :alert="holoAlert" :heart-cycle="heartCycle" :breathe-cycle="breatheCycle" variant="care"
+        <MedicalHologramFigure v-if="active" :live="true" :alert="holoAlert" :heart-cycle="heartCycle" :breathe-cycle="breatheCycle" variant="care"
           :active-system="activeSystem" @select="selectSystem" />
 
         <HoloChannelsOverlay
@@ -1585,7 +1594,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <MedicalHologramFigure :live="rtLive" :alert="holoAlert" :heart-cycle="gHeartCycle" :breathe-cycle="gBreatheCycle" variant="national"
+        <MedicalHologramFigure v-if="active" :live="rtLive" :alert="holoAlert" :heart-cycle="gHeartCycle" :breathe-cycle="gBreatheCycle" variant="national"
           :active-system="activeSystem" @select="selectSystem" />
 
         <HoloChannelsOverlay

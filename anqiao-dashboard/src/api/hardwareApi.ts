@@ -3,7 +3,8 @@
  * 目标态（API-CONTRACT §3.5 / INTEGRATION-SPEC §6-1）：
  * 浏览器不直连硬件云、不持有硬件云口令/长期 JWT；
  * 一律经业务后端 GET /v1/hardware/* 代理（业务 Bearer 令牌）。
- * 未登录或后端未注入 HW_* 时显式失败，禁止静默 mock。
+ * 2.8 查询上游入参只有 device_id（夜间另加 date），不要求 HW_ACCOUNT。
+ * 未登录时显式失败，禁止静默 mock。
  */
 
 export interface HardwareDevice {
@@ -85,11 +86,7 @@ export interface HardwareAlarm {
   status: 'triggered' | 'handled' | 'missed' | string
 }
 
-export interface HardwareStatusItem {
-  device_name: string
-  device_status: string
-  smbd_flag: string
-}
+import { ensureScreenSession, clearSession, getScreenTenant } from './http'
 
 // 业务后端同源 base（与 http.ts 一致）；硬件云凭据不在前端
 const BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) || ''
@@ -100,19 +97,23 @@ function businessToken(): string {
   return localStorage.getItem(TOKEN_KEY) || ''
 }
 
-async function proxyGet<T>(path: string): Promise<T> {
-  const token = businessToken()
+async function proxyGet<T>(path: string, retry = true): Promise<T> {
+  let token = businessToken()
   if (!token) {
-    throw new Error('[hardwareApi] 未登录，无法访问 /v1/hardware/*（业务 Bearer 必填）')
+    token = (await ensureScreenSession().catch(() => null)) || ''
+  }
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'X-Screen-Tenant': getScreenTenant(),
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
   let res: Response
   try {
     res = await fetch(`${BASE}${path}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
     })
   } catch {
     throw new Error('[hardwareApi] 网络异常，硬件代理不可达')
@@ -122,6 +123,13 @@ async function proxyGet<T>(path: string): Promise<T> {
     body = await res.json()
   } catch {
     throw new Error(`[hardwareApi] 服务响应异常（HTTP ${res.status}）`)
+  }
+  if (body.code === 401 && retry) {
+    clearSession()
+    const refreshedToken = await ensureScreenSession(true).catch(() => null)
+    if (refreshedToken) {
+      return proxyGet<T>(path, false)
+    }
   }
   if (body.code !== 200) {
     throw new Error(body.msg || `[hardwareApi] 代理失败（${body.code}）`)
@@ -164,16 +172,14 @@ export async function getLatestHardwareData(deviceId: string): Promise<LatestHar
   return proxyGet<LatestHardwareData>(`/v1/hardware/latest${qs({ device_id: deviceId })}`)
 }
 
-/** 设备权威在线/在场状态列表 */
-export async function getHardwareDeviceStatus(): Promise<HardwareStatusItem[]> {
-  const data = await proxyGet<HardwareStatusItem[] | { list?: HardwareStatusItem[] }>(`/v1/hardware/status`)
-  if (Array.isArray(data)) return data
-  return data?.list ?? []
-}
-
-/** 指定设备今日连续生理数据 */
+/** 指定设备今日连续生理数据（对接 API 2.8.4） */
 export async function getTodayRawData(deviceId: string): Promise<TodayRawDataPoint[]> {
   return proxyGet<TodayRawDataPoint[]>(`/v1/hardware/today${qs({ device_id: deviceId })}`)
+}
+
+/** 指定设备夜间窗数据（对接 API 2.8.3：前一日 20:00 至当日 08:00） */
+export async function getDailyRawData(deviceId: string, date: string): Promise<TodayRawDataPoint[]> {
+  return proxyGet<TodayRawDataPoint[]>(`/v1/hardware/daily${qs({ device_id: deviceId, date })}`)
 }
 
 /** 指定设备特定日期睡眠统计 */
@@ -187,14 +193,14 @@ export async function getReportDates(deviceId: string): Promise<string[]> {
   return Array.isArray(dates) ? dates : []
 }
 
-/** 云平台告警列表 */
+/** 云平台告警列表（对接 API 2.7.4：device_id 可选，不传则查全部） */
 export async function getHardwareAlarms(
-  userId?: number,
+  deviceId?: string,
   page = 1,
   pageSize = 20,
 ): Promise<{ items: HardwareAlarm[]; total: number }> {
   const res = await proxyGet<{ items?: HardwareAlarm[]; total?: number }>(
-    `/v1/hardware/alarms${qs({ user_id: userId, page, page_size: pageSize })}`,
+    `/v1/hardware/alarms${qs({ device_id: deviceId, page, page_size: pageSize })}`,
   )
   return { items: res?.items ?? [], total: res?.total ?? 0 }
 }

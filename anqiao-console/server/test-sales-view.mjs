@@ -1,8 +1,8 @@
 // 销售客户资产视图验收（Node 内置 node:test）
 // 运行：node --test server/test-sales-view.mjs（或随 npm test 全量）
 // 覆盖：N21 机构列表（SaaS 侧 device_registry 权威派生）；N22 机构设备；N23/N24/N25 诚实降级；
-//       N26 租户注册表读取；N27 开租户（仅「吴」）与重复 409；越权 404/403。
-// spawn 真实后端（sqlite 模式），员工账号走 EMPLOYEE_INIT_PASSWORD（123）播种链路。
+//       N26 租户注册表读取；N27 开租户（仅 su 角色）与重复 409；越权 404/403。
+// spawn 真实后端（sqlite 模式），员工账号走 EMPLOYEE_INIT_PASSWORD / SEED_ACCOUNT_PASSWORD 播种链路。
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -87,9 +87,9 @@ test('N21–N27 销售客户资产视图与租户管理', { skip: '销售视图�
   // 等待启动期异步链（argon2 哈希升级 + 哈希持久化）完成，避免登录读到中间态
   await new Promise((resolve) => setTimeout(resolve, 1500))
   try {
-    const salesToken = await getToken('何丹', '123')
+    const salesToken = await getToken('何丹', SEED_PASS)
     const suToken = await getToken('su01', SEED_PASS)
-    const wuToken = await getToken('吴', '123')
+    const wuToken = await getToken('吴', SEED_PASS)
     const nursingToken = await getToken('kangning_admin', SEED_PASS)
 
     // N21：机构列表（销售可见，源自 DEVICE_ASSETS 派生，含真实自营点位）
@@ -107,19 +107,24 @@ test('N21–N27 销售客户资产视图与租户管理', { skip: '销售视图�
     assert.equal(n22.status, 200)
     assert.ok(n22.body.data.list.length >= 1)
 
-    // N23：无 HW_* 凭据时诚实降级（vitals: null + reason），不静默 mock
+    // N23：按 2.8 转发 device_id；上游失败时 vitals:null + reason，成功则有体征，不静默 mock
     const n23 = await get(`/v1/sales/institutions/${encodeURIComponent(orgId)}/vitals-summary`, salesToken)
     assert.equal(n23.status, 200)
-    assert.ok(n23.body.data.list.every((e) => e.vitals === null && e.reason))
+    assert.ok(Array.isArray(n23.body.data.list))
+    for (const e of n23.body.data.list) {
+      assert.ok(e.device_id)
+      if (e.vitals === null) assert.ok(e.reason, '无体征时必须给 reason')
+    }
 
     // N24：SN 映射未定前诚实返回（alarms: null）
     const n24 = await get(`/v1/sales/institutions/${encodeURIComponent(orgId)}/alerts`, salesToken)
     assert.equal(n24.status, 200)
     assert.equal(n24.body.data.alarms, null)
 
-    // N25：无 HW 凭据 503（沿用硬件代理语义）
+    // N25：按 2.8 转发，不再因缺少 HW_* 返回 503
     const n25 = await get(`/v1/sales/institutions/${encodeURIComponent(orgId)}/telemetry?device_id=${encodeURIComponent(n22.body.data.list[0].device_id)}`, salesToken)
-    assert.equal(n25.status, 503)
+    assert.notEqual(n25.status, 503, '2.8 查询不得因缺少 HW_ACCOUNT 返回 503')
+    assert.ok([200, 502].includes(n25.status), `遥测应为 200 或上游 502，实为 ${n25.status}`)
 
     // 越权：护理院席位无该数据面 → 404
     const denied = await get('/v1/sales/institutions', nursingToken)
@@ -134,15 +139,15 @@ test('N21–N27 销售客户资产视图与租户管理', { skip: '销售视图�
     const n26Denied = await get('/v1/tenants', salesToken)
     assert.equal(n26Denied.status, 404)
 
-    // N27：仅「吴」可开租户
-    const n27Denied = await post('/v1/admin/tenants', suToken, { tenant_id: 't_demo01', name: '测试机构', vertical: 'nursing_home' })
+    // N27：仅 su 角色可开租户（禁止按中文名「吴」硬编码）
+    const n27Denied = await post('/v1/admin/tenants', wuToken, { tenant_id: 't_demo01', name: '测试机构', vertical: 'nursing_home' })
     assert.equal(n27Denied.status, 403)
-    const n27 = await post('/v1/admin/tenants', wuToken, { tenant_id: 't_demo01', name: '测试护理院（演示）', vertical: 'nursing_home' })
+    const n27 = await post('/v1/admin/tenants', suToken, { tenant_id: 't_demo01', name: '测试护理院（演示）', vertical: 'nursing_home' })
     assert.equal(n27.status, 200)
     assert.equal(n27.body.data.template, 'nursing_home_v1')
-    const n27Dup = await post('/v1/admin/tenants', wuToken, { tenant_id: 't_demo01', name: '重复', vertical: 'nursing_home' })
+    const n27Dup = await post('/v1/admin/tenants', suToken, { tenant_id: 't_demo01', name: '重复', vertical: 'nursing_home' })
     assert.equal(n27Dup.status, 409)
-    const n27Bad = await post('/v1/admin/tenants', wuToken, { tenant_id: 't_demo02', name: '非法业态', vertical: 'spa' })
+    const n27Bad = await post('/v1/admin/tenants', suToken, { tenant_id: 't_demo02', name: '非法业态', vertical: 'spa' })
     assert.equal(n27Bad.status, 400)
   } finally {
     child.kill()

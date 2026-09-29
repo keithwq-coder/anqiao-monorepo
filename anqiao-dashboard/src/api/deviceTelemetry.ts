@@ -1,6 +1,6 @@
 /**
  * 中科安樵全量在册真实设备 · 全局实时遥测轮询共享存储
- * 数据源：业务后端 /v1/hardware/latest（服务端持有硬件云凭据，API-CONTRACT §3.5）。
+ * 数据源：业务后端 /v1/hardware/latest（2.8.2 按 device_id 转发；公屏限在册 SN）。
  *
  * 三态判定口径（用户拍板，完全由 latest_data 最新样本驱动，LIVE_WINDOW_MS=90s）：
  *   在床（person）—— 有 ≤90s 新鲜样本，且含有效体征（hr>0 || br>0 || isBed===true）→ "● 设备在线 · 在床"
@@ -148,7 +148,7 @@ async function pollAllDevices(): Promise<void> {
   cloudGatewayHealth.lastCheckedAt = Date.now()
   if (succ === 0 && err > 0) {
     cloudGatewayHealth.healthy = false
-    cloudGatewayHealth.message = '硬件遥测接口无响应（业务后端 /v1/hardware/latest 超时或未注入 HW_*）'
+    cloudGatewayHealth.message = '硬件遥测接口无响应（业务后端 /v1/hardware/latest 超时或上游失败）'
   } else {
     cloudGatewayHealth.healthy = true
     cloudGatewayHealth.message = `华为云 IoTDA 直连正常 · ${succ}台云端建档`
