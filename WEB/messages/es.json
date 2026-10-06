@@ -17,11 +17,15 @@
     "closeMenu": "Cerrar menú"
   },
   "footer": {
-    "positioning": "Empresa nacional de innovación tecnológica · Monitorización precisa de la salud",
+    "positioning": "Percepción milimétrica · Monitorización precisa de la salud",
+    "lineage": "Algoritmos de radar de ondas milimétricas para el sueño desarrollados por la Universidad Tsinghua · Del ecosistema de la Academia China de las Ciencias",
     "contact": "Contacto",
     "phone": "Teléfono",
     "email": "Correo",
+    "partnerLogin": "Socios",
+    "partnerLoginLink": "Acceso al panel",
     "follow": "Síguenos",
+    "followNote": "Siga la cuenta oficial de WeChat de Zhongke Anqiao",
     "icp": "Registro ICP",
     "machineTranslated": "El contenido no chino de esta página es una traducción automática, solo como referencia; la versión en chino es la que prevalece. (Traducción automática pendiente de revisión)"
   },
@@ -44,7 +48,8 @@
   "productCard": {
     "model": "Modelo",
     "tagline": "Eslogan",
-    "details": "Ver detalles →"
+    "details": "Ver detalles →",
+    "inHouse": "Hardware de desarrollo propio"
   },
   "filter": {
     "all": "Todos",
@@ -61,7 +66,7 @@
       "specs": "Especificaciones",
       "video": "Vídeos",
       "docs": "Descargas",
-      "faq": "FAQ",
+      "faq": "Preguntas frecuentes",
       "related": "Productos relacionados"
     },
     "officialName": "Nombre oficial",
@@ -76,7 +81,7 @@
       "scene": "Demo en sitio"
     },
     "docType": {
-      "manual": "Manual",
+      "manual": "Manual de instrucciones",
       "brochure": "Folleto",
       "certificate": "Informe de prueba"
     },
@@ -95,67 +100,70 @@
     "privacyBadgeDesc": "El sensor superior es una ventana infrarroja ambiental pasiva. El dispositivo no tiene cámaras, sensores ópticos ni micrófonos, impidiendo cualquier grabación de audio o vídeo."
   },
   "home": {
-    "heroBadge": "Tecnología de radar derivada de Tsinghua · Empresa incubada nacional",
+    "heroKicker": "Tecnología de percepción de la salud de nivel institucional",
     "heroTitle": "Tecnología de Tsinghua · Monitorización precisa de la salud",
-    "heroTagline": "Soluciones de monitorización sin contacto multimodal mmWave de 60 GHz",
-    "heroBody": "Dedicado a residencias de ancianos, sanidad y viviendas adaptadas: detección sin contacto mediante radar puro, cero cámaras, cero micrófonos — cuidando la salud y la dignidad.",
-    "heroLiveStatus": "Monitorización en cama activa",
-    "heroLiveOnline": "En línea",
-    "heroVitalsRespiration": "Respiración",
-    "heroVitalsHeartRate": "Frecuencia cardíaca",
-    "heroVitalsStatus": "Durmiendo en cama",
-    "heroAlertNotification": "Alerta móvil en tiempo real para familiares / cuidadores",
-    "heroAlertText": "02:15 Levantamiento · 02:22 Regreso seguro (7 min, constantes estables)",
-    "heroPrivacyBadge": "Privacidad 100% física · 0 cámaras · 0 micrófonos",
-    "quote": "Solicitar presupuesto",
-    "dealer": "Ser socio de canal",
-    "advantagesTitle": "Cuatro pilares de confianza comercial y técnica",
-    "advantages": [
+    "heroLead": "Zhongke Anqiao es una empresa de tecnología de percepción. Para residencias de mayores, instituciones sanitarias y cuidados domiciliarios, entregamos sistemas de detección de constantes vitales y caídas sin cámaras ni micrófonos: solo perciben, no graban imágenes.",
+    "sigBreath": "Ritmo respiratorio",
+    "sigMove": "Micromovimientos",
+    "sigExit": "Eventos de abandono de cama",
+    "heroCta": "Ver productos y especificaciones técnicas",
+    "heroAffiliation": "Algoritmos de percepción afines a Tsinghua · Incubación tecnológica del Instituto Suzhou de Tecnologías Biomédicas e Ingeniería (Academia China de las Ciencias)",
+    "principlesTitle": "Principios técnicos",
+    "principles": [
       {
-        "title": "Algoritmos derivados de Tsinghua",
-        "body": "Investigación en radar mmWave validada mediante rigurosas pruebas clínicas."
+        "title": "Qué se percibe",
+        "body": "Respiración, frecuencia cardíaca, movimientos corporales, abandono de cama y caídas, obtenidos mediante la reflexión micro-Doppler de ondas electromagnéticas en la superficie del cuerpo. Sin dispositivos portátiles, sin contacto con la piel y sin ninguna colaboración de la persona atendida."
       },
       {
-        "title": "Cualificación médica de clase II",
-        "body": "Certificado oficial de registro para dispositivos médicos, plena conformidad legal."
+        "title": "Cómo se calcula",
+        "body": "La señal en bruto se filtra y procesa localmente en el chip de borde; los algoritmos provienen de la investigación de percepción del sueño de Tsinghua. La institución solo recibe eventos estructurados y valores, sin acceso a las formas de onda originales."
       },
       {
-        "title": "Privacidad 100% física",
-        "body": "Cero cámaras y cero micrófonos: protección absoluta garantizada a nivel de hardware."
-      },
-      {
-        "title": "Garantía de calidad de 12 meses",
-        "body": "Garantía de hardware de 12 meses (casos especiales a convenir)."
+        "title": "Por qué no hay riesgo para la privacidad",
+        "body": "El equipo no tiene cámara óptica ni micrófono y no genera imágenes ni audio. «Ser filmado o grabado» no existe físicamente: es un hecho de hardware, no una promesa de software."
       }
     ],
-    "flagshipTitle": "Dos dispositivos insignia en producción en serie",
-    "flagshipSubtitle": "Centrados en las necesidades prioritarias del cuidado mayor, entrega en volumen y certificaciones",
-    "flagshipBedTag": "Guardián de cama en dormitorio",
-    "flagshipBedTitle": "ZQ-SH100 · Guardián de salud IA",
-    "flagshipBedDesc": "Diseñado para la monitorización sin contacto de camas individuales a 60 GHz. Registra respiración, pulso y calidad de sueño, con alarma inmediata en salidas de cama prolongadas.",
-    "flagshipBedPoint1": "Signos vitales nocturnos digitalizados sin contacto, sincronización con familia y cuidadores",
-    "flagshipBedPoint2": "Alerta activa por tiempo excesivo fuera de la cama para evitar caídas y desorientación",
-    "flagshipBedPoint3": "Ventana infrarroja ambiental superior, sin cámaras ni grabaciones para un descanso tranquilo",
-    "flagshipFallTag": "Guardián de caídas en baño",
-    "flagshipFallTitle": "ZQ-D100 · Detector de caídas milimétrico",
-    "flagshipFallDesc": "Protege las zonas más críticas y resbaladizas del baño. El radar penetra el vapor y la oscuridad para detectar caídas en milisegundos y emitir avisos acústicos y móviles.",
-    "flagshipFallPoint1": "Detección de caídas en milisegundos con funcionamiento fiable ante vapor de agua",
-    "flagshipFallPoint2": "Alarma acústica local de alta potencia + notificación urgente en dispositivos móviles",
-    "flagshipFallPoint3": "Sin dispositivos que llevar puestos, instalación ligera en techo o pared",
-    "viewProductDetail": "Ver detalles y especificaciones del producto",
-    "matrixTitle": "Matriz de ampliación y dispositivos complementarios",
-    "matrixLead": "Módulos adaptables según presupuesto y necesidades, integrados con la plataforma IoT Anshouhu",
-    "viewAllProducts": "Ver los 10 productos y especificaciones completas →",
-    "solutionsTitle": "Soluciones por escenario",
-    "solutionsLead": "Soluciones que resuelven los dolores críticos en residencias, comunidades y hogares",
-    "viewSolution": "Ver solución completa →",
-    "dealerBanner": "Programa nacional de socios de canal — Soporte con muestras · Protección territorial · Licitaciones",
-    "dealerCta": "Conocer política de distribuidores y márgenes",
-    "newsTitle": "Tendencias del sector y normativas",
-    "newsLead": "Seguimiento de directrices gubernamentales y avances en la estandarización del radar para mayores",
-    "viewAllNews": "Ver todas las noticias",
-    "ctaTitle": "¿Necesita una solución y presupuesto para su proyecto?",
-    "ctaBody": "Indíquenos su tipo de institución y número de camas, nuestros especialistas responderán en menos de 2 horas."
+    "featuredTitle": "Producto destacado",
+    "featuredCta": "Ver especificaciones completas",
+    "specTableTitle": "Resumen de especificaciones de toda la gama",
+    "colModel": "Modelo",
+    "colPosition": "Posicionamiento",
+    "colFeature": "Características clave",
+    "colWarranty": "Garantía",
+    "scenariosTitle": "Para quién",
+    "casesTitle": "Pilotos y demostraciones",
+    "casesBody": "No inventamos casos. Zhongke Anqiao está en fase de despliegue en instituciones de demostración; los primeros pilotos se dirigen a residencias de mayores y centros de atención médico-asistencial del delta del Yangtsé, validando el sistema con camas, alertas y procesos reales.",
+    "casesNote": "Las instituciones piloto reciben: cuota de equipos a precio de fábrica, puesta en marcha in situ por ingenieros del fabricante, doce meses de garantía completa e informe de aceptación con firma conjunta.",
+    "casesCta": "Solicitar la propuesta piloto y la lista de aceptación",
+    "dealerTitle": "Política de canal",
+    "dealerLead": "Dirigida a integradores de salud y bienestar, distribuidores de dispositivos médicos e integradores de ciudades inteligentes. Las siguientes condiciones pueden incluirse en el contrato; los detalles se rigen por el acuerdo de canal oficial.",
+    "dealerColTerm": "Condición",
+    "dealerColDetail": "Alcance",
+    "dealerPolicies": [
+      {
+        "term": "Política de unidades de muestra",
+        "detail": "Con el primer pedido se pueden solicitar dos unidades de muestra al 50 % del precio de fábrica para demostraciones; la propiedad de las muestras se regula en el acuerdo de canal."
+      },
+      {
+        "term": "Protección regional",
+        "detail": "No se incorporan distribuidores del mismo nivel en la zona contratada; los proyectos transregionales se asignan según el principio de «registro previo»."
+      },
+      {
+        "term": "Apoyo en licitaciones",
+        "detail": "Documentación completa de conformidad, certificaciones de producto y respuestas técnicas; ingenieros del fabricante disponibles cuando la licitación lo requiera."
+      },
+      {
+        "term": "Garantía del equipo",
+        "detail": "Doce meses de garantía completa en todo el hardware; sustitución directa ante fallos no imputables al usuario. Mantenimiento de la plataforma de software gratuito el primer año."
+      }
+    ],
+    "contactTitle": "Contacto",
+    "contactLead": "En horario laboral, contacto telefónico directo con un asesor técnico; los correos se responden en un día laborable. Para pilotos institucionales se puede concertar una visita técnica in situ.",
+    "contactPhoneLabel": "Teléfono",
+    "contactMailLabel": "Correo electrónico",
+    "contactAddr": "Planta 18, Edificio de oficinas, Plaza Shihu Jinling, Suzhou",
+    "buyerLabel": "Comprador: ",
+    "dealerCta": "Conocer el programa de distribuidores"
   },
   "productsPage": {
     "title": "Productos",
@@ -172,10 +180,12 @@
     "quote": "Solicitar presupuesto",
     "back": "Volver a soluciones",
     "browseProducts": "Ver todos los productos",
-    "scenarios": "escenarios",
-    "viewDetail": "Ver escenario completo",
     "flagship": "Estrella y en producción: Guardian de salud IA y Detector de caídas (suministro en serie); demás por proyecto.",
-    "applicationTitle": "Cómo se aplica"
+    "applicationTitle": "Cómo se aplica",
+    "scenarioLabel": "Escenario de aplicación {num}",
+    "devicesLabel": "Equipos recomendados",
+    "devicesConsult": "La combinación de equipos se concreta al solicitar presupuesto.",
+    "valueConsult": "El valor entregado se define con su proyecto al solicitar presupuesto."
   },
   "aboutPage": {
     "title": "Sobre nosotros",
@@ -211,6 +221,7 @@
     "teamTitle": "Equipo de I+D",
     "teamBody": "El equipo central de I+D de Zhongke Anqiao procede de destacadas instituciones como la Universidad de Tsinghua y el Instituto de Suzhou de la Academia China de Ciencias, con amplia experiencia en radiofrecuencia, procesamiento de señales de bioradar y algoritmos de salud.",
     "historyTitle": "Hitos",
+    "yearSuffix": "",
     "history": [
       {
         "year": "2023",
@@ -230,25 +241,26 @@
     ]
   },
   "dealersPage": {
-    "title": "Programa de socios de canal a nivel nacional",
-    "lead": "Zhongke Anqiao convoca a socios distribuidores en todo el país. Proporcionamos muestras de prueba, registro de proyectos, protección territorial, licencias para licitaciones y soporte técnico integral.",
-    "reasonsTitle": "Cuatro garantías de colaboración",
+    "title": "Reclutamiento de los primeros socios de canal",
+    "lead": "Oportunidad de canal desde cero. Matriz completa, formación y garantía de 12 meses. La política detallada se comparte en la conversación de intención.",
+    "reasonsTitle": "Por qué Anqiao",
+    "reasonLabel": "Garantía de habilitación de la cooperación {num}",
     "reasons": [
       {
-        "title": "Respaldo tecnológico de Tsinghua",
-        "body": "Respaldado por la investigación en mmWave de la Universidad de Tsinghua, algoritmos sólidos y estabilidad demostrada."
+        "title": "Tecnología de Tsinghua",
+        "body": "Radar mmWave de sueño originado en investigación de Tsinghua."
       },
       {
-        "title": "Soporte de muestras y pruebas in situ",
-        "body": "Facilitamos unidades de demostración a socios acreditados para agilizar la validación con clientes e instituciones locales."
+        "title": "Matriz completa",
+        "body": "Guardia de cama, alerta de caídas, cribado y trayectoria."
       },
       {
-        "title": "Registro de proyectos y protección de precios",
-        "body": "Un riguroso registro de proyectos y política de precios territoriales previene la competencia desleal y preserva sus márgenes."
+        "title": "Formación para distribuidores",
+        "body": "Hay un programa de formación de producto y ventas; los socios se incorporan tras la firma."
       },
       {
-        "title": "Apoyo en licitaciones y garantía de calidad",
-        "body": "Documentación técnica exhaustiva para licitaciones y política de garantía de 12 meses en hardware (casos especiales a convenir)."
+        "title": "Garantía de 12 meses",
+        "body": "Garantía de hardware de 12 meses; casos especiales a convenir."
       }
     ],
     "stepsTitle": "Cómo funciona",
@@ -286,8 +298,11 @@
     "phone": "Teléfono",
     "email": "Correo",
     "followTitle": "Seguir nuestra cuenta oficial",
+    "followNote": "Siga la cuenta oficial de WeChat de Zhongke Anqiao",
     "inquiryTitle": "Presupuestos y consultas",
     "inquiryLead": "Rellene el formulario y le contactaremos pronto.",
+    "directChannels": "Canales de contacto oficiales",
+    "inquiryCta": "Solicitud de presupuesto en línea",
     "description": "Presupuestos y consultas: compra de dispositivos, soluciones y solicitudes de distribuidores."
   },
   "newsPage": {
@@ -295,10 +310,13 @@
     "date": "Publicado",
     "body": "Artículo",
     "back": "← Volver a noticias",
+    "unpublished": "Detalles por anunciar.",
+    "readMore": "Leer el artículo completo",
     "description": "Noticias de Zhongke Anqiao: normas (MZ/T 238-2025), catálogos de políticas y avances de proyectos."
   },
   "notFound": {
     "product": "Producto no encontrado",
-    "news": "Artículo no encontrado"
+    "news": "Artículo no encontrado",
+    "solution": "Solución no encontrada"
   }
 }

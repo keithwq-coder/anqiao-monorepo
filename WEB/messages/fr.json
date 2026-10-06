@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "title": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. | Surveillance précise de la santé",
-    "description": "Zhongke Anqiao propose des dispositifs de surveillance sans contact pour les maisons de retraite, la santé et le bien-être grâce à une perception multimodale — sans contact, zéro caméra, zéro microphone, couvrant sommeil, chute et soins."
+    "title": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. | Technologie issue de Tsinghua · Surveillance précise de la santé",
+    "description": "Grâce à la technologie de perception multimodale, Zhongke Anqiao fournit des dispositifs de surveillance sans contact pour les établissements de soins aux personnes âgées, la santé et le bien-être : sans contact, zéro caméra, zéro microphone, couvrant la surveillance du sommeil, la détection de chute et la gériatrie."
   },
   "nav": {
     "products": "Produits",
     "solutions": "Solutions",
-    "dealers": "Programme revendeurs",
+    "dealers": "Recrutement de revendeurs",
     "about": "À propos",
     "news": "Actualités",
     "contact": "Contact"
@@ -17,13 +17,17 @@
     "closeMenu": "Fermer le menu"
   },
   "footer": {
-    "positioning": "Entreprise nationale d'innovation technologique · Monitoring précis de la santé",
-    "contact": "Contact",
+    "positioning": "Perception millimétrique · Surveillance précise de la santé",
+    "lineage": "Algorithmes radar millimétriques du sommeil issus de la recherche Tsinghua · Issue de l'écosystème de l'Académie chinoise des sciences",
+    "contact": "Coordonnées",
     "phone": "Téléphone",
     "email": "E-mail",
-    "follow": "Suivez-nous",
+    "partnerLogin": "Partenaires",
+    "partnerLoginLink": "Connexion espace partenaire",
+    "follow": "Suivre le compte officiel",
+    "followNote": "Suivez le compte WeChat officiel de Zhongke Anqiao",
     "icp": "Enregistrement ICP",
-    "machineTranslated": "Le contenu non chinois de cette page est une traduction automatique, fournie à titre de référence uniquement ; la version chinoise fait foi. (Traduction automatique à vérifier)"
+    "machineTranslated": "Le contenu non chinois de cette page est une traduction automatique, fournie à titre de référence uniquement ; la version chinoise fait foi."
   },
   "common": {
     "pending": "En attente"
@@ -43,147 +47,153 @@
   },
   "productCard": {
     "model": "Modèle",
-    "tagline": "Accroche",
-    "details": "Voir les détails →"
+    "tagline": "Positionnement",
+    "details": "Voir les détails",
+    "inHouse": "Matériel développé en interne"
   },
   "filter": {
     "all": "Tout",
     "aria": "Filtrer les produits par scénario",
-    "dimApp": "Scénarios",
-    "dimPurchase": "Achat",
-    "dimTopic": "Thèmes",
-    "dimPerson": "Public"
+    "dimApp": "Scénarios d'application",
+    "dimPurchase": "Canaux d'achat",
+    "dimTopic": "Thèmes de besoins",
+    "dimPerson": "Publics concernés"
   },
   "productDetail": {
     "tabs": {
       "overview": "Aperçu",
-      "features": "Fonctionnalités",
-      "specs": "Spécifications",
+      "features": "Points forts",
+      "specs": "Spécifications techniques",
       "video": "Vidéos",
-      "docs": "Téléchargements",
-      "faq": "FAQ",
+      "docs": "Documents à télécharger",
+      "faq": "Questions fréquentes",
       "related": "Produits associés"
     },
-    "officialName": "Nom officiel",
-    "deployment": "Sites de déploiement",
-    "sellingPoints": "Points forts",
-    "scenes": "Cas d'usage",
-    "scenesTags": "Étiquettes de cas d'usage",
+    "officialName": "Nom officiel du produit",
+    "deployment": "Points de déploiement",
+    "sellingPoints": "Arguments clés",
+    "scenes": "Scénarios d'application",
+    "scenesTags": "Étiquettes de scénarios",
     "quote": "Demander un devis",
     "videoType": {
-      "intro": "Présentation",
-      "installation": "Démo d'installation",
-      "scene": "Démo sur site"
+      "intro": "Présentation produit",
+      "installation": "Démonstration d'installation",
+      "scene": "Captation en situation réelle"
     },
     "docType": {
-      "manual": "Manuel",
-      "brochure": "Brochure",
+      "manual": "Manuel d'utilisation",
+      "brochure": "Brochure produit",
       "certificate": "Rapport de test"
     },
     "download": "Télécharger",
     "relatedTitle": "Produits associés",
-    "relatedEmpty": "Appareils connectés typiques",
+    "relatedEmpty": "Appareils typiquement connectés",
     "browseAll": "Voir tous les produits",
-    "platformTitle": "Hub · Plateforme cloud Anshouhu",
-    "platformBody": "Cet appareil peut se connecter à la plateforme cloud Anshouhu pour l'agrégation des données multi-appareils, la télésurveillance et la gestion au niveau de l'organisation.",
-    "platformCta": "Découvrir la plateforme Anshouhu",
-    "dimApp": "Scénarios",
+    "platformTitle": "Hub d'accès · Plateforme cloud Anshouhu",
+    "platformBody": "Cet appareil peut être connecté à la plateforme cloud Anshouhu, permettant l'agrégation des données multi-appareils, la télésurveillance et la gestion au niveau de l'établissement.",
+    "platformCta": "Découvrir la plateforme cloud Anshouhu",
+    "dimApp": "Scénarios d'application",
     "dimPurchase": "Canaux d'achat",
-    "dimTopic": "Thèmes",
-    "dimPerson": "Public concerné",
-    "privacyBadgeTitle": "Protection absolue de la vie privée",
-    "privacyBadgeDesc": "Le capteur supérieur est une fenêtre infrarouge passive. L'appareil ne comporte aucune caméra, aucun capteur optique et aucun microphone, empêchant tout enregistrement audio/vidéo."
+    "dimTopic": "Thèmes de besoins",
+    "dimPerson": "Publics concernés",
+    "privacyBadgeTitle": "Engagement : protection physique de la vie privée à 100 %",
+    "privacyBadgeDesc": "La sonde située en haut de l'appareil est une fenêtre de perception infrarouge ambiante à haute sensibilité. L'appareil ne contient aucune caméra optique, aucun capteur d'image, aucun microphone ; les risques de prise de vue ou d'enregistrement sont éliminés au niveau matériel, protégeant le sommeil ainsi que la vie privée et la dignité des personnes âgées."
   },
   "home": {
-    "heroBadge": "Technologie radar dérivée de Tsinghua · Entreprise incubée nationale",
-    "heroTitle": "Technologie dérivée de Tsinghua · Surveillance précise de la santé",
-    "heroTagline": "Solutions de surveillance sans contact multimodal à ondes millimétriques 60 GHz",
-    "heroBody": "Dédié aux établissements pour personnes âgées, à la santé et au maintien à domicile : détection sans contact par radar pur, zéro caméra, zéro microphone — pour la santé et la dignité.",
-    "heroLiveStatus": "Surveillance du lit active",
-    "heroLiveOnline": "En ligne",
-    "heroVitalsRespiration": "Respiration",
-    "heroVitalsHeartRate": "Rythme cardiaque",
-    "heroVitalsStatus": "Sommeil au lit",
-    "heroAlertNotification": "Notification mobile en temps réel pour proches / soignants",
-    "heroAlertText": "02:15 Lever nocturne · 02:22 Retour sécurisé (7 min, signes stables)",
-    "heroPrivacyBadge": "Confidentialité 100% physique · 0 caméra · 0 micro",
-    "quote": "Demander un devis",
-    "dealer": "Devenir partenaire",
-    "advantagesTitle": "Quatre piliers de confiance technique et commerciale",
-    "advantages": [
+    "heroKicker": "Technologie de perception de la santé de niveau institutionnel",
+    "heroTitle": "Une veille imperceptible, une exposition nulle de la vie privée",
+    "heroLead": "Zhongke Anqiao est une entreprise de technologies de perception. Pour les établissements de soins aux personnes âgées, les établissements de santé et l'aide à domicile, nous livrons des systèmes de perception des signes vitaux et des chutes, sans caméra ni microphone — perception uniquement, aucune image enregistrée.",
+    "sigBreath": "Rythme respiratoire",
+    "sigMove": "Micro-mouvements corporels",
+    "sigExit": "Événement de sortie de lit",
+    "heroCta": "Voir les produits et spécifications techniques",
+    "heroAffiliation": "Algorithmes de perception issus de Tsinghua · Incubation technologique de l'Institut Suzhou des technologies biomédicales et de l'ingénierie, Académie chinoise des sciences",
+    "principlesTitle": "Principes techniques",
+    "principles": [
       {
-        "title": "Algorithmes dérivés de Tsinghua",
-        "body": "Recherche radar millimétrique validée par benchmarks cliniques rigoureux."
+        "title": "Ce que nous percevons",
+        "body": "Respiration, fréquence cardiaque, mouvements corporels, sortie de lit, chute — obtenus par la réflexion micro-Doppler des ondes électromagnétiques à la surface du corps humain. Aucun dispositif porté, aucun contact avec la peau, aucune coopération demandée à la personne accompagnée."
       },
       {
-        "title": "Agrément dispositif médical classe II",
-        "body": "Certificat d'enregistrement officiel pour la vente de dispositifs médicaux."
+        "title": "Comment nous calculons",
+        "body": "Les signaux bruts sont filtrés et les caractéristiques extraites localement sur la puce embarquée ; les algorithmes sont issus de la recherche Tsinghua sur la perception du sommeil. L'établissement ne reçoit que des événements et des valeurs structurés, jamais les formes d'onde brutes."
       },
       {
-        "title": "Confidentialité 100% physique",
-        "body": "Zéro caméra, zéro micro — protection absolue garantie au niveau matériel."
-      },
-      {
-        "title": "Garantie qualité 12 mois",
-        "body": "Politique de garantie de 12 mois (conditions particulières à convenir)."
+        "title": "Pourquoi un risque de vie privée nul",
+        "body": "L'appareil ne comporte ni caméra optique ni microphone, et ne génère aucune image ni aucun son. « Être filmé ou enregistré » n'existe pas physiquement — c'est un fait matériel, pas une promesse logicielle."
       }
     ],
-    "flagshipTitle": "Deux produits phares en production de série",
-    "flagshipSubtitle": "Répondant aux besoins essentiels des seniors, livrables en volume avec certifications complètes",
-    "flagshipBedTag": "Gardien du lit de chambre",
-    "flagshipBedTitle": "ZQ-SH100 · Moniteur de lit IA",
-    "flagshipBedDesc": "Conçu pour la surveillance discrète du lit 60 GHz. Mesure continue de la respiration, du rythme cardiaque et du sommeil, avec alerte immédiate en cas de sortie prolongée.",
-    "flagshipBedPoint1": "Numérisation sans contact des signes vitaux, synchronisation facile avec la famille",
-    "flagshipBedPoint2": "Alerte proactive en cas de sortie de lit prolongée la nuit pour prévenir les chutes",
-    "flagshipBedPoint3": "Fenêtre infrarouge supérieure, zéro caméra, zéro enregistrement pour un sommeil serein",
-    "flagshipFallTag": "Gardien des chutes en salle de bain",
-    "flagshipFallTitle": "ZQ-D100 · Détecteur de chute millimétrique",
-    "flagshipFallDesc": "Surveille les zones humides et à haut risque. Le radar traverse la vapeur d'eau et l'obscurité pour détecter toute chute en millisecondes et déclencher l'alarme sonore et mobile.",
-    "flagshipFallPoint1": "Détection de chute en millisecondes, fonctionnement stable en milieu humide",
-    "flagshipFallPoint2": "Alarme sonore locale puissante + notification d'urgence simultanée sur mobile",
-    "flagshipFallPoint3": "Aucun capteur à porter, installation rapide au plafond ou au mur",
-    "viewProductDetail": "Voir détails du produit et spécifications",
-    "matrixTitle": "Matrice d'extension et équipements complémentaires",
-    "matrixLead": "Composants modulaires adaptés à chaque établissement, connectés à la plateforme IoT Anshouhu",
-    "viewAllProducts": "Voir les 10 produits et spécifications techniques →",
-    "solutionsTitle": "Solutions par scénario",
-    "solutionsLead": "Répondre aux défis majeurs des résidences, collectivités et domiciles avec des solutions concrètes",
-    "viewSolution": "Voir la solution complète →",
-    "dealerBanner": "Programme national de partenaires revendeurs — Support échantillons · Protection régionale · Appels d'offres",
-    "dealerCta": "Découvrir le programme revendeurs",
-    "newsTitle": "Actualités et normes de l'industrie",
-    "newsLead": "Suivre l'évolution des politiques publiques et la normalisation des radars pour personnes âgées",
-    "viewAllNews": "Voir toutes les actualités",
-    "ctaTitle": "Besoin d'une solution sur mesure et d'un devis ?",
-    "ctaBody": "Indiquez-nous votre type d'établissement et le nombre de lits, nos experts vous répondront sous 2 heures."
+    "featuredTitle": "Produits phares",
+    "featuredCta": "Voir les spécifications complètes",
+    "specTableTitle": "Aperçu des spécifications de toute la gamme",
+    "colModel": "Modèle",
+    "colPosition": "Positionnement",
+    "colFeature": "Caractéristiques clés",
+    "colWarranty": "Garantie",
+    "scenariosTitle": "Pour qui",
+    "casesTitle": "Pilotes et démonstrations",
+    "casesBody": "Nous n'inventons pas d'études de cas. Zhongke Anqiao est en phase de déploiement en établissements de démonstration : les premiers pilotes visent les établissements de soins aux personnes âgées et les structures médico-gériatriques du delta du Yangtsé, pour valider le système sur des lits, des alertes et des processus réels.",
+    "casesNote": "Les établissements pilotes bénéficient de : quotas d'appareils au prix usine, mise en service sur site par des ingénieurs du fabricant, garantie intégrale de douze mois, et un rapport de réception cosigné.",
+    "casesCta": "Demander le plan pilote et la liste de contrôle de réception",
+    "dealerTitle": "Politique de recrutement des canaux",
+    "dealerLead": "À destination des intégrateurs en bien-vieillir, des distributeurs de dispositifs médicaux et des intégrateurs de villes intelligentes. Les clauses suivantes peuvent être inscrites au contrat ; les modalités détaillées relèvent de l'accord de distribution formel.",
+    "dealerColTerm": "Élément de politique",
+    "dealerColDetail": "Conditions limites",
+    "dealerPolicies": [
+      {
+        "term": "Politique de démonstration",
+        "detail": "Sur la première commande, il est possible de demander deux ensembles de démonstration à 50 % du prix usine pour les présentations en établissement ; la propriété des unités de démonstration relève de l'accord de distribution."
+      },
+      {
+        "term": "Protection régionale",
+        "detail": "Aucun distributeur de même niveau n'est recruté dans la région contractée ; les projets transrégionaux sont arbitrés selon le principe du « premier déclaré »."
+      },
+      {
+        "term": "Appui aux appels d'offres",
+        "detail": "Fourniture de l'ensemble des documents de conformité, certifications produits et dossiers de réponse technique ; si nécessaire, un ingénieur du fabricant accompagne l'offre."
+      },
+      {
+        "term": "Garantie intégrale",
+        "detail": "Tous les matériels bénéficient d'une garantie intégrale de 12 mois ; les dommages non imputables à l'utilisateur donnent lieu à un remplacement direct ; la plateforme logicielle est maintenue gratuitement la première année."
+      }
+    ],
+    "contactTitle": "Contact",
+    "contactLead": "Pendant les horaires de bureau, un conseiller technique répond directement au téléphone ; les e-mails reçoivent une réponse sous un jour ouvré. Pour les pilotes en établissement, une visite technique sur site peut être planifiée directement.",
+    "contactPhoneLabel": "Téléphone",
+    "contactMailLabel": "E-mail",
+    "contactAddr": "18e étage, immeuble commercial Shihu Jinling Plaza, Suzhou",
+    "buyerLabel": "Public concerné : ",
+    "dealerCta": "Découvrir la politique de recrutement"
   },
   "productsPage": {
-    "title": "Produits",
-    "lead": "Une matrice complète d'appareils couvrant surveillance du lit, alerte de chute, dépistage de santé et suivi"
+    "title": "Centre produits",
+    "lead": "Une matrice complète d'appareils couvrant la veille au lit, l'alerte de chute, le dépistage de santé et le suivi de trajectoire"
   },
   "solutionsPage": {
     "title": "Solutions",
-    "lead": "Combinaisons d'appareils adaptées par scénario — institutions, communautés, santé, bien-être et rénovation adaptée au vieillissement.",
+    "lead": "Combinaisons d'appareils adaptées par scénario : établissements, communautés, santé, bien-être et rénovation adaptée au vieillissement.",
     "navAria": "Navigation par scénario",
     "buyer": "Décideur / Acheteur",
-    "painPoints": "Points de douleur",
+    "painPoints": "Points critiques du scénario",
     "devices": "Combinaison d'appareils recommandée",
     "value": "Valeur livrée",
     "quote": "Demander un devis",
     "back": "Retour aux solutions",
     "browseProducts": "Voir tous les produits",
-    "scenarios": "scénarios",
-    "viewDetail": "Voir le scénario complet",
-    "flagship": "Produits phares en série : Garde de santé IA et Détecteur de chute (livraison en volume) ; autres sur mesure.",
-    "applicationTitle": "Comment appliquer"
+    "flagship": "Produits phares · en production de série : Garde de santé IA et détecteur de chute (fourniture en volume possible) ; les autres appareils sont fournis à la demande, par projet.",
+    "applicationTitle": "Comment appliquer",
+    "scenarioLabel": "Scénario {num}",
+    "devicesLabel": "Matériel adapté recommandé",
+    "devicesConsult": "La combinaison d'équipements est précisée lors de la consultation ; demandez un devis.",
+    "valueConsult": "La valeur livrée est définie en fonction de votre projet ; demandez un devis."
   },
   "aboutPage": {
     "title": "À propos",
-    "lead": "Technologie dérivée de Tsinghua · Monitoring sans contact multimodal · Surveillance précise de la santé",
-    "introTitle": "Profil de l'entreprise",
-    "introBody": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. intègre la R&D et la vente de dispositifs médicaux, d'intelligence de bureau, de gestion de la santé, d'intégration médicale intelligente, de réadaptation des personnes âgées, d'applications mobiles et de logiciels de surveillance préventive de la santé. Fondée en 2023 et basée à Suzhou (Chine), la société a été incubée au sein de l'Institut de recherche en technologies avancées de Suzhou.",
+    "lead": "Technologie issue de Tsinghua · Surveillance sans contact multimodale · Surveillance précise de la santé",
+    "introTitle": "Présentation de l'entreprise",
+    "introBody": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. s'appuie sur l'innovation technologique intelligente et réunit la recherche, le développement et la vente dans les domaines des dispositifs médicaux, de l'intelligence de bureau, de la gestion de la santé, de l'intégration médicale intelligente, de la réadaptation des personnes âgées, des applications mobiles et des logiciels de surveillance préventive de la santé. Fondée en 2023, l'entreprise a son siège à Suzhou, en Chine.",
     "techTitle": "Feuille de route technologique",
-    "techBody": "L'entreprise construit un centre numérique de gestion de la santé et une équipe R&D professionnelle, développant progressivement des appareils clés couvrant le passe rapide santé intelligent, le dépistage rapide sans contact, les unités mère-enfant de santé et le passe rapide microfluidique. En coopération étroite avec l'Institut de génie biomédical de Suzhou, elle développe conjointement des programmes de surveillance de la santé des enfants et des adolescents, adopte la technologie radar millimétrique du sommeil de Tsinghua et lance le développement du moniteur de sommeil intégrant médical et gériatrie — officialisant le programme de R&D du dispositif AI Health Guardian.",
+    "techBody": "L'entreprise construit un centre numérique de gestion de la santé et une équipe de R&D professionnelle, et développe progressivement plusieurs équipements clés : couloirs rapides de santé intelligente, dépistage rapide sans contact, unités mère-enfant de santé et couloirs rapides microfluidiques. En coopération étroite avec l'Institut Suzhou des technologies biomédicales et de l'ingénierie, elle codéveloppe des programmes de surveillance et de promotion régulières de la santé des enfants et adolescents, adopte la technologie radar millimétrique du sommeil issue de la recherche Tsinghua et lance la R&D d'une solution de surveillance du sommeil médico-gériatrique pilotée par les données — le projet cœur de R&D du Garde de santé IA est officiellement initié.",
     "qualityTitle": "Assurance qualité",
     "qualityTableCaption": "Étapes et engagements d'assurance qualité",
     "qualityStage": "Étape",
@@ -191,92 +201,94 @@
     "qualityPromise": "Engagement",
     "qualityStages": [
       {
-        "stage": "Réception & inspection",
+        "stage": "Réception et inspection",
         "time": "Sous 7 jours",
-        "promise": "Problème qualité / produit endommagé / erreur → remplacement gratuit"
+        "promise": "Problème de qualité / produit endommagé / erreur d'envoi → remplacement gratuit"
       },
       {
-        "stage": "Garantie de remplacement",
+        "stage": "Période de garantie de remplacement",
         "time": "Sous 15 jours",
-        "promise": "Panne non liée à l'usage → remplacement gratuit"
+        "promise": "Défaut de performance non imputable à l'utilisateur → remplacement gratuit"
       },
       {
         "stage": "Période de garantie",
         "time": "12 mois",
-        "promise": "Politique de garantie 12 mois, conditions particulières à convenir"
+        "promise": "Politique de réparation de 12 mois ; cas particuliers à convenir"
       }
     ],
     "certTitle": "Qualifications",
-    "certBody": "La société détient un certificat d'enregistrement d'activité de dispositifs médicaux (qualifiée pour vendre des dispositifs médicaux de classe II).",
-    "teamTitle": "Équipe R&D",
-    "teamBody": "L'équipe centrale de R&D de Zhongke Anqiao est issue de prestigieuses institutions, notamment l'Université Tsinghua et l'Institut de Suzhou de l'Académie chinoise des sciences, apportant une vaste expertise en radiofréquence, traitement du signal bioradar et algorithmes de santé.",
-    "historyTitle": "Jalons",
+    "certBody": "L'entreprise détient l'attestation d'enregistrement d'exploitation de dispositifs médicaux (qualification de vente de dispositifs médicaux de classe II).",
+    "teamTitle": "Équipe de R&D",
+    "teamBody": "L'équipe centrale de R&D de Zhongke Anqiao est issue d'institutions de recherche telles que l'Université Tsinghua et l'Institut Suzhou des technologies biomédicales et de l'ingénierie de l'Académie chinoise des sciences (Institut Suzhou de médecine et d'ingénierie), avec une solide expérience industrielle et d'ingénierie en radiofréquence micro-ondes, en traitement du signal bioradar et en algorithmes de santé médicale.",
+    "historyTitle": "Parcours",
+    "yearSuffix": "",
     "history": [
       {
         "year": "2023",
-        "title": "Fondation",
-        "body": "Fondée à l'Institut de recherche en technologies avancées de Suzhou, création d'un centre de gestion de la santé et d'une équipe R&D, développement du passe rapide santé, du dépistage rapide sans contact et du passe rapide microfluidique."
+        "title": "Création de l'entreprise",
+        "body": "L'entreprise est fondée à Suzhou, avec la création d'un centre numérique de gestion de la santé et d'une équipe de R&D professionnelle, développant progressivement des équipements clés : couloir rapide de santé intelligente, dépistage rapide sans contact, unité mère-enfant de santé et couloir rapide microfluidique."
       },
       {
         "year": "2024",
-        "title": "Projet principal lancé",
-        "body": "Lancement de la série Elderly Health Guardian ; coopération avec l'Institut de génie biomédical de Suzhou ; adoption du radar mmWave du sommeil de Tsinghua ; lancement officiel du projet AI Health Guardian."
+        "title": "Lancement du projet cœur",
+        "body": "Lancement innovant de la gamme de produits de veille de la santé des personnes âgées ; coopération approfondie avec l'Institut Suzhou des technologies biomédicales et de l'ingénierie pour codévelopper des programmes de surveillance et de promotion régulières de la santé des enfants et adolescents ; adoption de la technologie radar millimétrique du sommeil issue de la recherche Tsinghua et lancement de la R&D d'une solution de surveillance du sommeil médico-gériatrique ; le projet cœur de R&D du Garde de santé IA est formellement initié."
       },
       {
-        "year": "2025–aujourd'hui",
-        "title": "Gamme complète",
-        "body": "Grâce aux résultats de l'Institut de recherche de Shenzhen, développement autonome de l'analyseur microfluidique de globules blancs et du lit de soins intelligent ; intégration modulaire des fonctions de surveillance ; coopération avec l'Université du Sud-Est."
+        "year": "2025 à aujourd'hui",
+        "title": "Matrice produit finalisée",
+        "body": "En s'appuyant sur les résultats de recherche transférés par l'Institut de recherche en technologies avancées de Shenzhen, l'entreprise a développé de manière indépendante l'analyseur microfluidique de leucocytes et le logiciel du lit de soins intelligent multifonction ; les fonctions de surveillance des signes vitaux ont été intégrées sous forme modulaire, avec le développement de matériels de transfert et de fauteuils de massage à impulsions, perfectionnant en continu le système de veille de santé IA ; en coopération approfondie avec l'Université du Sud-Est, elle prend en charge la R&D des composants clés du fauteuil de salle d'attente à ECG haute fréquence."
       }
     ]
   },
   "dealersPage": {
-    "title": "Programme de recrutement de partenaires revendeurs",
-    "lead": "Zhongke Anqiao recrute des partenaires de distribution dans toute la région. Nous offrons le support d'échantillons, la protection des projets, les autorisations d'appel d'offres et un accompagnement technique complet.",
-    "reasonsTitle": "Quatre garanties de partenariat",
+    "title": "Programme national de recrutement de partenaires de canal",
+    "lead": "Matrice produit complète, système de formation et garantie de 12 mois (cas particuliers à convenir). La politique de canal détaillée est communiquée lors de la phase d'échange d'intention.",
+    "reasonsTitle": "Pourquoi choisir Anqiao",
+    "reasonLabel": "Garantie d'accompagnement partenaire {num}",
     "reasons": [
       {
-        "title": "Soutien technologique Tsinghua",
-        "body": "Soutenu par la recherche en ondes millimétriques de l'Université Tsinghua, des algorithmes robustes et une stabilité éprouvée."
+        "title": "Appui technologique issu de Tsinghua",
+        "body": "Adoption de la technologie radar millimétrique du sommeil issue de la recherche Tsinghua."
       },
       {
-        "title": "Support d'échantillons et démonstrations",
-        "body": "Nous fournissons à nos partenaires agréés des unités de démonstration pour convaincre rapidement les acteurs locaux."
+        "title": "Matrice produit complète",
+        "body": "Veille au lit, alerte de chute, dépistage de santé et suivi de trajectoire — vente combinée possible sur de multiples scénarios."
       },
       {
-        "title": "Enregistrement de projet et protection tarifaire",
-        "body": "Un système strict d'enregistrement et de politique tarifaire régionale empêche la concurrence déloyale et protège vos marges."
+        "title": "Système complet de formation des revendeurs",
+        "body": "Un programme de formation produit et commerciale est en place ; participation à la formation certifiante après signature."
       },
       {
-        "title": "Accompagnement aux appels d'offres et garantie qualité",
-        "body": "Spécifications complètes pour les appels d'offres et politique de garantie de 12 mois sur tout le matériel (conditions particulières à convenir)."
+        "title": "Garantie de 12 mois",
+        "body": "Tous les matériels sont garantis 12 mois ; cas particuliers à convenir ; le service après-vente repose sur une politique formalisée."
       }
     ],
-    "stepsTitle": "Comment ça marche",
+    "stepsTitle": "Processus de coopération",
     "steps": [
       {
         "step": "01",
-        "title": "Envoyer l'intention",
-        "body": "Remplissez le formulaire ci-dessous."
+        "title": "Soumettre l'intention",
+        "body": "Remplissez le formulaire d'inscription d'intention ci-dessous."
       },
       {
         "step": "02",
-        "title": "Échanger",
-        "body": "Nous discutons région, scénarios et modèle de coopération."
+        "title": "Échange et mise en relation",
+        "body": "Nous discutons avec vous de la région, des scénarios et du modèle de coopération."
       },
       {
         "step": "03",
-        "title": "Formation & certification",
+        "title": "Formation et certification",
         "body": "Participez aux formations produit et commerciales."
       },
       {
         "step": "04",
-        "title": "Signer & autoriser",
-        "body": "Finalisez le contrat et l'autorisation de canal."
+        "title": "Signature et autorisation",
+        "body": "Finalisez le contrat et l'autorisation de distribution."
       }
     ],
-    "stepsNote": "Les politiques détaillées sont fournies lors de la phase de communication d'intention.",
+    "stepsNote": "La politique de canal détaillée est communiquée lors de la phase d'échange d'intention.",
     "formTitle": "Inscription d'intention",
-    "formLead": "Nous vous recontacterons rapidement après l'envoi."
+    "formLead": "Nous vous contacterons dans les meilleurs délais après réception."
   },
   "contactPage": {
     "title": "Contact",
@@ -285,20 +297,26 @@
     "address": "Adresse",
     "phone": "Téléphone",
     "email": "E-mail",
-    "followTitle": "Suivre notre compte officiel",
-    "inquiryTitle": "Devis & demandes",
-    "inquiryLead": "Remplissez le formulaire ci-dessous, nous vous contacterons rapidement.",
-    "description": "Devis et consultations : achat d'équipements, solutions et candidatures de revendeurs."
+    "followTitle": "Suivre le compte officiel",
+    "followNote": "Suivez le compte WeChat officiel de Zhongke Anqiao",
+    "inquiryTitle": "Devis et demandes",
+    "inquiryLead": "Remplissez le formulaire ci-dessous, nous vous contacterons dans les meilleurs délais.",
+    "directChannels": "Canaux de contact officiels",
+    "inquiryCta": "Devis de projet en ligne",
+    "description": "Achat d'équipements, conseil en solutions et inscription d'intention de revendeur : contactez Zhongke Anqiao pour obtenir un devis de surveillance précise de la santé."
   },
   "newsPage": {
     "title": "Actualités",
-    "date": "Publié",
+    "date": "Date de publication",
     "body": "Article",
     "back": "← Retour aux actualités",
-    "description": "Actualités Zhongke Anqiao : normes (MZ/T 238-2025), catalogues politiques et avancées de projets."
+    "unpublished": "Détails à venir.",
+    "readMore": "Lire l'article complet",
+    "description": "Actualités Zhongke Anqiao : normes du secteur, répertoires de politiques et avancées de projets."
   },
   "notFound": {
     "product": "Produit introuvable",
-    "news": "Article introuvable"
+    "news": "Article introuvable",
+    "solution": "Solution introuvable"
   }
 }

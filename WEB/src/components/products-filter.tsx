@@ -70,21 +70,21 @@ export function ProductsFilter({ products }: { products: LocalizedProduct[] }) {
 
   return (
     <div>
-      <div className="mb-8 space-y-4">
+      <div className="mb-8 space-y-3">
         {/* 「全部」常驻 */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5">
           <button
             type="button"
             onClick={() => select(ALL)}
             aria-pressed={active === ALL}
-            className={`focus-ring rounded-md border px-4 py-2 text-sm transition-colors ${
+            className={`focus-ring px-4 py-1.5 text-xs font-semibold transition-colors ${
               active === ALL
-                ? "border-primary bg-primary text-white"
-                : "border-border bg-white text-text hover:bg-primary-light"
+                ? "bg-primary-dark text-white"
+                : "border border-border bg-white text-text hover:border-primary-dark/60"
             }`}
           >
             {ALL}
-            <span className="ml-1.5 text-xs opacity-70">{products.length}</span>
+            <span className="ml-1.5 font-mono text-[11px] opacity-80">{products.length}</span>
           </button>
         </div>
 
@@ -93,20 +93,20 @@ export function ProductsFilter({ products }: { products: LocalizedProduct[] }) {
           if (items.length === 0) return null;
           const isOpen = open.has(dim);
           return (
-            <div key={dim} className="rounded-lg border border-border bg-white">
+            <div key={dim} className="border border-border bg-white">
               <button
                 type="button"
                 onClick={() => toggle(dim)}
                 aria-expanded={isOpen}
-                className="focus-ring flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-text"
+                className="focus-ring flex w-full items-center justify-between px-5 py-3 text-xs font-mono font-bold uppercase tracking-wider text-text hover:bg-paper transition-colors"
               >
                 <span>{t(`dim${dim.charAt(0).toUpperCase()}${dim.slice(1)}`)}</span>
-                <span aria-hidden="true" className="text-primary">
-                  {isOpen ? "▾" : "▸"}
+                <span aria-hidden="true" className="text-xs font-bold text-primary-dark">
+                  {isOpen ? "▲" : "▼"}
                 </span>
               </button>
               {isOpen ? (
-                <div className="flex flex-wrap gap-3 border-t border-border px-4 pb-4 pt-3">
+                <div className="flex flex-wrap gap-2 border-t border-border/70 px-5 pb-4 pt-3 bg-paper">
                   {items.map((scene) => {
                     const selected = scene === active;
                     return (
@@ -115,14 +115,14 @@ export function ProductsFilter({ products }: { products: LocalizedProduct[] }) {
                         type="button"
                         onClick={() => select(scene)}
                         aria-pressed={selected}
-                        className={`focus-ring rounded-md border px-4 py-2 text-sm transition-colors ${
+                        className={`focus-ring px-3 py-1 text-xs font-medium transition-colors ${
                           selected
-                            ? "border-primary bg-primary text-white"
-                            : "border-border bg-white text-text hover:bg-primary-light"
+                            ? "bg-primary-dark text-white font-semibold"
+                            : "border border-border bg-white text-text-light hover:border-primary-dark/60 hover:text-primary-dark"
                         }`}
                       >
                         {scene}
-                        <span className="ml-1.5 text-xs opacity-70">
+                        <span className="ml-1.5 font-mono text-[11px] opacity-75">
                           {countOf(scene)}
                         </span>
                       </button>

@@ -5,6 +5,7 @@ import { ProductDetail } from "@/components/product/product-detail";
 import { isPending } from "@/data/pending";
 import { getLocalizedProduct, products } from "@/data/products";
 import { routing } from "@/i18n/routing";
+import { CANONICAL_ORIGIN } from "@/lib/site";
 
 export function generateStaticParams() {
   return routing.locales.flatMap((locale) =>
@@ -40,7 +41,7 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const tn = await getTranslations({ locale, namespace: "nav" });
-  const site = "https://anqiao.aibrain.wiki";
+  const site = CANONICAL_ORIGIN;
   const productUrl = `${site}/${locale}/products/${product.slug}`;
 
   const productLd = {
@@ -51,12 +52,6 @@ export default async function ProductDetailPage({
     model: product.model ?? undefined,
     brand: { "@type": "Brand", name: "安守护" },
     image: product.images[0]?.src,
-    offers: {
-      "@type": "Offer",
-      url: productUrl,
-      priceCurrency: "CNY",
-      availability: "https://schema.org/InStock",
-    },
     additionalProperty: product.features.map((f, i) => ({
       "@type": "PropertyValue",
       name: `feature_${i + 1}`,

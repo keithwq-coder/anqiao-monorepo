@@ -28,7 +28,7 @@ export function LocaleSwitcher() {
       value={locale}
       onChange={onChange}
       aria-label="切换语言"
-      className="focus-ring cursor-pointer rounded-md border border-border bg-white px-2 py-1.5 text-sm text-text transition-colors hover:bg-bg-warm"
+      className="focus-ring cursor-pointer rounded-[8px] border border-border/80 bg-white px-2.5 py-1.5 text-xs sm:text-sm font-medium text-text shadow-2xs transition-colors hover:border-primary/50 hover:bg-bg-warm"
     >
       {routing.locales.map((l) => (
         <option key={l} value={l}>

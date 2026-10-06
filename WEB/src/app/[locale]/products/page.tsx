@@ -23,12 +23,15 @@ export default async function ProductsPage({
   setRequestLocale(locale);
   const t = await getTranslations("productsPage");
   return (
-    <Section
-      title={t("title")}
-      lead={t("lead")}
-      tone="bg"
-    >
-      <ProductsFilter products={products.map((p) => localizeProduct(p, locale as "zh" | "en" | "fr" | "es" | "ja" | "ru"))} />
-    </Section>
+    <>
+      <Section
+        variant="page-head"
+        title={t("title")}
+        lead={t("lead")}
+      />
+      <Section tone="bg">
+        <ProductsFilter products={products.map((p) => localizeProduct(p, locale as "zh" | "en" | "fr" | "es" | "ja" | "ru"))} />
+      </Section>
+    </>
   );
 }

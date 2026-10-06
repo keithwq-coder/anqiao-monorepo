@@ -1,3 +1,4 @@
+import { CANONICAL_ORIGIN } from "@/lib/site";
 import type { L } from "./locale";
 import { PENDING } from "./pending";
 
@@ -23,14 +24,17 @@ export const COMPANY = {
     ja: "蘇州市石湖金陵広場ビジネスビル 18階",
     ru: "18 этаж, деловой центр Shihu Jinling Plaza, Сучжоу",
   } satisfies L<string>,
-  /** 业主提供(2026-08-05)。 */
-  phone: "13032531078",
-  /** 业主提供(2026-08-05)。 */
-  email: "448121288@qq.com",
-  /** SPEC §4.2：ICP 备案号 {{待填}},等业主提供。 */
+  /** 业主提供(2026-09-29)：对公电话。 */
+  phone: "13405084570",
+  /** 业主提供(2026-09-29)：对公邮箱。 */
+  email: "13405084570@139.com",
+  /** SPEC §4.2：ICP 备案号仍待业主提供真实号，页脚继续占位。 */
   icp: PENDING,
-  /** REBUILD 阶段 4：官网。 */
-  website: "https://anqiao.aibrain.wiki",
+  /**
+   * 规范域名。裸域 anqiaokj.com 由 nginx 301 到 www。
+   * 旧域 anqiao.aibrain.wiki 上线后同样 301 过来。
+   */
+  website: CANONICAL_ORIGIN,
   copyright: {
     zh: "© 2026 中科安樵（苏州）科技有限公司",
     en: "© 2026 Zhongke Anqiao (Suzhou) Technology Co., Ltd.",

@@ -2,10 +2,12 @@ import { Link } from "@/i18n/navigation";
 
 const VARIANTS = {
   primary:
-    "bg-primary text-white hover:bg-primary-dark border border-transparent",
+    "text-primary-dark underline decoration-primary-dark/40 decoration-2 underline-offset-8 hover:decoration-primary-dark",
   secondary:
-    "bg-white text-primary border border-primary hover:bg-primary-light",
-  ghost: "bg-transparent text-primary border border-border hover:bg-primary-light",
+    "text-ink underline decoration-ink/30 decoration-2 underline-offset-8 hover:text-primary-dark hover:decoration-primary-dark/60",
+  dark: "text-primary-dark underline decoration-primary-dark/40 decoration-2 underline-offset-8 hover:decoration-primary-dark",
+  ghost:
+    "text-text-light underline decoration-transparent underline-offset-8 hover:text-primary-dark hover:decoration-primary-dark/60",
 } as const;
 
 export function CtaLink({
@@ -22,9 +24,10 @@ export function CtaLink({
   return (
     <Link
       href={href}
-      className={`focus-ring inline-flex items-center justify-center rounded-md px-6 py-3 text-base font-medium transition-colors ${VARIANTS[variant]} ${className}`}
+      className={`focus-ring inline-flex items-center gap-2 text-sm sm:text-base font-bold transition-colors ${VARIANTS[variant]} ${className}`}
     >
       {children}
+      <span aria-hidden="true">→</span>
     </Link>
   );
 }

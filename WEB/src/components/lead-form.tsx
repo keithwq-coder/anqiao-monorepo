@@ -11,10 +11,10 @@ import {
   type LeadType,
 } from "@/lib/lead";
 
-const LABEL = "block text-sm font-medium text-text";
+const LABEL = "block text-sm font-semibold text-text";
 const INPUT =
-  "focus-ring mt-2 block w-full rounded-md border border-border bg-white px-3 py-2 text-text";
-const ERROR = "mt-1 text-sm text-[#B4342C]";
+  "focus-ring mt-1.5 block w-full border border-border bg-white px-3.5 py-2.5 text-sm sm:text-base text-text transition-colors placeholder:text-text-muted hover:border-primary/50 focus:border-primary";
+const ERROR = "mt-1.5 text-xs font-medium text-[#B4342C]";
 
 export function LeadForm({
   type,
@@ -195,14 +195,14 @@ export function LeadForm({
       <button
         type="submit"
         disabled={pending}
-        className="focus-ring inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
+        className="focus-ring inline-flex items-center justify-center bg-primary px-7 py-3 text-base font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? tf("submitting") : tf("submit")}
       </button>
 
       <p aria-live="polite" role="status">
         {state.ok ? (
-          <span className="block rounded-md bg-primary-light px-4 py-3 text-primary-dark">
+          <span className="block border border-primary/30 bg-primary-light px-4 py-3 text-sm font-medium text-primary-dark">
             {state.message}
           </span>
         ) : state.message ? (

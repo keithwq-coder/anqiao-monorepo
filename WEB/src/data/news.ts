@@ -7,7 +7,7 @@ export type NewsItem = {
   /** 随语言变化。 */
   title: L<string>;
   summary: L<string>;
-  /** 无正文则详情页渲染 <Pending />。 */
+  /** 无正文则详情页显示「详情待公布」。 */
   body?: L<string>;
   cover?: string;
 };

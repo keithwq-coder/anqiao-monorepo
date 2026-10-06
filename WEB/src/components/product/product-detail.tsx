@@ -10,7 +10,6 @@ import {
   SCENE_DIMENSION,
   sceneAnchorByLabel,
 } from "@/data/scenes";
-import { Pending } from "@/components/pending";
 import { ProductCard } from "@/components/product-card";
 import { isPending } from "@/data/pending";
 import { getLocalizedProduct, type LocalizedProduct } from "@/data/products";
@@ -53,17 +52,17 @@ export function ProductDetail({ product }: { product: LocalizedProduct }) {
 
   return (
     <>
-      <div className="sticky top-16 z-40 border-b border-border bg-white/95 backdrop-blur">
-        <div className="container-page flex flex-wrap gap-1 py-3">
+      <div className="sticky top-16 z-40 border-b border-border bg-white/95 backdrop-blur-md">
+        <div className="container-page flex flex-wrap gap-2 py-3">
           {availableTabs.map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => selectTab(key)}
-              className={`focus-ring rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              className={`focus-ring px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                 active === key
-                  ? "bg-primary-light text-primary-dark"
-                  : "text-text-light hover:bg-bg-warm"
+                  ? "bg-primary-dark text-white"
+                  : "text-text-light hover:bg-paper hover:text-primary-dark"
               }`}
             >
               {td(`tabs.${key}`)}
@@ -72,7 +71,7 @@ export function ProductDetail({ product }: { product: LocalizedProduct }) {
         </div>
       </div>
 
-      <div className="container-page py-10">
+      <div className="container-page py-10 sm:py-14">
         {active === "overview" && <Overview product={product} />}
         {active === "features" && <Features product={product} />}
         {active === "specs" && <Specs product={product} />}
@@ -88,7 +87,6 @@ export function ProductDetail({ product }: { product: LocalizedProduct }) {
 /* ---------- 概览：主图+缩略图画廊 + 信息区 ---------- */
 function Overview({ product }: { product: LocalizedProduct }) {
   const td = useTranslations("productDetail");
-  const tpc = useTranslations("productCard");
   const locale = useLocale() as "zh" | "en" | "fr" | "es" | "ja" | "ru";
   const [mainIdx, setMainIdx] = useState(0);
   const imgs = product.images;
@@ -97,7 +95,7 @@ function Overview({ product }: { product: LocalizedProduct }) {
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       <div className="space-y-4">
-        <div className="rounded-lg border border-border bg-white p-4">
+        <div className="relative flex items-center justify-center overflow-hidden border border-border bg-paper p-6">
           <Image
             key={main.src}
             src={main.src}
@@ -108,16 +106,16 @@ function Overview({ product }: { product: LocalizedProduct }) {
           />
         </div>
         {imgs.length > 1 ? (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5">
             {imgs.map((img, i) => (
               <button
                 key={img.src}
                 type="button"
                 onClick={() => setMainIdx(i)}
-                className={`focus-ring w-20 overflow-hidden rounded-md border bg-white p-1 transition-colors ${
+                className={`focus-ring w-20 overflow-hidden border-2 bg-white p-1 transition-colors ${
                   i === mainIdx
-                    ? "border-primary"
-                    : "border-border hover:border-primary"
+                    ? "border-primary-dark"
+                    : "border-border hover:border-primary/50"
                 }`}
               >
                 <Image
@@ -134,35 +132,36 @@ function Overview({ product }: { product: LocalizedProduct }) {
       </div>
 
       <div>
-        {isPending(product.model) ? (
-          <Pending label={tpc("model")} />
-        ) : (
-          <p className="text-sm font-medium text-primary">{product.model}</p>
-        )}
-        <h1 className="mt-3 text-3xl font-semibold text-text">{product.name}</h1>
-
-        {product.officialName !== undefined && isPending(product.officialName) ? (
-          <div className="mt-3">
-            <Pending label={td("officialName")} />
+        {product.model && !isPending(product.model) ? (
+          <div className="font-mono text-xs font-bold uppercase tracking-wider text-primary">
+            SPEC MODEL // {product.model}
           </div>
         ) : null}
+        <h1
+          className="mt-2 text-3xl font-bold tracking-tight text-ink sm:text-4xl"
+          style={{ fontFamily: "var(--font-serif)" }}
+        >
+          {product.name}
+        </h1>
 
-        <div className="mt-4">
-          {isPending(product.tagline) ? (
-            <Pending label={tpc("tagline")} />
-          ) : (
-            <p className="text-lg text-text-light">{product.tagline}</p>
-          )}
-        </div>
+        {product.officialName && !isPending(product.officialName) ? (
+          <p className="mt-2 font-mono text-xs text-text-muted">
+            {td("officialName")}：{product.officialName}
+          </p>
+        ) : null}
+
+        {product.tagline && !isPending(product.tagline) ? (
+          <p className="mt-4 text-base sm:text-lg leading-relaxed text-text-light">{product.tagline}</p>
+        ) : null}
 
         {product.deployment && product.deployment.length > 0 ? (
           <div className="mt-6">
-            <h2 className="text-sm font-semibold text-text-light">{td("deployment")}</h2>
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-text-muted">{td("deployment")}</h2>
             <ul className="mt-2 flex flex-wrap gap-2">
               {product.deployment.map((d) => (
                 <li
                   key={d}
-                  className="rounded-md bg-bg-warm px-3 py-1 text-sm text-text"
+                  className="border border-border bg-white px-2.5 py-1 text-xs font-medium text-text"
                 >
                   {d}
                 </li>
@@ -171,28 +170,28 @@ function Overview({ product }: { product: LocalizedProduct }) {
           </div>
         ) : null}
 
-        <h2 className="mt-8 text-lg font-semibold text-text">{td("sellingPoints")}</h2>
-        <div className="mt-3">
-          {product.features.length > 0 ? (
-            <ul className="space-y-2">
+        {product.features.length > 0 ? (
+          <>
+            <h2 className="mt-8 text-base font-bold text-text">{td("sellingPoints")}</h2>
+            <ul className="mt-3 space-y-2">
               {product.features.map((f) => (
-                <li key={f} className="flex gap-2 text-text-light">
-                  <span aria-hidden="true" className="text-primary">
-                    ·
+                <li key={f} className="flex gap-2 text-xs sm:text-sm text-text-light leading-relaxed">
+                  <span aria-hidden="true" className="font-mono font-bold text-primary">
+                    ›
                   </span>
                   <span>{f}</span>
                 </li>
               ))}
             </ul>
-          ) : (
-            <Pending label={td("sellingPoints")} />
-          )}
-        </div>
+          </>
+        ) : null}
 
         {product.slug === "zq-sh100" ? (
-          <div className="mt-5 rounded-lg border border-primary/20 bg-primary-light/60 p-4 text-sm text-primary-dark">
-            <p className="flex items-center gap-1.5 font-semibold">
-              <span aria-hidden="true">🛡️</span>
+          <div className="mt-6 border border-primary/30 bg-primary-light p-5 text-sm text-primary-dark">
+            <p className="font-bold">
+              <span className="mr-2 font-mono text-xs font-bold uppercase tracking-wider text-primary-dark/70" aria-hidden="true">
+                PRIVACY //
+              </span>
               <span>{td("privacyBadgeTitle")}</span>
             </p>
             <p className="mt-1.5 text-xs leading-relaxed text-text-light">
@@ -201,14 +200,14 @@ function Overview({ product }: { product: LocalizedProduct }) {
           </div>
         ) : null}
 
-        <h2 className="mt-8 text-lg font-semibold text-text">{td("scenes")}</h2>
-        <div className="mt-3">
-          {product.scenes.length > 0 ? (
-            <SceneGroups scenes={product.scenes} locale={locale} td={td} />
-          ) : (
-            <Pending label={td("scenesTags")} />
-          )}
-        </div>
+        {product.scenes.length > 0 ? (
+          <>
+            <h2 className="mt-8 text-base font-bold text-text">{td("scenes")}</h2>
+            <div className="mt-3">
+              <SceneGroups scenes={product.scenes} locale={locale} td={td} />
+            </div>
+          </>
+        ) : null}
 
         <div className="mt-8">
           <CtaLink href={`/contact?product=${product.slug}`}>{td("quote")}</CtaLink>
@@ -220,21 +219,20 @@ function Overview({ product }: { product: LocalizedProduct }) {
 
 /* ---------- 功能亮点：卡片网格 ---------- */
 function Features({ product }: { product: LocalizedProduct }) {
-  const td = useTranslations("productDetail");
   if (product.features.length === 0) {
-    return <Pending label={td("sellingPoints")} />;
+    return null;
   }
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {product.features.map((f, i) => (
         <div
           key={f}
-          className="rounded-lg border border-border bg-white p-5 transition-shadow hover:shadow-md"
+          className="border border-border bg-white p-6 transition-colors hover:border-primary/60"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-light text-sm font-semibold text-primary-dark">
-            {i + 1}
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-primary">
+            FEATURE 0{i + 1}
           </span>
-          <p className="mt-3 text-text">{f}</p>
+          <p className="mt-3 text-sm sm:text-base leading-relaxed text-text">{f}</p>
         </div>
       ))}
     </div>
@@ -243,21 +241,23 @@ function Features({ product }: { product: LocalizedProduct }) {
 
 /* ---------- 技术规格：分组表优先于纯文本 ---------- */
 function Specs({ product }: { product: LocalizedProduct }) {
-  const td = useTranslations("productDetail");
   if (product.specGroups && product.specGroups.length > 0) {
     return (
       <div className="space-y-8">
         {product.specGroups.map((group) => (
           <div key={group.groupName}>
-            <h3 className="text-lg font-semibold text-text">{group.groupName}</h3>
-            <dl className="mt-3 divide-y divide-border overflow-hidden rounded-lg border border-border">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider text-primary mb-2">
+              SPECIFICATION // {group.groupName}
+            </div>
+            <h3 className="text-lg font-bold text-text">{group.groupName}</h3>
+            <dl className="mt-3 divide-y divide-border/60 border border-border bg-white">
               {group.items.map((item) => (
                 <div
                   key={item.label}
-                  className="grid grid-cols-1 gap-1 bg-white px-4 py-3 sm:grid-cols-3"
+                  className="grid grid-cols-1 gap-1 px-5 py-3.5 sm:grid-cols-3 transition-colors hover:bg-paper"
                 >
-                  <dt className="text-text-light sm:col-span-1">{item.label}</dt>
-                  <dd className="text-text sm:col-span-2">{item.value}</dd>
+                  <dt className="text-xs sm:text-sm font-semibold text-text-muted sm:col-span-1">{item.label}</dt>
+                  <dd className="text-xs sm:text-sm font-medium text-text sm:col-span-2">{item.value}</dd>
                 </div>
               ))}
             </dl>
@@ -267,23 +267,23 @@ function Specs({ product }: { product: LocalizedProduct }) {
     );
   }
   if (product.spec !== null) {
-    return <p className="whitespace-pre-line text-text-light">{product.spec}</p>;
+    return <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-text-light font-mono">{product.spec}</p>;
   }
-  return <Pending label={td("tabs.specs")} />;
+  return null;
 }
 
 /* ---------- 视频 ---------- */
 function Videos({ product }: { product: LocalizedProduct }) {
   const td = useTranslations("productDetail");
   if (!product.videos || product.videos.length === 0) {
-    return <Pending label={td("tabs.video")} />;
+    return null;
   }
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {product.videos.map((v) => (
         <div
           key={v.url}
-          className="overflow-hidden rounded-lg border border-border bg-white"
+          className="overflow-hidden border border-border bg-white"
         >
           <div className="aspect-video bg-black">
             {v.url.endsWith(".mp4") ? (
@@ -304,13 +304,13 @@ function Videos({ product }: { product: LocalizedProduct }) {
               />
             )}
           </div>
-          <div className="p-4">
-            <span className="rounded bg-primary-light px-2 py-0.5 text-xs text-primary-dark">
+          <div className="p-5">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-primary">
               {td(
                 `videoType.${v.type === "intro" ? "intro" : v.type === "installation" ? "installation" : "scene"}`,
               )}
             </span>
-            <h3 className="mt-2 font-semibold text-text">{v.title}</h3>
+            <h3 className="mt-2 font-bold text-text">{v.title}</h3>
           </div>
         </div>
       ))}
@@ -322,24 +322,24 @@ function Videos({ product }: { product: LocalizedProduct }) {
 function Docs({ product }: { product: LocalizedProduct }) {
   const td = useTranslations("productDetail");
   if (!product.documents || product.documents.length === 0) {
-    return <Pending label={td("tabs.docs")} />;
+    return null;
   }
   return (
-    <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+    <ul className="divide-y divide-border/60 border border-border bg-white">
       {product.documents.map((doc) => (
         <li key={doc.url}>
           <a
             href={doc.url}
             download
-            className="focus-ring flex items-center justify-between gap-4 bg-white px-4 py-4 hover:bg-bg-warm"
+            className="focus-ring flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-paper"
           >
             <span className="flex items-center gap-3">
-              <span className="rounded bg-primary-light px-2 py-0.5 text-xs text-primary-dark">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-primary">
                 {td.has(`docType.${doc.type}`) ? td(`docType.${doc.type}`) : doc.type}
               </span>
-              <span className="text-text">{doc.title}</span>
+              <span className="text-sm font-medium text-text">{doc.title}</span>
             </span>
-            <span className="text-sm text-primary">{doc.size ?? td("download")} ↓</span>
+            <span className="font-mono text-xs font-semibold text-primary">{doc.size ?? td("download")} ↓</span>
           </a>
         </li>
       ))}
@@ -349,27 +349,26 @@ function Docs({ product }: { product: LocalizedProduct }) {
 
 /* ---------- 常见问题：原生 details 折叠 ---------- */
 function Faqs({ product }: { product: LocalizedProduct }) {
-  const td = useTranslations("productDetail");
   if (!product.faqs || product.faqs.length === 0) {
-    return <Pending label={td("tabs.faq")} />;
+    return null;
   }
   return (
     <div className="space-y-3">
       {product.faqs.map((faq) => (
         <details
           key={faq.question}
-          className="group overflow-hidden rounded-lg border border-border bg-white"
+          className="group overflow-hidden border border-border bg-white"
         >
-          <summary className="focus-ring flex cursor-pointer items-center justify-between px-4 py-4 font-medium text-text">
-            {faq.question}
+          <summary className="focus-ring flex cursor-pointer items-center justify-between px-6 py-4 font-bold text-text">
+            <span>{faq.question}</span>
             <span
               aria-hidden="true"
-              className="text-primary transition-transform group-open:rotate-180"
+              className="text-primary text-xs transition-transform group-open:rotate-180"
             >
-              ▾
+              ▼
             </span>
           </summary>
-          <div className="border-t border-border px-4 py-4 text-text-light">
+          <div className="border-t border-border/60 bg-paper px-6 py-4 text-sm leading-relaxed text-text-light">
             {faq.answer}
           </div>
         </details>
@@ -391,9 +390,8 @@ function Related({ product }: { product: LocalizedProduct }) {
   if (related.length === 0 && !showPlatformCard) {
     return (
       <div className="space-y-4">
-        <Pending label={td("relatedEmpty")} />
         <CtaLink href="/products" variant="secondary">
-          浏览全部产品
+          {td("browseAll")}
         </CtaLink>
       </div>
     );
@@ -402,7 +400,7 @@ function Related({ product }: { product: LocalizedProduct }) {
   return (
     <div className="space-y-6">
       {related.length > 0 ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {related.map((p) => (
             <ProductCard key={p.slug} product={p} />
           ))}
@@ -410,16 +408,16 @@ function Related({ product }: { product: LocalizedProduct }) {
       ) : null}
 
       {showPlatformCard ? (
-        <div className="rounded-lg border border-primary bg-primary-light p-5">
-          <p className="text-sm font-semibold text-primary-dark">
+        <div className="border border-primary/30 bg-primary-light p-6 sm:p-8">
+          <p className="text-base font-bold text-primary-dark">
             {td("platformTitle")}
           </p>
-          <p className="mt-2 text-text-light">
+          <p className="mt-2 text-sm sm:text-base leading-relaxed text-text-light">
             {td("platformBody")}
           </p>
-          <div className="mt-3">
+          <div className="mt-5">
             <CtaLink href="/products/platform" variant="secondary">
-              了解安守护云平台
+              {td("platformCta")}
             </CtaLink>
           </div>
         </div>
@@ -442,16 +440,18 @@ function SceneGroups({
   locale: "zh" | "en" | "fr" | "es" | "ja" | "ru";
   td: (key: string) => string;
 }) {
-  const groups = SCENE_GROUP_ORDER.map((dim) => ({
+  const grouped = SCENE_GROUP_ORDER.map((dim) => ({
     dim,
     items: scenes.filter((s) => SCENE_DIMENSION[sceneKeyOf(s)] === dim),
   })).filter((g) => g.items.length > 0);
+  const groupedSet = new Set(grouped.flatMap((g) => g.items));
+  const leftover = scenes.filter((s) => !groupedSet.has(s));
 
   return (
     <div className="space-y-4">
-      {groups.map((g) => (
+      {grouped.map((g) => (
         <div key={g.dim}>
-          <p className="text-sm font-semibold text-text-light">
+          <p className="font-mono text-xs font-bold uppercase tracking-wider text-text-muted">
             {td(`dim${cap(g.dim)}`)}
           </p>
           <ul className="mt-2 flex flex-wrap gap-2">
@@ -460,8 +460,8 @@ function SceneGroups({
               return anchor ? (
                 <li key={s}>
                   <Link
-                    href={`/solutions/${anchor}`}
-                    className="focus-ring inline-block rounded-md bg-primary-light px-3 py-1 text-sm text-primary-dark transition-colors hover:bg-primary hover:text-white"
+                    href={`/solutions#${anchor}`}
+                    className="focus-ring inline-block border border-primary/30 bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark transition-colors hover:bg-primary-dark hover:text-white"
                   >
                     {s}
                   </Link>
@@ -469,7 +469,7 @@ function SceneGroups({
               ) : (
                 <li
                   key={s}
-                  className="rounded-md bg-bg-warm px-3 py-1 text-sm text-text"
+                  className="border border-border bg-white px-2.5 py-1 text-xs font-medium text-text"
                 >
                   {s}
                 </li>
@@ -478,6 +478,18 @@ function SceneGroups({
           </ul>
         </div>
       ))}
+      {leftover.length > 0 ? (
+        <ul className="flex flex-wrap gap-2">
+          {leftover.map((s) => (
+            <li
+              key={s}
+              className="border border-border bg-white px-2.5 py-1 text-xs font-medium text-text"
+            >
+              {s}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
@@ -493,4 +505,3 @@ function sceneKeyOf(label: string): string {
   }
   return "";
 }
-

@@ -17,11 +17,15 @@
     "closeMenu": "Close menu"
   },
   "footer": {
-    "positioning": "National-level technology innovation enterprise · Precision health monitoring",
+    "positioning": "mmWave sensing · Precision health monitoring",
+    "lineage": "Sleep mmWave radar algorithms originating from Tsinghua research · From the Chinese Academy of Sciences ecosystem",
     "contact": "Contact",
     "phone": "Phone",
     "email": "Email",
+    "partnerLogin": "Partners",
+    "partnerLoginLink": "Workbench login",
     "follow": "Follow Us",
+    "followNote": "Follow the official WeChat account of Zhongke Anqiao",
     "icp": "ICP Filing",
     "machineTranslated": "This page contains machine-translated content for reference only. The Chinese version is authoritative."
   },
@@ -44,7 +48,8 @@
   "productCard": {
     "model": "Model",
     "tagline": "Tagline",
-    "details": "View details →"
+    "details": "View details",
+    "inHouse": "In-house developed hardware"
   },
   "filter": {
     "all": "All",
@@ -95,67 +100,70 @@
     "privacyBadgeDesc": "The top sensor is an ambient infrared sensing window. The device contains zero cameras, zero image sensors, and zero microphones, physically preventing audio and video recording to protect privacy and dignity."
   },
   "home": {
-    "heroBadge": "Tsinghua-Derived Radar Sensing · National Incubated Enterprise",
-    "heroTitle": "Tsinghua-derived Technology · Precision Health Monitoring",
-    "heroTagline": "60GHz mmWave Multi-modal Contactless Monitoring Solutions",
-    "heroBody": "Dedicated to elderly care, healthcare and aging-friendly living: contactless sensing powered by pure radar, zero cameras, zero microphones — safeguarding health and human dignity.",
-    "heroLiveStatus": "Bedside Monitoring Active",
-    "heroLiveOnline": "Online",
-    "heroVitalsRespiration": "Respiration",
-    "heroVitalsHeartRate": "Heart Rate",
-    "heroVitalsStatus": "Sleeping in Bed",
-    "heroAlertNotification": "Real-time Mobile Alert to Family / Nurse",
-    "heroAlertText": "02:15 Got up · 02:22 Safely returned (7 min, vitals normal)",
-    "heroPrivacyBadge": "100% Physical Privacy · 0 Cameras · 0 Microphones",
-    "quote": "Request a Quote",
-    "dealer": "Become a Partner",
-    "advantagesTitle": "Four Commercial & Technical Trust Foundations",
-    "advantages": [
+    "heroKicker": "Institutional-grade health sensing technology",
+    "heroTitle": "Invisible Care, Zero Privacy Exposure",
+    "heroLead": "Zhongke Anqiao is a sensing technology company. For elderly-care institutions, healthcare organizations and home care settings, we deliver vital-sign and fall-sensing systems with no cameras and no microphones — sensing only, never recording images.",
+    "sigBreath": "Respiration rhythm",
+    "sigMove": "Micro-movement",
+    "sigExit": "Bed-exit event",
+    "heroCta": "View products & specifications",
+    "heroAffiliation": "Tsinghua-derived sensing algorithms · Incubated by Suzhou Institute of Biomedical Engineering and Technology, CAS",
+    "principlesTitle": "How It Works",
+    "principles": [
       {
-        "title": "Tsinghua-Derived Algorithms",
-        "body": "Conversion of Tsinghua mmWave sleep research with rigorous clinical benchmark validation."
+        "title": "What we sense",
+        "body": "Respiration, heart rate, body movement, bed exit and falls — captured through micro-Doppler reflection of electromagnetic waves on the human body. No wearables, no skin contact, no cooperation required from the person being cared for."
       },
       {
-        "title": "Class II Medical Device License",
-        "body": "Officially registered medical device filing certificate, fully compliant."
+        "title": "How we compute",
+        "body": "Raw signals are filtered and feature-extracted locally on the edge chip, with algorithms originating from Tsinghua sleep-sensing research. Institutions receive only structured events and values, never raw waveforms."
       },
       {
-        "title": "100% Physical Privacy",
-        "body": "Zero optical cameras, zero microphones — eliminating privacy leaks at the hardware level."
-      },
-      {
-        "title": "12-Month Quality Warranty",
-        "body": "Standardized 12-month hardware warranty (special cases determined separately)."
+        "title": "Why zero privacy risk",
+        "body": "The device contains no optical camera and no microphone, and generates no image or audio. 'Being filmed or recorded' is physically impossible — a hardware fact, not a software promise."
       }
     ],
-    "flagshipTitle": "Dual Production Flagships",
-    "flagshipSubtitle": "Targeting critical eldercare pain points, in volume production with complete software-hardware synergy",
-    "flagshipBedTag": "Bedroom Bedside Guardian",
-    "flagshipBedTitle": "ZQ-SH100 · AI Health Guardian",
-    "flagshipBedDesc": "A 60GHz contactless monitor crafted for single beds. Continuously tracks respiration, heart rate, and sleep curves all night, alerting immediately upon overdue bed exit.",
-    "flagshipBedPoint1": "Contactless overnight vitals digitization, one-tap report sync to family & nurse stations",
-    "flagshipBedPoint2": "Active alert on bed-exit timeout to prevent night falls or wandering",
-    "flagshipBedPoint3": "Top infrared ambient sensor window, zero cameras, zero recording for peaceful sleep",
-    "flagshipFallTag": "High-Risk Bathroom Fall Guardian",
-    "flagshipFallTitle": "ZQ-D100 · Fall Detection Monitor",
-    "flagshipFallDesc": "Guarding high-risk, lethal bathroom and washroom zones. Radar penetrates steam and darkness to capture posture collapse in milliseconds, sounding local sirens and dispatching alerts.",
-    "flagshipFallPoint1": "Millisecond-level fall posture detection, resilient in steamy and dark environments",
-    "flagshipFallPoint2": "High-decibel local alarm + simultaneous multi-channel push to phones and care platforms",
-    "flagshipFallPoint3": "Zero wearables required, ceiling or wall-mount lightweight deployment",
-    "viewProductDetail": "View Product Details & Specs",
-    "matrixTitle": "Complementary & Expansion Matrix",
-    "matrixLead": "Modular components tailored to facility needs, seamlessly connected to the Anshouhu IoT platform",
-    "viewAllProducts": "View All 10 Products & Full Technical Specs →",
-    "solutionsTitle": "Practical Scenario Solutions",
-    "solutionsLead": "Addressing core pain points in senior facilities, communities and homes with complete software-hardware synergy",
-    "viewSolution": "View Complete Solution →",
-    "dealerBanner": "National Channel Partner Program — Demo Unit Support · Territory Protection · Bidding Authorization",
-    "dealerCta": "Explore Partner Policies & Margins",
-    "newsTitle": "Industry Trends & Official Standards",
-    "newsLead": "Tracking government policy directions and standardization milestones in radar-based eldercare",
-    "viewAllNews": "View all news",
-    "ctaTitle": "Need a device bundle and budget estimate for your project?",
-    "ctaBody": "Tell us your facility type, bed count or household units, and our technical specialists will prepare a detailed proposal within 2 hours."
+    "featuredTitle": "Featured Products",
+    "featuredCta": "View full specifications",
+    "specTableTitle": "Full-range specifications at a glance",
+    "colModel": "Model",
+    "colPosition": "Positioning",
+    "colFeature": "Key Features",
+    "colWarranty": "Warranty",
+    "scenariosTitle": "Who It Serves",
+    "casesTitle": "Pilots & Demonstrations",
+    "casesBody": "We do not fabricate case studies. Zhongke Anqiao is in its demonstration-deployment phase: the first pilots target elderly-care institutions and integrated medical-eldercare facilities in the Yangtze River Delta, validating the system on real beds, real alerts and real workflows.",
+    "casesNote": "Pilot institutions receive: factory-price device quotas, on-site commissioning by factory engineers, a 12-month whole-unit warranty, and a co-signed acceptance report.",
+    "casesCta": "Request the pilot plan & acceptance checklist",
+    "dealerTitle": "Channel Program",
+    "dealerLead": "For eldercare integrators, medical-device distributors and smart-city integrators. The following terms can be written into contracts; details are governed by the formal channel agreement.",
+    "dealerColTerm": "Policy Item",
+    "dealerColDetail": "Conditions & Boundaries",
+    "dealerPolicies": [
+      {
+        "term": "Demo units",
+        "detail": "First orders may apply for two demo sets at 50% of factory price for institutional demonstrations; ownership is governed by the channel agreement."
+      },
+      {
+        "term": "Regional protection",
+        "detail": "No same-tier dealers within a contracted region; cross-region projects are coordinated under the 'first to register' principle."
+      },
+      {
+        "term": "Bidding support",
+        "detail": "Full compliance documents, product certifications and technical response files are provided; factory engineers join the bid when necessary."
+      },
+      {
+        "term": "Whole-unit warranty",
+        "detail": "12-month whole-unit warranty across all hardware; non-artificial damage is replaced outright. The software platform includes free maintenance for the first year."
+      }
+    ],
+    "contactTitle": "Contact",
+    "contactLead": "Reach a technical advisor directly by phone during working hours; emails are answered within one business day. For institutional pilots, an engineer site survey can be scheduled directly.",
+    "contactPhoneLabel": "Phone",
+    "contactMailLabel": "Email",
+    "contactAddr": "18F, Shihu Jinling Plaza Business Building, Suzhou",
+    "buyerLabel": "Buyer: ",
+    "dealerCta": "Learn about the dealer program"
   },
   "productsPage": {
     "title": "Products",
@@ -172,16 +180,18 @@
     "quote": "Request a Quote",
     "back": "Back to solutions",
     "browseProducts": "Browse all products",
-    "scenarios": "scenarios",
-    "viewDetail": "View full scenario",
     "flagship": "Flagship · mass-produced: AI Health Guardian & Fall Detection Monitor (batch supply ready); other devices supplied per project.",
-    "applicationTitle": "How it applies"
+    "applicationTitle": "How it applies",
+    "scenarioLabel": "Scenario {num}",
+    "devicesLabel": "Recommended compatible hardware",
+    "devicesConsult": "Device combinations are provided during quote consultation.",
+    "valueConsult": "Delivered value is scoped with your project during quote consultation."
   },
   "aboutPage": {
     "title": "About Us",
     "lead": "Tsinghua-derived Technology · Multi-modal contactless monitoring · Precision Health Monitoring",
     "introTitle": "Company Profile",
-    "introBody": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. integrates R&D and sales of medical devices, office intelligence, health management, smart medical integration, elderly rehabilitation, mobile applications and smart prevention health-monitoring software. Founded in 2023 and headquartered in Suzhou, China, the company was incubated within the Suzhou Advanced Technology Research Institute.",
+    "introBody": "Zhongke Anqiao (Suzhou) Technology Co., Ltd. integrates R&D and sales of medical devices, office intelligence, health management, smart medical integration, elderly rehabilitation, mobile applications and smart prevention health-monitoring software. Founded in 2023, the company is headquartered in Suzhou, China.",
     "techTitle": "Technology Roadmap",
     "techBody": "The company is building a digital health management center and a professional R&D team, progressively developing key devices covering smart health fast-pass, contactless rapid health screening, health mother-and-child units and microfluidic health fast-pass. In deep cooperation with Suzhou Institute of Biomedical Engineering, it jointly develops routine monitoring and promotion programs for children's and adolescents' health, adopts Tsinghua's sleep mmWave radar technology, and launches data-driven medical-eldercare integrated sleep monitoring R&D — officially initiating the core AI Health Guardian device R&D program.",
     "qualityTitle": "Quality Assurance",
@@ -209,13 +219,14 @@
     "certTitle": "Qualifications",
     "certBody": "The company holds a medical device business filing certificate (qualified to sell Class II medical devices).",
     "teamTitle": "R&D Team",
-    "teamBody": "Zhongke Anqiao's core R&D team hails from prestigious institutions including Tsinghua University and the Chinese Academy of Sciences Suzhou Institute, bringing profound expertise in microwave RF, bioradar signal processing, and medical health algorithms.",
+    "teamBody": "Zhongke Anqiao's core R&D team comes from renowned universities and research institutions, including Tsinghua University and Suzhou Institute of Biomedical Engineering and Technology, Chinese Academy of Sciences, with deep industry expertise in microwave RF engineering, bioradar signal processing and medical health algorithms.",
     "historyTitle": "Milestones",
+    "yearSuffix": "",
     "history": [
       {
         "year": "2023",
         "title": "Company founded",
-        "body": "Founded at the Suzhou Advanced Technology Research Institute, established a digital health-management center and a professional R&D team, progressively refining key devices: smart-health rapid channel, contactless rapid screening, health parent-child device and microfluidic health rapid channel."
+        "body": "Founded in Suzhou, the company established a digital health-management center and a professional R&D team, progressively refining key devices: smart-health rapid channel, contactless rapid screening, health parent-child device and microfluidic health rapid channel."
       },
       {
         "year": "2024",
@@ -231,24 +242,25 @@
   },
   "dealersPage": {
     "title": "National Channel Partner Recruitment Program",
-    "lead": "Zhongke Anqiao invites channel partners across the nation. We provide demo unit support, project registration and territory protection, bidding authorization, and comprehensive technical enablement.",
-    "reasonsTitle": "Four Channel Partnership Guarantees",
+    "lead": "Complete product matrix, enablement training, and a 12-month warranty (special cases determined separately). Detailed channel policy is shared during intent discussions.",
+    "reasonsTitle": "Why partner with Anqiao",
+    "reasonLabel": "Partnership enablement {num}",
     "reasons": [
       {
-        "title": "Tsinghua-derived Technology Backing",
-        "body": "Backed by Tsinghua University mmWave research, robust core algorithms and proven stability build a strong technical moat."
+        "title": "Tsinghua-derived technology",
+        "body": "Sleep mmWave radar technology originating from Tsinghua research."
       },
       {
-        "title": "Demo Unit Support & On-site Testing",
-        "body": "We provide qualified partners with low-barrier demo units and technical support to swiftly win local projects and pilot sites."
+        "title": "Complete product matrix",
+        "body": "Bed guarding, fall alert, health screening and trajectory monitoring — combinable for multiple scenarios."
       },
       {
-        "title": "Project Registration & Price Protection",
-        "body": "A strict project registration system and regional pricing policies prevent price gouging and cross-region dumping, securing healthy margins."
+        "title": "Dealer enablement training",
+        "body": "Product and sales enablement training is in place; partners join after signing."
       },
       {
-        "title": "Bidding Support & Quality Warranty",
-        "body": "Comprehensive tender specifications and technical documentation provided; 12-month warranty policy across all hardware (special cases determined separately)."
+        "title": "12-month warranty",
+        "body": "12-month hardware warranty; special cases determined separately."
       }
     ],
     "stepsTitle": "How It Works",
@@ -286,8 +298,11 @@
     "phone": "Phone",
     "email": "Email",
     "followTitle": "Follow Our Official Account",
+    "followNote": "Follow the official WeChat account of Zhongke Anqiao",
     "inquiryTitle": "Quotes & Inquiries",
     "inquiryLead": "Fill in the form below and we will contact you shortly.",
+    "directChannels": "Official Contact Channels",
+    "inquiryCta": "Online Project Quote",
     "description": "Request a quote from Zhongke Anqiao for device procurement, solution consulting and dealer applications."
   },
   "newsPage": {
@@ -295,10 +310,13 @@
     "date": "Published",
     "body": "Article",
     "back": "← Back to news",
-    "description": "Zhongke Anqiao news: industry standards (MZ/T 238-2025), smart elderly-care policy catalogs and project updates."
+    "unpublished": "Details to be announced.",
+    "readMore": "Read the full story",
+    "description": "Zhongke Anqiao news: industry standards, policy catalogs and project updates."
   },
   "notFound": {
     "product": "Product not found",
-    "news": "Article not found"
+    "news": "Article not found",
+    "solution": "Solution not found"
   }
 }

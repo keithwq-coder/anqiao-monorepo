@@ -1,5 +1,6 @@
 import type { Locale } from "@/data/locale";
 import { l } from "@/data/locale";
+import { filterPublicScenes } from "@/data/scenes";
 import { zqSh100 } from "./zq-sh100";
 import { zqD100 } from "./zq-d100";
 import { za100 } from "./za100";
@@ -43,7 +44,7 @@ export function localizeProduct(
       : undefined,
     tagline: l(product.tagline, locale),
     features: l(product.features, locale),
-    scenes: l(product.scenes, locale),
+    scenes: filterPublicScenes(l(product.scenes, locale)),
     spec: l(product.spec, locale),
     customers: l(product.customers, locale),
     warranty: l(product.warranty, locale),

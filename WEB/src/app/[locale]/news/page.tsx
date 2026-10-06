@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Section } from "@/components/section";
-import { Pending } from "@/components/pending";
 import { isPending } from "@/data/pending";
 import { localizeNews, news } from "@/data/news";
 
@@ -25,27 +24,38 @@ export default async function NewsPage({
   setRequestLocale(locale);
   const t = await getTranslations("newsPage");
   return (
-    <Section title={t("title")} tone="bg">
-      <ul className="space-y-5">
-        {news.map((item) => localizeNews(item, locale as "zh" | "en" | "fr" | "es" | "ja" | "ru")).map((item) => (
-          <li key={item.slug}>
-            <Link
-              href={`/news/${item.slug}`}
-              className="focus-ring block rounded-lg border border-border bg-white p-6 transition-shadow hover:shadow-md"
-            >
-              {isPending(item.date) ? (
-                <Pending label={t("date")} />
-              ) : (
-                <p className="text-sm text-text-muted">{item.date}</p>
-              )}
-              <h2 className="mt-2 text-xl font-semibold text-text">
-                {item.title}
-              </h2>
-              <p className="mt-3 text-text-light">{item.summary}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </Section>
+    <>
+      <Section variant="page-head" title={t("title")} lead={t("description")} />
+
+      <Section tone="bg">
+        <ul className="max-w-4xl divide-y divide-border border-y border-border">
+          {news.map((item) => localizeNews(item, locale as "zh" | "en" | "fr" | "es" | "ja" | "ru")).map((item) => (
+            <li key={item.slug}>
+              <Link
+                href={`/news/${item.slug}`}
+                className="focus-ring group grid gap-2 py-8 sm:grid-cols-[120px_1fr_auto] sm:items-baseline sm:gap-8"
+              >
+                {item.date && !isPending(item.date) ? (
+                  <span className="font-mono text-xs font-semibold tracking-wider text-text-muted">
+                    {item.date}
+                  </span>
+                ) : (
+                  <span className="hidden sm:block" />
+                )}
+                <span>
+                  <h2 className="text-xl font-bold leading-snug text-ink transition-colors group-hover:text-primary-dark">
+                    {item.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-text-light sm:text-base">{item.summary}</p>
+                </span>
+                <span className="text-sm font-semibold text-primary-dark underline decoration-primary-dark/40 decoration-2 underline-offset-8 group-hover:decoration-primary-dark">
+                  {t("readMore")} <span aria-hidden="true">→</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </>
   );
 }

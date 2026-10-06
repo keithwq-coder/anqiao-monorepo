@@ -12,8 +12,6 @@ export async function generateMetadata({
   return { title: t("title"), description: t("introBody") };
 }
 
-
-
 export default async function AboutPage({
   params,
 }: {
@@ -32,48 +30,44 @@ export default async function AboutPage({
     title: string;
     body: string;
   }[];
+
   return (
     <>
-      <section className="bg-primary-light py-14">
-        <div className="container-page">
-          <h1 className="text-3xl font-semibold text-text">{t("title")}</h1>
-          <p className="mt-4 text-text-light">{t("lead")}</p>
-        </div>
-      </section>
+      <Section variant="page-head" title={t("title")} lead={t("lead")} />
 
-      <Section title={t("introTitle")} tone="bg">
-        <p className="max-w-4xl text-text-light">{t("introBody")}</p>
+      <Section num="01" title={t("introTitle")} tone="warm">
+        <p className="max-w-4xl text-base sm:text-lg leading-relaxed text-text-light">{t("introBody")}</p>
       </Section>
 
-      <Section title={t("techTitle")} tone="warm">
-        <p className="max-w-4xl text-text-light">{t("techBody")}</p>
+      <Section num="02" title={t("techTitle")} tone="bg">
+        <p className="max-w-4xl text-base sm:text-lg leading-relaxed text-text-light">{t("techBody")}</p>
       </Section>
 
-      <Section title={t("qualityTitle")} tone="bg">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px] border-collapse text-left">
+      <Section num="03" title={t("qualityTitle")} tone="warm">
+        <div className="overflow-x-auto border border-border bg-white">
+          <table className="w-full min-w-[540px] border-collapse text-left text-sm">
             <caption className="sr-only">{t("qualityTableCaption")}</caption>
             <thead>
-              <tr className="border-b border-border">
-                <th scope="col" className="py-3 pr-4 font-semibold text-text">
+              <tr className="border-b border-border text-xs tracking-wider text-text-muted">
+                <th scope="col" className="px-5 py-3 font-semibold">
                   {t("qualityStage")}
                 </th>
-                <th scope="col" className="py-3 pr-4 font-semibold text-text">
+                <th scope="col" className="px-5 py-3 font-semibold">
                   {t("qualityTime")}
                 </th>
-                <th scope="col" className="py-3 font-semibold text-text">
+                <th scope="col" className="px-5 py-3 font-semibold">
                   {t("qualityPromise")}
                 </th>
               </tr>
             </thead>
             <tbody>
               {qualityStages.map((row) => (
-                <tr key={row.stage} className="border-b border-border">
-                  <th scope="row" className="py-3 pr-4 font-medium text-text">
+                <tr key={row.stage} className="border-b border-border/70 last:border-0 hover:bg-bg-warm/60">
+                  <th scope="row" className="px-5 py-4 font-bold whitespace-nowrap text-ink">
                     {row.stage}
                   </th>
-                  <td className="py-3 pr-4 text-text-light">{row.time}</td>
-                  <td className="py-3 text-text-light">{row.promise}</td>
+                  <td className="px-5 py-4 whitespace-nowrap text-text-light">{row.time}</td>
+                  <td className="px-5 py-4 text-text-light leading-relaxed">{row.promise}</td>
                 </tr>
               ))}
             </tbody>
@@ -81,29 +75,32 @@ export default async function AboutPage({
         </div>
       </Section>
 
-      <Section title={t("certTitle")} tone="warm">
-        <p className="text-text-light">{t("certBody")}</p>
+      <Section num="04" title={t("certTitle")} tone="bg">
+        <div className="max-w-4xl border border-border bg-white p-8 sm:p-10">
+          <p className="text-base sm:text-lg leading-relaxed text-text-light">{t("certBody")}</p>
+        </div>
       </Section>
 
-      <Section title={t("teamTitle")} tone="bg">
-        <p className="max-w-4xl text-text-light">{t("teamBody")}</p>
+      <Section num="05" title={t("teamTitle")} tone="warm">
+        <p className="max-w-4xl text-base sm:text-lg leading-relaxed text-text-light">{t("teamBody")}</p>
       </Section>
 
-      <Section title={t("historyTitle")} tone="warm">
-        <ol className="space-y-5">
+      <Section num="06" title={t("historyTitle")} tone="bg">
+        <ul className="divide-y divide-border">
           {history.map((item) => (
             <li
               key={item.year}
-              className="rounded-lg border border-border bg-white p-5"
+              className="grid gap-2 py-8 sm:grid-cols-[140px_minmax(0,220px)_1fr] sm:items-baseline sm:gap-8"
             >
-              <p className="text-sm font-medium text-primary">{item.year}</p>
-              <h3 className="mt-1 text-lg font-semibold text-text">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-text-light">{item.body}</p>
+              <span className="text-sm font-semibold tracking-wider text-primary-dark">
+                {item.year}
+                {t("yearSuffix")}
+              </span>
+              <h3 className="text-xl font-bold text-ink">{item.title}</h3>
+              <p className="text-sm sm:text-base leading-relaxed text-text-light">{item.body}</p>
             </li>
           ))}
-        </ol>
+        </ul>
       </Section>
     </>
   );

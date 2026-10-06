@@ -2,10 +2,8 @@ import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 /**
- * 线索落地加固（SPEC §2.3「部署前必办」）。
- *
- * 串行化写入队列：避免并发追加写损坏 data/leads.jsonl。
- * 进程内链式 Promise，单实例足够；多实例需换外部队列或数据库。
+ * 本地开发兜底：仅在未配置 CONSOLE_API_BASE 时写入 data/leads.jsonl。
+ * 生产必须走基座 POST /v1/public/leads，禁止静默回退到本文件。
  */
 
 /** 一条线索记录（写入 data/leads.jsonl，每行一个 JSON）。 */

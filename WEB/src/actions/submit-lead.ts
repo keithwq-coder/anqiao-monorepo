@@ -10,6 +10,14 @@ import {
 import { checkRateLimit } from "@/lib/rate-limit";
 import { appendLead } from "@/lib/lead-store";
 
+/**
+ * 生产必须把线索写入基座 POST /v1/public/leads。
+ * 本机未起 console 时才允许落到 data/leads.jsonl，禁止生产静默回退。
+ */
+function consoleApiBase(): string {
+  return (process.env.CONSOLE_API_BASE ?? "").replace(/\/$/, "");
+}
+
 /** 电话允许数字、空格、加号、减号、括号。 */
 const PHONE_RE = /^[0-9+\-()\s]{5,20}$/;
 
@@ -31,7 +39,6 @@ export async function submitLead(
   const requestHeaders = await headers();
   const ip = getClientIp(requestHeaders);
 
-  // 1) 限速：60 秒内同一 IP 最多 3 次（SPEC §2.3 部署前必办）
   const rate = await checkRateLimit(ip);
   if (!rate.ok) {
     return {
@@ -41,7 +48,6 @@ export async function submitLead(
     };
   }
 
-  // 2) 字段校验（SPEC §2.3：长度上限、必填、类型）
   const type = field(formData, "type") === "dealer" ? "dealer" : "inquiry";
   const name = field(formData, "name");
   const phone = field(formData, "phone");
@@ -84,21 +90,65 @@ export async function submitLead(
   }
 
   const source = requestHeaders.get("referer") ?? "unknown";
+  const payload = {
+    type,
+    name,
+    phone,
+    organization,
+    inquiry_type: inquiryType,
+    inquiryType,
+    customer_type: customerType || null,
+    customerType: customerType || null,
+    product: product || null,
+    message: message || null,
+    source,
+    ip,
+  };
 
-  // 4) 串行化写入 leads.jsonl（SPEC §2.3 落地加固）
+  const apiBase = consoleApiBase();
+  if (apiBase) {
+    try {
+      const res = await fetch(`${apiBase}/v1/public/leads`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Forwarded-For": ip,
+          "X-Real-IP": ip,
+        },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        code?: number;
+        msg?: string;
+      };
+      if (!res.ok || body.code !== 200) {
+        return {
+          ok: false,
+          message: body.msg || "提交失败，请稍后重试。",
+          errors: {},
+        };
+      }
+      return { ok: true, message: "提交成功，我们会尽快与您联系。", errors: {} };
+    } catch {
+      return {
+        ok: false,
+        message: "提交失败，请稍后重试。",
+        errors: {},
+      };
+    }
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    return {
+      ok: false,
+      message: "线索通道未配置，请稍后重试。",
+      errors: {},
+    };
+  }
+
   try {
-    await appendLead({
-      type,
-      name,
-      phone,
-      organization,
-      inquiryType,
-      customerType: customerType || null,
-      product: product || null,
-      message: message || null,
-      source,
-      ip,
-    });
+    await appendLead(payload);
   } catch {
     return {
       ok: false,

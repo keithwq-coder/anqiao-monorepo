@@ -10,7 +10,7 @@ export function Pending({ label }: { label: string }) {
   const t = useTranslations("common");
   return (
     <div
-      className="rounded-md border border-dashed bg-[#F5F5F3] px-4 py-3 text-text-light"
+      className="border border-dashed bg-[#F5F5F3] px-4 py-3 text-text-light"
       style={{ borderColor: "#C9C9C4", borderWidth: "1px" }}
     >
       <span className="font-medium">{t("pending")}</span>
