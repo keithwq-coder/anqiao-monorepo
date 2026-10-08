@@ -159,6 +159,9 @@
       <button :class="['tab-btn', activeTab === 'caregivers' && 'active']" @click="activeTab = 'caregivers'">
         👥 责任护工团队效能与排班考核
       </button>
+      <button :class="['tab-btn', activeTab === 'accounts' && 'active']" @click="activeTab = 'accounts'">
+        🔐 账号与权限
+      </button>
     </div>
 
     <!-- ==================== Tab 1: 全院大盘与长者全景档案 ==================== -->
@@ -877,6 +880,67 @@
       </table>
     </div>
 
+    <!-- ==================== Tab: 账号与权限（N28 三层模型：用户-组-颗粒） ==================== -->
+    <div v-if="activeTab === 'accounts'" class="content-panel">
+      <div v-if="permLoading" class="text-muted mb-3">账号权限数据加载中…</div>
+      <template v-else>
+        <div class="shift-summary mb-3">
+          <span class="font-bold">🔐 账号与权限管理</span>
+          <span class="ml-3 text-xs text-muted">本组织账号均挂权限组（组即角色默认颗粒套餐），可对单个账号逐颗加开/关闭；改动保存后，目标账号重新登录或刷新会话生效。平台不提供伙伴自建账号。</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>账号</th>
+              <th>姓名/席位</th>
+              <th>权限组（角色）</th>
+              <th>工作台</th>
+              <th>颗粒微调</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="u in orgUsers" :key="u.username">
+              <td class="font-mono text-primary font-bold">{{ u.username }}</td>
+              <td>{{ u.display_name }}</td>
+              <td><span class="badge badge-purple text-xs">{{ u.role }}</span></td>
+              <td class="text-xs text-muted font-mono">{{ u.workspace }}</td>
+              <td>
+                <span v-if="u.granted_perms.length || u.revoked_perms.length" class="badge badge-info text-xs">
+                  +{{ u.granted_perms.length }} / -{{ u.revoked_perms.length }}
+                </span>
+                <span v-else class="text-xs text-muted">组默认</span>
+              </td>
+              <td>
+                <button class="btn btn-sm" @click="toggleExpand(u)">
+                  {{ expandedUser === u.username ? '收起' : '颗粒开关' }}
+                </button>
+              </td>
+            </tr>
+            <tr v-if="expandedUser">
+              <td colspan="6" class="perm-matrix-cell">
+                <div class="perm-matrix">
+                  <button
+                    v-for="code in permCatalog"
+                    :key="code"
+                    :class="['perm-chip', permStateOf(orgUsers.find((x) => x.username === expandedUser)!, code)]"
+                    @click="cyclePerm(orgUsers.find((x) => x.username === expandedUser)!, code)"
+                  >
+                    {{ code }}
+                  </button>
+                </div>
+                <div class="mt-3">
+                  <button class="btn btn-primary btn-sm" @click="savePermTweaks(expandedUser)">保存微调</button>
+                  <button class="btn btn-sm ml-2" @click="resetUserPerms(expandedUser)">恢复组默认</button>
+                  <span class="text-xs text-muted ml-2">绿=加开 · 红=关闭 · 灰=组默认（点击循环切换）</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </template>
+    </div>
+
     <!-- ==================== 长者全景健康档案弹窗 ==================== -->
     <div v-if="selectedPatientModal" class="modal-backdrop" @click="selectedPatientModal = null">
       <div class="modal-dialog" @click.stop>
@@ -981,17 +1045,89 @@
 <script setup lang="ts">
 import InstitutionLtcEntry from '../../../features/ltc-workbench/pages/InstitutionLtcEntry.vue'
 import { ref, onMounted, computed } from 'vue'
-import { getOverview, getPatients, getAlerts } from '../../../api/client'
+import { getOverview, getPatients, getAlerts, getOrgUsers, getPermissionCatalog, patchOrgUser, type OrgUserRow } from '../../../api/client'
 import { useOrgIdentity } from '../../../features/ltc-workbench/org-identity'
 import type { Overview, Patient, Alert } from '../../../api/types'
 
 const { orgName } = useOrgIdentity()
 
-const activeTab = ref<'patients' | 'ltc' | 'quality' | 'alerts' | 'caregivers'>('patients')
+const activeTab = ref<'patients' | 'ltc' | 'quality' | 'alerts' | 'caregivers' | 'accounts'>('patients')
 
 const overview = ref<Overview | null>(null)
 const patients = ref<Patient[]>([])
 const alerts = ref<Alert[]>([])
+
+// ---- N28 账号与权限（三层模型：用户-组-颗粒）----
+const orgUsers = ref<import('../../../api/client').OrgUserRow[]>([])
+const permCatalog = ref<string[]>([])
+const permLoading = ref(false)
+const expandedUser = ref<string | null>(null)
+const draftGranted = ref<string[]>([])
+const draftRevoked = ref<string[]>([])
+
+async function loadOrgUsers() {
+  permLoading.value = true
+  try {
+    const [usersRes, catalogRes] = await Promise.all([getOrgUsers(), getPermissionCatalog()])
+    orgUsers.value = usersRes.list
+    permCatalog.value = catalogRes.codes
+  } catch (e) {
+    showToast('账号权限加载失败（可能无 user:manage 颗粒）')
+  } finally {
+    permLoading.value = false
+  }
+}
+
+function toggleExpand(u: import('../../../api/client').OrgUserRow) {
+  if (expandedUser.value === u.username) {
+    expandedUser.value = null
+    return
+  }
+  expandedUser.value = u.username
+  draftGranted.value = [...u.granted_perms]
+  draftRevoked.value = [...u.revoked_perms]
+}
+
+function permStateOf(u: import('../../../api/client').OrgUserRow, code: string): 'granted' | 'revoked' | 'default' {
+  if (draftGranted.value.includes(code)) return 'granted'
+  if (draftRevoked.value.includes(code)) return 'revoked'
+  return 'default'
+}
+
+function cyclePerm(u: import('../../../api/client').OrgUserRow, code: string) {
+  if (expandedUser.value !== u.username) return
+  const g = new Set(draftGranted.value)
+  const r = new Set(draftRevoked.value)
+  const inGroup = u.permissions.includes(code) && !r.has(code) // 组默认已含且未显式关
+  if (g.has(code)) { g.delete(code); r.add(code) }        // 加开 → 关闭
+  else if (r.has(code)) { r.delete(code) }                // 关闭 → 回组默认
+  else if (inGroup) { r.add(code) }                       // 组默认含 → 显式关闭
+  else { g.add(code) }                                    // 组默认无 → 加开
+  draftGranted.value = [...g]
+  draftRevoked.value = [...r]
+}
+
+async function savePermTweaks(username: string) {
+  try {
+    await patchOrgUser(username, { granted_perms: draftGranted.value, revoked_perms: draftRevoked.value })
+    showToast(`${username} 权限已更新（目标账号重新登录或刷新会话后生效）`)
+    await loadOrgUsers()
+    expandedUser.value = null
+  } catch (e: any) {
+    showToast(e?.message || '保存失败')
+  }
+}
+
+async function resetUserPerms(username: string) {
+  try {
+    await patchOrgUser(username, { reset_perms: true })
+    showToast(`${username} 已恢复组默认权限`)
+    await loadOrgUsers()
+    expandedUser.value = null
+  } catch (e: any) {
+    showToast(e?.message || '重置失败')
+  }
+}
 
 const filterFloor = ref('')
 const filterCareLevel = ref('')
@@ -1191,6 +1327,7 @@ function exportInstitutionalReport() {
 }
 
 onMounted(() => {
+  void loadOrgUsers()
   loadData()
 })
 </script>
@@ -1459,6 +1596,15 @@ onMounted(() => {
   border-radius: 6px 6px 0 0;
 }
 
+.perm-matrix-cell { background: rgba(255,255,255,0.02); }
+.perm-matrix { display: flex; flex-wrap: wrap; gap: 6px; max-width: 960px; }
+.perm-chip {
+  border: 1px solid var(--border, #d0d7de); border-radius: 999px; padding: 2px 10px;
+  font-size: 11px; font-family: monospace; cursor: pointer; background: transparent; color: inherit;
+}
+.perm-chip.default { opacity: 0.55; }
+.perm-chip.granted { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.5); font-weight: 700; }
+.perm-chip.revoked { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); text-decoration: line-through; opacity: 0.8; }
 .content-panel {
   background: #ffffff;
   border-radius: 8px;

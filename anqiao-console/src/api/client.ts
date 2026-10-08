@@ -22,6 +22,7 @@ import type {
   DeviceAsset,
   DeviceLifecycleLog,
   PartnerChannelData,
+  PartnerLead,
   AssessedPerson,
   LtcApplication,
   AssessmentTask,
@@ -281,6 +282,20 @@ export function getDeviceLifecycleLogs(deviceId?: string): Promise<{ list: Devic
 // ---------- 合作伙伴渠道 ----------
 export function getPartnerChannels(): Promise<PartnerChannelData> {
   return http.get<PartnerChannelData>('/v1/partner/channels')
+}
+
+export function createPartnerLead(input: {
+  name: string
+  contact?: string
+  phone?: string
+  estimated_devices?: number
+  message?: string
+}): Promise<PartnerLead> {
+  return http.post<PartnerLead>('/v1/partner/leads', input)
+}
+
+export function advancePartnerLead(leadId: string, status?: string): Promise<PartnerLead> {
+  return http.post<PartnerLead>(`/v1/partner/leads/${encodeURIComponent(leadId)}/advance`, status ? { status } : {})
 }
 
 // ---------- 长护险业务域 ----------
@@ -648,4 +663,61 @@ export function expertReviewTask(taskId: string, input: {
   sign_off_status?: 'approved' | 'returned'
 }): Promise<{ task: AssessmentTask; report: any }> {
   return http.post<{ task: AssessmentTask; report: any }>(`/v1/ltc/tasks/${encodeURIComponent(taskId)}/expert-review`, input)
+}
+
+// ==================== N28 租户内账号与权限管理（三层模型：用户-组-颗粒） ====================
+
+export interface OrgUserRow {
+  username: string
+  display_name: string
+  role: string
+  unified_role: string
+  workspace: string
+  scope: string
+  granted_perms: string[]
+  revoked_perms: string[]
+  permissions: string[]
+}
+
+export interface OrgUsersResp {
+  list: OrgUserRow[]
+  total: number
+}
+
+export interface OrgUserPatchResp {
+  username: string
+  granted_perms: string[]
+  revoked_perms: string[]
+  permissions: string[]
+}
+
+/** 本租户账号列表（含每人组归属与颗粒覆盖明细） */
+export function getOrgUsers(): Promise<OrgUsersResp> {
+  return http.get<OrgUsersResp>('/v1/org/users')
+}
+
+/** 权限颗粒目录（全量可开关清单） */
+export function getPermissionCatalog(): Promise<{ codes: string[] }> {
+  return http.get<{ codes: string[] }>('/v1/org/permission-catalog')
+}
+
+/** 账号颗粒微调（granted/revoked 传全量数组；reset_perms 一键回组默认；new_password 重置口令） */
+export function patchOrgUser(
+  username: string,
+  body: { granted_perms?: string[]; revoked_perms?: string[]; reset_perms?: boolean; new_password?: string },
+): Promise<OrgUserPatchResp> {
+  return http.patch<OrgUserPatchResp>(`/v1/org/users/${encodeURIComponent(username)}`, body)
+}
+
+/** 权限变更后的会话刷新：拉最新权限（不必重登） */
+export function getAuthSession(): Promise<{
+  username: string
+  staff: { name: string; role: string; unified_role?: string }
+  workspace: string
+  permissions: string[]
+  data_scope?: string
+  granted_perms: string[]
+  revoked_perms: string[]
+}> {
+  return http.get('/v1/auth/session')
 }

@@ -30,6 +30,39 @@ export function dbPath() {
 let db = null
 let sqliteReady = null
 
+/**
+ * 启动列迁移（仓库首个迁移机制，三层权限模型引入）：
+ * 旧库缺 granted_perms / revoked_perms 列时补列，幂等。
+ * CREATE TABLE IF NOT EXISTS 只对新库生效——已有 sqlite 文件必须走这里，否则 INSERT 抛错。
+ */
+const SQLITE_SAAS_USERS_NEW_COLUMNS = [
+  ['granted_perms', "TEXT NOT NULL DEFAULT '[]'"],
+  ['revoked_perms', "TEXT NOT NULL DEFAULT '[]'"],
+]
+
+function migrateSqliteColumns(db) {
+  const cols = db.prepare('PRAGMA table_info(saas_users)').all()
+  const existing = new Set(cols.map((c) => c.name))
+  for (const [col, ddl] of SQLITE_SAAS_USERS_NEW_COLUMNS) {
+    if (!existing.has(col)) db.exec(`ALTER TABLE saas_users ADD COLUMN ${col} ${ddl}`)
+  }
+}
+
+/** MySQL 版同构迁移（MySQL 5.7 兼容：INFORMATION_SCHEMA 检测 + ADD COLUMN） */
+async function migrateMysqlColumns(pool) {
+  const [rows] = await pool.query(
+    "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'saas_users'",
+  )
+  const existing = new Set(rows.map((r) => r.COLUMN_NAME))
+  const ddl = [
+    ['granted_perms', "TEXT NOT NULL"],
+    ['revoked_perms', "TEXT NOT NULL"],
+  ]
+  for (const [col, def] of ddl) {
+    if (!existing.has(col)) await pool.query(`ALTER TABLE saas_users ADD COLUMN ${col} ${def}`)
+  }
+}
+
 async function ensureDb() {
   if (db) return db
   if (!sqliteReady) {
@@ -87,10 +120,18 @@ async function ensureDb() {
           is_seed INTEGER NOT NULL DEFAULT 0,
           is_active INTEGER NOT NULL DEFAULT 1,
           created_by TEXT NOT NULL DEFAULT 'seed',
+          updated_at TEXT NOT NULL,
+          granted_perms TEXT NOT NULL DEFAULT '[]',
+          revoked_perms TEXT NOT NULL DEFAULT '[]'
+        );
+        CREATE TABLE IF NOT EXISTS public_leads (
+          lead_id TEXT PRIMARY KEY,
+          payload TEXT NOT NULL,
           updated_at TEXT NOT NULL
         );
       `)
       db.prepare("INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', '1')").run()
+      migrateSqliteColumns(db)
       return db
     })()
   }
@@ -173,9 +214,18 @@ async function ensureMysql() {
           is_seed TINYINT(1) NOT NULL DEFAULT 0,
           is_active TINYINT(1) NOT NULL DEFAULT 1,
           created_by VARCHAR(64) NOT NULL DEFAULT 'seed',
+          updated_at VARCHAR(40) NOT NULL,
+          granted_perms TEXT NOT NULL,
+          revoked_perms TEXT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS public_leads (
+          lead_id VARCHAR(64) NOT NULL PRIMARY KEY,
+          payload MEDIUMTEXT NOT NULL,
           updated_at VARCHAR(40) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
       await mysqlPool.query("INSERT IGNORE INTO meta (`key`, `value`) VALUES ('schema_version', '1')")
+      await migrateMysqlColumns(mysqlPool).catch((err) => console.error('[db] mysql 列迁移失败:', err.message))
       return mysqlPool
     })()
   }
@@ -186,29 +236,35 @@ export async function saveSaaSUser(u) {
   try {
     if (dataLayerMode() === 'sqlite') {
       const d = await ensureDb()
-      d.prepare(`INSERT INTO saas_users (username, password_hash, display_name, unified_role, role, tenant_id, workspace, scope, pool_id, is_seed, is_active, created_by, updated_at)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+      d.prepare(`INSERT INTO saas_users (username, password_hash, display_name, unified_role, role, tenant_id, workspace, scope, pool_id, is_seed, is_active, created_by, updated_at, granted_perms, revoked_perms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ON CONFLICT(username) DO UPDATE SET
           password_hash = CASE WHEN excluded.password_hash = '' THEN saas_users.password_hash ELSE excluded.password_hash END,
           display_name = excluded.display_name, unified_role = excluded.unified_role, role = excluded.role,
           tenant_id = excluded.tenant_id, workspace = excluded.workspace, scope = excluded.scope,
-          pool_id = excluded.pool_id, is_active = excluded.is_active, updated_at = excluded.updated_at`)
+          pool_id = excluded.pool_id, is_active = excluded.is_active, updated_at = excluded.updated_at,
+          granted_perms = excluded.granted_perms, revoked_perms = excluded.revoked_perms`)
         .run(u.username, u.password_hash || '', u.display_name || '', u.unified_role || '', u.role || '',
           u.tenant_id || 'anqiao', u.workspace || '', u.scope || 'org', u.pool_id || null,
-          u.is_seed ? 1 : 0, u.is_active === false ? 0 : 1, u.created_by || 'seed', now())
+          u.is_seed ? 1 : 0, u.is_active === false ? 0 : 1, u.created_by || 'seed', now(),
+          JSON.stringify(Array.isArray(u.granted_perms) ? u.granted_perms : []),
+          JSON.stringify(Array.isArray(u.revoked_perms) ? u.revoked_perms : []))
       return true
     }
     const pool = await ensureMysql()
     await pool.execute(
-      `INSERT INTO saas_users (username, password_hash, display_name, unified_role, role, tenant_id, workspace, scope, pool_id, is_seed, is_active, created_by, updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+      `INSERT INTO saas_users (username, password_hash, display_name, unified_role, role, tenant_id, workspace, scope, pool_id, is_seed, is_active, created_by, updated_at, granted_perms, revoked_perms)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
        ON DUPLICATE KEY UPDATE password_hash = IF(VALUES(password_hash) = '', password_hash, VALUES(password_hash)),
          display_name = VALUES(display_name), unified_role = VALUES(unified_role), role = VALUES(role),
          tenant_id = VALUES(tenant_id), workspace = VALUES(workspace), scope = VALUES(scope),
-         pool_id = VALUES(pool_id), is_active = VALUES(is_active), updated_at = VALUES(updated_at)`,
+         pool_id = VALUES(pool_id), is_active = VALUES(is_active), updated_at = VALUES(updated_at),
+         granted_perms = VALUES(granted_perms), revoked_perms = VALUES(revoked_perms)`,
       [u.username, u.password_hash || '', u.display_name || '', u.unified_role || '', u.role || '',
        u.tenant_id || 'anqiao', u.workspace || '', u.scope || 'org', u.pool_id || null,
-       u.is_seed ? 1 : 0, u.is_active === false ? 0 : 1, u.created_by || 'seed', now()]
+       u.is_seed ? 1 : 0, u.is_active === false ? 0 : 1, u.created_by || 'seed', now(),
+       JSON.stringify(Array.isArray(u.granted_perms) ? u.granted_perms : []),
+       JSON.stringify(Array.isArray(u.revoked_perms) ? u.revoked_perms : [])]
     )
     return true
   } catch (err) {
@@ -272,6 +328,52 @@ export async function loadDeviceRegistry() {
   } catch (err) {
     console.error('[db] mysql loadDeviceRegistry failed:', err.message)
     return null
+  }
+}
+
+export async function savePublicLead(lead) {
+  const payload = JSON.stringify(lead)
+  const ts = now()
+  try {
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      d.prepare(
+        `INSERT INTO public_leads (lead_id, payload, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT(lead_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at`,
+      ).run(lead.lead_id, payload, ts)
+      return true
+    }
+    if (dataLayerMode() === 'mysql') {
+      const pool = await ensureMysql()
+      await pool.execute(
+        `INSERT INTO public_leads (lead_id, payload, updated_at) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE payload = VALUES(payload), updated_at = VALUES(updated_at)`,
+        [lead.lead_id, payload, ts],
+      )
+      return true
+    }
+    return false
+  } catch (err) {
+    console.error('[db] savePublicLead failed:', err.message)
+    return false
+  }
+}
+
+export async function loadPublicLeads() {
+  try {
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      return d.prepare('SELECT payload FROM public_leads ORDER BY updated_at ASC').all().map((r) => JSON.parse(r.payload))
+    }
+    if (dataLayerMode() === 'mysql') {
+      const pool = await ensureMysql()
+      const [rows] = await pool.execute('SELECT payload FROM public_leads ORDER BY updated_at ASC')
+      return rows.map((r) => JSON.parse(r.payload))
+    }
+    return []
+  } catch (err) {
+    console.error('[db] loadPublicLeads failed:', err.message)
+    return []
   }
 }
 

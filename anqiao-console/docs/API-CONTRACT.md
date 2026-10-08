@@ -7,7 +7,7 @@
 > v0.2 变更：①明确唯一业务后端为 `anqiao-console/server`，大屏与管理控制台均为纯前端消费方（仓库拓扑/部署/切换窗口以 `docs/INTEGRATION-SPEC.md` 为唯一来源）；②新增 §3.1 路由实现状态索引；③§5 补充硬件云凭据服务端化的目标态口径。
 > v0.3 变更：①登录/切换响应补齐 `workspace`/`principal`/`permissions`/`data_scope`；②§3.2 固化设备资产与合作伙伴渠道字段（原 🆕）；③§3.3 定义 `GET /v1/project/config`（对齐 INTEGRATION-SPEC §5.1）；④§3.4 列出 `/v1/ltc/*` 已实现路由全集（流程细节仍以 `LTC-INSURANCE-SPEC` 为唯一来源）；⑤§7 标注授权/工作台实现态；⑥Data Scope 补 `channel`。
 > v0.4 变更：①消费方补官网（第四端）；②新增无鉴权 `POST /v1/public/leads`；③渠道工作台补 `POST /v1/partner/leads` 与推进接口，禁止前端假写入。
-> v0.5 变更：①§3.5 硬件代理补 SIM 仿真源分流（`SIM-` 前缀设备由内置确定性仿真源应答 2.8 六路由，见 SIM-TELEMETRY-DESIGN §3）；②N27 补记请求体结构并扩展 `partner_sandbox` 伙伴沙箱开通（N27a，见 SIM-TELEMETRY-DESIGN §5）。
+> v0.5 变更：①§3.5 硬件代理补 SIM 仿真源分流（`SIM-` 前缀设备由内置确定性仿真源应答 2.8 六路由，见 SIM-TELEMETRY-DESIGN §3）；②N27 补记请求体结构并扩展 `partner_sandbox` 伙伴沙箱开通（N27a，见 SIM-TELEMETRY-DESIGN §5）；③权限引擎重构为三层模型（用户-组-颗粒）：`permissions` 语义 = 组展开 ∪ granted − revoked，新增 N28 租户内账号管理三接口与 GET `/v1/auth/session` 会话刷新，登录/切换/公屏三处下发点全量切换；④平台业务只读路由（patients/alerts/shift/geo/devices）前置 authorize read 门控。
 
 ---
 
@@ -268,6 +268,7 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
 | N26 | GET `/v1/tenants` | `su`/`platform_admin` | 租户注册表：含 `vertical`/`template`/`deployment` 三字段（seed.js TENANT_CONFIGS） | 已实现 |
 | N27 | POST `/v1/admin/tenants` | 守卫 `role === 'su'`（与 `/v1/admin/users` 同守卫 `canAllocateUsers`；禁止按中文名硬编码） | 选业态模板开租户（运行时注册，`registerTenant`）：重复 409、非法业态 400 | 已实现 |
 | N27a | POST `/v1/admin/tenants`（`partner_sandbox` 字段） | 同 N27 | **伙伴沙箱开通（SIM-TELEMETRY-DESIGN §5）**：请求体扩展，一次开出"租户 + SIM 设备批次 + 16 角色账号群 + 康宁同构数据面"，见下方请求体定义 | 已实现 |
+| N28 | GET `/v1/org/users`、GET `/v1/org/permission-catalog`、PATCH `/v1/org/users/{username}` | `user:manage`（nursing_admin 组默认含）+ 目标账号同租户 + 目标非 `su` | **租户内账号与权限管理（三层模型：用户-组-颗粒）**：列表/颗粒目录/微调（`granted_perms[]`、`revoked_perms[]` 全量替换、`reset_perms`、`new_password`）；颗粒必须属全集（组外 400）；**无创建端点**（预置角色栈外不可新增）；变更经 `verifyToken` 实时合并即时生效，会话刷新走 GET `/v1/auth/session` | 已实现 |
 
 **N27 请求体**（v0.5 起登记）：
 

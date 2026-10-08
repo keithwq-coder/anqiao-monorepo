@@ -61,6 +61,8 @@ import {
   dataScopeOf,
   workspaceOf,
   authorize,
+  effectivePermissionsOf,
+  ALL_PERMISSION_CODES,
 } from './auth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -74,7 +76,7 @@ export class LtcError extends Error {
   }
 }
 
-export { permissionsOf, dataScopeOf, workspaceOf, authorize }
+export { permissionsOf, dataScopeOf, workspaceOf, authorize, effectivePermissionsOf, ALL_PERMISSION_CODES }
 
 export const ROLES = [
   'su',

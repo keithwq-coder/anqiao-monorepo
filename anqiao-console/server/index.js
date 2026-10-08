@@ -90,6 +90,8 @@ import {
   dataScopeOf,
   workspaceOf,
   authorize,
+  effectivePermissionsOf,
+  ALL_PERMISSION_CODES,
   createDeviceAsset,
   updateDeviceAsset,
   deleteDeviceAsset,
@@ -225,6 +227,20 @@ const EMPLOYEE_ACCOUNTS = [
   { username: '周晶晶', display_name: '周晶晶', unified_role: 'sales', role: 'business_user', tenant_id: 'anqiao', workspace: 'customer_view', scope: 'org' },
 ]
 
+/** saas_users 颗粒覆盖列容错解析（JSON 字符串 → string[]；坏值回退 []） */
+function parsePermColumn(raw) {
+  if (Array.isArray(raw)) return raw.filter((c) => typeof c === 'string')
+  if (typeof raw === 'string' && raw) {
+    try {
+      const arr = JSON.parse(raw)
+      return Array.isArray(arr) ? arr.filter((c) => typeof c === 'string') : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 async function ensureSaasAccounts() {
   try {
     const existing = await loadSaaSUsers()
@@ -246,7 +262,13 @@ async function ensureSaasAccounts() {
     const users = await loadSaaSUsers()
     let added = 0
     for (const u of users) {
-      if (ACCOUNTS.some((a) => a.username === u.username)) continue
+      const inMem = ACCOUNTS.find((a) => a.username === u.username)
+      if (inMem) {
+        // 三层权限模型（W6）：既有内存账号回写覆盖列（此前"缺则加"不回写，重启丢失颗粒微调）
+        inMem.granted_perms = Array.isArray(u.granted_perms) ? u.granted_perms : parsePermColumn(u.granted_perms)
+        inMem.revoked_perms = Array.isArray(u.revoked_perms) ? u.revoked_perms : parsePermColumn(u.revoked_perms)
+        continue
+      }
       ACCOUNTS.push({
         username: u.username,
         password_hash: u.password_hash,
@@ -257,6 +279,8 @@ async function ensureSaasAccounts() {
         org_id: u.tenant_id || 'anqiao',
         workspace: u.workspace || 'platform_operations',
         scope: u.scope || 'org',
+        granted_perms: Array.isArray(u.granted_perms) ? u.granted_perms : parsePermColumn(u.granted_perms),
+        revoked_perms: Array.isArray(u.revoked_perms) ? u.revoked_perms : parsePermColumn(u.revoked_perms),
       })
       added++
     }
@@ -334,6 +358,13 @@ function verifyToken(token) {
     return null
   }
   if (typeof payload.exp !== 'number' || payload.exp * 1000 <= Date.now()) return null
+  // 三层权限模型（W2）：token 只携带身份，颗粒覆盖列以 ACCOUNTS 实时账号为准合并进 payload，
+  // 使 authorize() 每请求走 effectivePermissionsOf 合成——颗粒微调后无需重签 token 即时生效。
+  const liveAccount = ACCOUNTS.find((a) => a.username === payload.username)
+  if (liveAccount) {
+    payload.granted_perms = Array.isArray(liveAccount.granted_perms) ? liveAccount.granted_perms : parsePermColumn(liveAccount.granted_perms)
+    payload.revoked_perms = Array.isArray(liveAccount.revoked_perms) ? liveAccount.revoked_perms : parsePermColumn(liveAccount.revoked_perms)
+  }
   return payload
 }
 
@@ -479,7 +510,7 @@ async function handleLogin(req, res) {
     workspace: account.workspace || workspaceOf(account.role),
     pool_id: poolId,
     principal: principalForAccount(account),
-    permissions: permissionsOf(account.role),
+    permissions: effectivePermissionsOf(account),
     data_scope: account.scope || dataScopeOf(account.role),
     workspaces: authorizedWorkspacesFor(account.role, account),
   })
@@ -504,26 +535,32 @@ async function handleTenantSwitch(req, res, authPayload) {
   if (!allowedTenants.includes(targetTenantId)) {
     return send(res, 403, 403, '无权切换到目标组织（账号仅归属本组织）')
   }
+  const newPoolId = account?.pool_id || (targetTenantId === 'bureau_suqian' ? 'suqian' : targetTenantId === 'bureau_moumou' ? 'moumou' : null)
   const newPayload = {
     tenant_id: targetTenantId,
     username: authPayload.username,
-    staff_name: authPayload.staff_name,
-    role: authPayload.role,
+    staff_name: account?.staff_name || authPayload.staff_name,
+    role: account?.role || authPayload.role,
+    unified_role: account?.unified_role || authPayload.unified_role,
+    workspace: account?.workspace || workspaceOf(account?.role || authPayload.role),
+    pool_id: newPoolId,
     exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS,
   }
   return ok(res, {
     token: signToken(newPayload),
-    staff: { name: authPayload.staff_name, role: authPayload.role },
+    staff: { name: newPayload.staff_name, role: newPayload.role, unified_role: newPayload.unified_role },
     tenant: {
       tenant_id: targetTenantId,
       name: getTenantName(targetTenantId),
       kind: getTenantKind(targetTenantId),
     },
     principal: principalForAccount(account ?? {}),
-    permissions: permissionsOf(authPayload.role),
-    data_scope: dataScopeOf(authPayload.role),
-    workspace: account?.workspace || workspaceOf(authPayload.role),
-    workspaces: authorizedWorkspacesFor(authPayload.role, account),
+    // 权限引擎修复：以 ACCOUNTS 实时账号（而非旧 token payload 的 role）合成下发，
+    // 此前基于 authPayload.role 查静态表，账号组/微调变更后 switch 不生效（既有 bug①）
+    permissions: effectivePermissionsOf(account ?? authPayload),
+    data_scope: account?.scope || dataScopeOf(account?.role || authPayload.role),
+    workspace: newPayload.workspace,
+    workspaces: authorizedWorkspacesFor(account?.role || authPayload.role, account),
   })
 }
 
@@ -1507,7 +1544,7 @@ function handleScreenAuth(req, res, url) {
     tenant: { tenant_id: payload.tenant_id, name: getTenantName(payload.tenant_id), kind: getTenantKind(payload.tenant_id) },
     workspace: payload.workspace,
     pool_id: payload.pool_id,
-    permissions: permissionsOf(payload.role),
+    permissions: effectivePermissionsOf(payload),
     data_scope: payload.data_scope,
   })
 }
@@ -1694,6 +1731,22 @@ const server = http.createServer(async (req, res) => {
       if (method === 'POST' && path === '/v1/auth/switch') {
         return await handleTenantSwitch(req, res, authPayload)
       }
+      // 权限变更后的会话刷新（W2）：凭当前 token 拉最新账号权限，不必等 8h 过期重登
+      if (method === 'GET' && path === '/v1/auth/session') {
+        const account = ACCOUNTS.find((a) => a.username === authPayload.username)
+        if (!account) return unauthorized(res, '账号不存在或已停用')
+        return ok(res, {
+          username: account.username,
+          staff: { name: account.staff_name, role: account.role, unified_role: account.unified_role },
+          tenant: { tenant_id: account.tenant_id, name: getTenantName(account.tenant_id), kind: getTenantKind(account.tenant_id) },
+          workspace: account.workspace || workspaceOf(account.role),
+          permissions: effectivePermissionsOf(account),
+          data_scope: account.scope || dataScopeOf(account.role),
+          workspaces: authorizedWorkspacesFor(account.role, account),
+          granted_perms: Array.isArray(account.granted_perms) ? account.granted_perms : parsePermColumn(account.granted_perms),
+          revoked_perms: Array.isArray(account.revoked_perms) ? account.revoked_perms : parsePermColumn(account.revoked_perms),
+        })
+      }
       if (method === 'POST' && path === '/v1/auth/change-password') {
         const body = await readBody(req).catch(() => ({}))
         const oldP = typeof body.old_password === 'string' ? body.old_password : ''
@@ -1708,6 +1761,84 @@ const server = http.createServer(async (req, res) => {
         account.password_hash = hashPassword(newP, randomBytes(16).toString('hex'))
         await saveAccountHash(account.username, account.password_hash)
         return ok(res, { username: account.username, changed: true })
+      }
+
+      // ---------- 租户内账号与权限管理（N28，三层模型：用户-组-颗粒） ----------
+      // 守卫：操作者持 user:manage（护理院院长组默认有）+ 目标账号必须同租户。
+      // 无创建端点——租户内账号仅来自预置角色栈（业主口径：不支持伙伴自建用户）。
+      if (method === 'GET' && path === '/v1/org/users') {
+        const authRes = authorize(authPayload, 'user:manage')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
+        const list = ACCOUNTS.filter((a) => a.tenant_id === authPayload.tenant_id).map((a) => ({
+          username: a.username,
+          display_name: a.staff_name,
+          role: a.role,
+          unified_role: a.unified_role,
+          workspace: a.workspace,
+          scope: a.scope,
+          granted_perms: Array.isArray(a.granted_perms) ? a.granted_perms : parsePermColumn(a.granted_perms),
+          revoked_perms: Array.isArray(a.revoked_perms) ? a.revoked_perms : parsePermColumn(a.revoked_perms),
+          permissions: effectivePermissionsOf(a),
+        }))
+        return ok(res, { list, total: list.length })
+      }
+      if (method === 'GET' && path === '/v1/org/permission-catalog') {
+        const authRes = authorize(authPayload, 'user:manage')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
+        return ok(res, { codes: ALL_PERMISSION_CODES })
+      }
+      const orgUserMatch = /^\/v1\/org\/users\/([A-Za-z0-9_-]+)$/.exec(path)
+      if (orgUserMatch && method === 'PATCH') {
+        const authRes = authorize(authPayload, 'user:manage')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
+        const target = ACCOUNTS.find((a) => a.username === orgUserMatch[1])
+        if (!target) return notFound(res, '账号不存在')
+        if (target.tenant_id !== authPayload.tenant_id) {
+          return send(res, 403, 403, '只能管理本组织账号')
+        }
+        if (target.role === 'su' || target.unified_role === 'su') {
+          return send(res, 403, 403, '平台超管账号不受租户级微调约束')
+        }
+        const body = await readBody(req).catch(() => ({}))
+
+        // 颗粒微调：只接受全集内的字符串；reset_perms 一键回组默认
+        if (body.reset_perms) {
+          target.granted_perms = []
+          target.revoked_perms = []
+        } else {
+          if (Array.isArray(body.granted_perms)) {
+            const bad = body.granted_perms.filter((c) => !ALL_PERMISSION_CODES.includes(c))
+            if (bad.length) return badRequest(res, `未知权限颗粒: ${bad.join(', ')}`)
+            target.granted_perms = [...new Set(body.granted_perms)]
+          }
+          if (Array.isArray(body.revoked_perms)) {
+            const bad = body.revoked_perms.filter((c) => !ALL_PERMISSION_CODES.includes(c))
+            if (bad.length) return badRequest(res, `未知权限颗粒: ${bad.join(', ')}`)
+            target.revoked_perms = [...new Set(body.revoked_perms)]
+          }
+        }
+        if (typeof body.new_password === 'string' && body.new_password.length >= 6) {
+          target.password_hash = hashPassword(body.new_password, randomBytes(16).toString('hex'))
+        }
+        await saveSaaSUser({
+          username: target.username,
+          password_hash: target.password_hash,
+          display_name: target.staff_name,
+          unified_role: target.unified_role,
+          role: target.role,
+          tenant_id: target.tenant_id,
+          workspace: target.workspace,
+          scope: target.scope,
+          granted_perms: target.granted_perms,
+          revoked_perms: target.revoked_perms,
+          created_by: authPayload.username,
+        })
+        return ok(res, {
+          username: target.username,
+          granted_perms: target.granted_perms,
+          revoked_perms: target.revoked_perms,
+          permissions: effectivePermissionsOf(target),
+        })
       }
 
       // ---------- 用户管理（生产口径：仅 su 角色可开号，禁止按中文名硬编码门闩） ----------
@@ -1800,32 +1931,54 @@ const server = http.createServer(async (req, res) => {
 
         return handleOverview(req, res, authPayload)
       }
+      // ---------- 平台业务只读面（N28 联动）：颗粒 revoke 需真实拦截 ----------
+      // 这些路由历史上仅靠工作台隔离、不前置 authorize——三层模型下颗粒开关必须可感知，
+      // 统一补 read 颗粒门控（screen_viewer 公屏注入账号在此前已被推入，同受组权限约束）。
       if (method === 'GET' && path === '/v1/alerts') {
+        const authRes = authorize(authPayload, 'alert:read')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return handleAlertsList(req, res, authPayload, url)
       }
       const alertAction = /^\/v1\/alerts\/([A-Za-z0-9_-]+)\/(handle|claim)$/.exec(path)
       if (method === 'POST' && alertAction) {
+        const authRes = authorize(authPayload, alertAction[2] === 'claim' ? 'alert:claim' : 'alert:handle')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return alertAction[2] === 'claim'
           ? await handleAlertClaim(req, res, authPayload, alertAction[1])
           : await handleAlertHandle(req, res, authPayload, alertAction[1])
       }
       if (method === 'GET' && path === '/v1/shift') {
+        const authRes = authorize(authPayload, 'shift:read')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return handleShift(req, res, authPayload)
       }
       if (method === 'GET' && path === '/v1/geo/cities') {
+        const authRes = authorize(authPayload, 'geo:read')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return handleGeoCities(req, res, authPayload)
       }
       if (method === 'GET' && path === '/v1/geo/devices') {
+        const authRes = authorize(authPayload, 'geo:read')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return handleGeoDevices(req, res, authPayload, url)
       }
       if (method === 'GET' && path === '/v1/patients') {
+        const authRes = authorize(authPayload, 'patient:read')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return handlePatientsList(req, res, authPayload, url)
       }
       const patientMatch = /^\/v1\/patients\/([A-Za-z0-9_-]+)$/.exec(path)
       if (method === 'GET' && patientMatch) {
+        // 语义次序：先租户隔离 404（跨机构 patient_id 按租户查不到，账号矩阵 §4 契约），后 read 颗粒 403
+        const detail = getPatientDetail(authPayload.tenant_id, patientMatch[1])
+        if (!detail) return notFound(res, '长者不存在')
+        const authRes = authorize(authPayload, 'patient:read')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return handlePatientDetail(req, res, authPayload, patientMatch[1])
       }
       if (method === 'GET' && path === '/v1/devices') {
+        const authRes = authorize(authPayload, 'device:read')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return handleDevicesList(req, res, authPayload, url)
       }
       if (method === 'POST' && path === '/v1/devices') {

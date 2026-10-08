@@ -29,102 +29,14 @@ export function can(
     .some((c) => hasPermission(perms, c))
 }
 
-/** 服务端获授工作台；融合服务端 workspaces 字段与各角色基准工作台，确保离线与热更新均不掉工作台 */
+/** 服务端获授工作台（三层权限模型）：以后端下发 workspaces 为唯一真源。
+ * 此前与 27 角色前端 fallback 表取并集，后端收窄授权不生效（既有 bug③，本次移除）；
+ * 登录/切换/session 三接口均经 authorizedWorkspacesFor 下发。 */
 export function allowedWorkspaces(session: {
   workspaces?: string[]
   workspace?: string
-  principal?: { role?: string }
-  staff?: { role?: string }
 }): string[] {
-  const role = session.principal?.role || session.staff?.role || ''
-  const fallback: Record<string, string[]> = {
-    su: [
-      'system_admin',
-      'platform_operations',
-      'home_dispatch',
-      'home_elderly_dossier',
-      'home_device_monitoring',
-      'home_supervision_reports',
-      'device_monitoring',
-      'reports_center',
-      'medical_supervision',
-      'insurer_operations',
-      'assessor_workspace',
-      'nursing_home_admin',
-      'care_desk',
-      'patient_dossier',
-      'nursing_staff',
-      'partner_operations',
-    ],
-    platform_admin: [
-      'system_admin',
-      'platform_operations',
-      'home_dispatch',
-      'home_elderly_dossier',
-      'home_device_monitoring',
-      'home_supervision_reports',
-      'device_monitoring',
-      'reports_center',
-      'medical_supervision',
-      'insurer_operations',
-      'assessor_workspace',
-      'nursing_home_admin',
-      'care_desk',
-      'patient_dossier',
-      'nursing_staff',
-      'partner_operations',
-    ],
-    admin: [
-      'home_dispatch',
-      'home_elderly_dossier',
-      'home_device_monitoring',
-      'home_supervision_reports',
-      'platform_operations',
-      'device_monitoring',
-      'reports_center',
-      'medical_supervision',
-      'insurer_operations',
-      'assessor_workspace',
-      'nursing_home_admin',
-      'care_desk',
-      'patient_dossier',
-    ],
-    user: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports', 'device_monitoring', 'reports_center', 'platform_operations'],
-    elderly_care_admin: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    home_dispatcher: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    grid_team_leader: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    grid_caregiver: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    rehab_specialist: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    home_nurse: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    rehab_therapist: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    dementia_specialist: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    case_manager: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    quality_inspector: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    ltc_biller: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    assistive_specialist: ['home_dispatch', 'home_elderly_dossier', 'home_device_monitoring', 'home_supervision_reports'],
-    device_user: ['device_monitoring', 'reports_center'],
-    medical_supervisor: ['medical_supervision', 'reports_center'],
-    medical_insurance_staff: ['medical_supervision', 'reports_center'],
-    medical_director: ['medical_supervision', 'reports_center'],
-    medical_auditor: ['medical_supervision', 'reports_center'],
-    medical_finance: ['medical_supervision', 'reports_center'],
-    medical_assessor_admin: ['medical_supervision', 'reports_center'],
-    insurer_operator: ['insurer_operations', 'reports_center'],
-    insurer_staff: ['insurer_operations', 'reports_center'],
-    assessor: ['assessor_workspace'],
-    nursing_admin: ['nursing_home_admin', 'care_desk', 'patient_dossier', 'device_monitoring', 'reports_center', 'nursing_staff'],
-    nursing_head: ['care_desk', 'patient_dossier', 'device_monitoring', 'reports_center', 'nursing_staff'],
-    nursing_station: ['care_desk', 'patient_dossier', 'device_monitoring', 'reports_center', 'nursing_staff'],
-    nursing_nurse: ['nursing_staff', 'care_desk', 'patient_dossier', 'device_monitoring', 'reports_center'],
-    nursing_caregiver: ['nursing_staff', 'care_desk', 'patient_dossier', 'device_monitoring', 'reports_center'],
-    partner_admin: ['partner_operations'],
-    family_contact: [],
-  }
-
-  const roleList = fallback[role] || []
-  const sessionList = session.workspaces || []
-  let list = Array.from(new Set([...sessionList, ...roleList]))
-
+  let list = [...(session.workspaces || [])]
   if (!list.length && session.workspace) {
     list = [session.workspace]
   }

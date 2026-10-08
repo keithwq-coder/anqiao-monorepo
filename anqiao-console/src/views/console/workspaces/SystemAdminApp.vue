@@ -114,9 +114,9 @@
     <div v-if="activeTab === 'auth_arch'" class="content-panel">
       <div class="grid-2">
         <div class="arch-card">
-          <div class="arch-title">1. RBAC (基于角色的访问控制)</div>
+          <div class="arch-title">1. RBAC 三层模型（用户 → 权限组 → 权限颗粒）</div>
           <div class="arch-desc">
-            为角色静态分配操作权限集，如 <code>su</code>, <code>admin</code>, <code>medical_supervisor</code>, <code>insurer_operator</code>, <code>assessor</code>, <code>nursing_admin</code>, <code>nursing_nurse</code>, <code>partner_admin</code>。
+            账号挂权限组（组即角色的默认颗粒套餐，如 <code>nursing_admin</code>、<code>nursing_nurse</code>），可再对账号做颗粒级加开/关闭：最终权限 = 组展开 ∪ granted − revoked（<code>su</code> 恒全权 <code>*</code>）。
           </div>
           <div class="arch-points">
             <div>• <code>medical_supervisor</code>: 具备最终核定(final_ratify)、反欺诈稽核(fraud_investigate)等专属权限</div>
@@ -154,11 +154,13 @@
             定义五级数据访问范围边界。
           </div>
           <div class="arch-points">
-            <div>• <code>all</code>: 超级管理员与自营总控全域穿透</div>
+            <div>• <code>global</code>: 平台超管全域穿透</div>
             <div>• <code>pool</code>: 统筹区监管范围（医保局统筹区全量监管数据）</div>
-            <div>• <code>tenant</code>: 单租户机构边界（如演示·康宁护理院（模拟机构）内数据）</div>
+            <div>• <code>org</code>: 单租户机构边界（如康宁护理院内数据）</div>
             <div>• <code>assigned</code>: 细粒度分配边界（责任护工分配楼层）</div>
-            <div>• <code>partner_lead</code>: 渠道引荐潜客边界（严禁跨客户访问）</div>
+            <div>• <code>task</code>: 任务边界（评估师仅本人被派任务）</div>
+            <div>• <code>applicant</code>: 家属绑定边界（仅本绑定长者）</div>
+            <div>• <code>channel</code>: 渠道边界（渠道账号禁读客户正文，按 partner_org 匹配）</div>
           </div>
         </div>
       </div>

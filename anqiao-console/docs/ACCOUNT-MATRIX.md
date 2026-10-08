@@ -40,8 +40,18 @@
 }
 ```
 
-- `principal`：账号主体（含组织归属）；`permissions`：该角色全部能力；`data_scope`：数据可见范围（`global`/`org`/`pool`/`task`/`applicant`）。
+- `principal`：账号主体（含组织归属）；`permissions`：**生效权限 = 权限组（角色）展开 ∪ 账号 granted − 账号 revoked**（三层模型：用户-组-颗粒；`su` 恒 `*` 全权，不适用微调）；`data_scope`：数据可见范围（`global`/`org`/`pool`/`task`/`applicant`/`channel`）。
 - 跨组织数据访问一律按角色收敛：读他人越权数据返回 `404`，无权限操作返回 `403`。
+
+### 3.2a 颗粒微调与会话刷新（N28，2026-10-08）
+
+- 账号级覆盖列：`granted_perms` / `revoked_perms`（`saas_users` 两列，JSON 数组；颗粒必须属 `ALL_PERMISSION_CODES` 全集，组外编码 400）。
+- 管理接口（守卫 `user:manage` + 目标账号同租户 + 目标非 `su`）：
+  - `GET /v1/org/users`：本租户账号列表（含组、生效颗粒、覆盖明细）。
+  - `GET /v1/org/permission-catalog`：颗粒目录（91 颗全集）。
+  - `PATCH /v1/org/users/{username}`：`granted_perms[]` / `revoked_perms[]`（全量替换）/ `reset_perms: true`（一键回组默认）/ `new_password`（≥6 位）。**无创建端点**——租户账号仅来自预置角色栈，不支持伙伴自建用户。
+- 权限变更生效：覆盖列在 `verifyToken` 时以 `ACCOUNTS` 实时合并进请求主体，颗粒微调**无需重签 token 即时生效**；前端可经 `GET /v1/auth/session` 拉取最新权限刷新会话（不必等 8h token 过期）。
+- 平台业务路由（`/v1/patients`、`/v1/alerts` 及处置、`/v1/shift`、`/v1/geo/*`、`/v1/devices`）自本版起前置 `authorize` read 颗粒门控——此前仅靠工作台隔离，颗粒关闭不真实拦截。
 
 ## 3. 权限与数据范围
 

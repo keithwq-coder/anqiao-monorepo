@@ -24,6 +24,7 @@ export const WORKSPACES = {
   REPORTS_CENTER: 'reports_center',
   REHAB_STUDIO: 'rehab_studio',
   DEMENTIA_STUDIO: 'dementia_studio',
+  CUSTOMER_VIEW: 'customer_view',
 }
 
 export const ROLE_WORKSPACE_MAP = {
@@ -79,6 +80,7 @@ export const ROLE_WORKSPACE_MAP = {
   rehab_therapist: WORKSPACES.REHAB_STUDIO,
   dementia_specialist: WORKSPACES.DEMENTIA_STUDIO,
   screen_viewer: WORKSPACES.DEVICE_MONITORING,
+  business_user: WORKSPACES.CUSTOMER_VIEW,
 }
 
 export const ROLE_DATA_SCOPE_MAP = {
@@ -132,6 +134,7 @@ export const ROLE_DATA_SCOPE_MAP = {
   patient_dossier: 'org',
   reports_center: 'org',
   screen_viewer: 'org',
+  business_user: 'channel',
 }
 
 export const ROLE_PERMISSIONS = {
@@ -299,6 +302,7 @@ export const ROLE_PERMISSIONS = {
     'overview:read', 'shift:read', 'report:read', 'report:generate',
     'device:read', 'device:write', 'monitoring:read',
     'service_record:read', 'service_record:write',
+    'user:manage',
   ],
   nursing_head: [
     'patient:read', 'patient:write', 'bed:read', 'bed:write',
@@ -432,10 +436,60 @@ export const ROLE_PERMISSIONS = {
     'patient:read', 'alert:read', 'vitals:read',
     'monitoring:read', 'shift:read', 'bed:read', 'report:read',
   ],
+  // 销售席位（EMPLOYEE_ACCOUNTS / 客户视图）：修复此前三表缺位的静默回退
+  business_user: [
+    'customer:read', 'lead:read', 'lead:write',
+  ],
 }
 
 export function permissionsOf(role) {
   return ROLE_PERMISSIONS[role] ?? []
+}
+
+/**
+ * 权限颗粒全集目录（用户-组-颗粒三层模型的第三层）。
+ * 组（ROLE_PERMISSIONS）定义"默认套餐"；账号级 granted/revoked 做颗粒微调；
+ * N28 管理接口只允许微调本目录内的颗粒（不新造颗粒）。
+ */
+export const ALL_PERMISSION_CODES = Object.freeze(
+  [...new Set(
+    Object.values(ROLE_PERMISSIONS)
+      .flat()
+      .filter((c) => c !== '*'),
+  )],
+)
+
+/** 解析账号上的颗粒覆盖列（granted_perms/revoked_perms，容错 JSON） */
+function parsePermList(raw) {
+  if (Array.isArray(raw)) return raw.filter((c) => typeof c === 'string')
+  if (typeof raw === 'string' && raw) {
+    try {
+      const arr = JSON.parse(raw)
+      return Array.isArray(arr) ? arr.filter((c) => typeof c === 'string') : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+/**
+ * 三层模型合成（W 系验收核心）：最终权限 = 组展开 ∪ granted − revoked。
+ * account 可为 saas_users 行、内存 ACCOUNTS 实体或 principal（含 role 即可）。
+ * su 组（'*' 通配）不适用微调——平台超管恒全权，任何 granted/revoked 对其无效。
+ */
+export function effectivePermissionsOf(account) {
+  const role = account?.role
+  const groupPerms = permissionsOf(role)
+  if (groupPerms.includes('*')) return ['*']
+  const granted = parsePermList(account?.granted_perms)
+  const revoked = parsePermList(account?.revoked_perms)
+  const merged = new Set(groupPerms)
+  for (const c of granted) {
+    if (ALL_PERMISSION_CODES.includes(c)) merged.add(c)
+  }
+  for (const c of revoked) merged.delete(c)
+  return [...merged]
 }
 
 export function dataScopeOf(role) {
@@ -459,8 +513,11 @@ export function authorize(principal, action, resource = null, context = {}) {
     return { allow: false, status: 401, message: '未登录或登录已过期' }
   }
 
-  // 1. RBAC: 角色能力判定
-  const perms = permissionsOf(principal.role)
+  // 1. RBAC: 三层模型（用户-组-颗粒）合成判定：principal 可为账号实体或 token payload；
+  //    token payload 不含覆盖列时退化为组定义查询，与旧行为逐字段一致
+  const perms = principal.granted_perms !== undefined || principal.revoked_perms !== undefined
+    ? effectivePermissionsOf(principal)
+    : (principal.permissions_cache || permissionsOf(principal.role))
   const hasPerm = perms.includes('*') || perms.includes(action)
   if (!hasPerm) {
     return { allow: false, status: 403, message: `角色 [${principal.role}] 无权执行操作 [${action}]` }
