@@ -50,6 +50,15 @@ import {
   deleteSaaSUser,
 } from './db.js'
 import {
+  restorePublicLeads,
+  mergeChannelLeads,
+  clientIp,
+  checkPublicLeadRate,
+  createWebsiteLead,
+  createWorkbenchLead,
+  advanceLead,
+} from './public-leads.js'
+import {
   getDeviceList,
   getLatestData,
   getDailyData,
@@ -58,6 +67,15 @@ import {
   getReportDates,
   getAlarms,
 } from './hw.js'
+import {
+  isSimDevice,
+  simLatestData,
+  simDailyData,
+  simTodayData,
+  simSleepStats,
+  simReportDates,
+  simAlarms,
+} from './sim-telemetry.js'
 import {
   LtcError,
   ctxForAccount,
@@ -166,6 +184,8 @@ if (alertSnapshots && typeof alertSnapshots === 'object') {
   }
 }
 
+await restorePublicLeads()
+
 // 阶段四：种子口令升级为 argon2id + 随机 salt；sqlite 模式叠加已保存哈希
 const restoredHashes = await loadAccountHashes()
 for (const a of ACCOUNTS) {
@@ -267,7 +287,13 @@ if (!TOKEN_SECRET) {
 }
 const TOKEN_TTL_SECONDS = 8 * 3600 // 8 小时
 // CORS allowlist（生产同源走 nginx 反代其实用不到，留着供跨域调试）
-const ALLOWED_ORIGINS = ['http://localhost:5173', 'https://anqiao.aibrain.wiki']
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://anqiao.aibrain.wiki',
+  'https://www.anqiaokj.com',
+  'https://anqiaokj.com',
+]
 
 const ALERT_STATUSES = ['triggered', 'handling', 'handled', 'missed']
 const PATIENT_STATUS_FILTERS = ['in_bed', 'off_bed', 'abnormal']
@@ -333,15 +359,21 @@ function clearLoginFail(ip) {
 // ---------- 统一响应包 { code, msg, data } ----------
 function corsOrigin(req) {
   const origin = req?.headers?.origin
-  return origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  if (!origin) return ALLOWED_ORIGINS[0]
+  if (ALLOWED_ORIGINS.includes(origin)) return origin
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin
+  if (/^https?:\/\/1\.94\.51\.126(:\d+)?$/.test(origin)) return origin
+  if (/^https?:\/\/([a-zA-Z0-9-]+\.)*anqiaokj\.com(:\d+)?$/.test(origin)) return origin
+  return origin
 }
 
 function send(res, httpStatus, code, msg, data = null, req = null) {
   const body = JSON.stringify({ code, msg, data })
+  const r = req || res?.req
   res.writeHead(httpStatus, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': corsOrigin(req),
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Origin': corsOrigin(r),
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Screen-Tenant',
   })
   res.end(body)
@@ -794,7 +826,7 @@ function handlePartnerChannels(req, res, authPayload) {
     channels = channels.filter((c) => c.partner_org_id === account.org_id)
   }
   const customers = channels.flatMap((c) => c.developed_customers || [])
-  const leads = channels.flatMap((c) => c.leads || [])
+  const leads = mergeChannelLeads(account, channels)
   return ok(res, {
     partner_id: account?.org_id || channels[0]?.partner_org_id,
     list: channels,
@@ -831,7 +863,11 @@ function screenMayReadHardware(authPayload, path, deviceId) {
   return screenAllowedDeviceIds(authPayload).includes(deviceId)
 }
 
-/** GET /v1/hardware/* — 服务端代理。2.8 查询按文档只转发 device_id（夜间另加 date），不要求 HW_*。 */
+/**
+ * GET /v1/hardware/* — 服务端代理。2.8 查询按文档只转发 device_id（夜间另加 date），不要求 HW_*。
+ * SIM- 前缀设备不转发硬件云，由内置确定性仿真源应答（SIM-TELEMETRY-DESIGN §3.1；
+ * 鉴权与公屏在册校验先于分流，对 SIM 设备同等生效；短路在 502 包装之前）。
+ */
 async function handleHardwareProxy(req, res, authPayload, url, path) {
   const screen = isScreenViewer(authPayload)
   if (screen) {
@@ -863,6 +899,7 @@ async function handleHardwareProxy(req, res, authPayload, url, path) {
       if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
         return send(res, 403, 403, '公屏只能查询在册设备体征')
       }
+      if (isSimDevice(deviceId)) return ok(res, simLatestData(deviceId))
       return ok(res, await getLatestData(deviceId))
     }
     if (path === '/v1/hardware/daily') {
@@ -873,6 +910,7 @@ async function handleHardwareProxy(req, res, authPayload, url, path) {
       if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
         return send(res, 403, 403, '公屏只能查询在册设备体征')
       }
+      if (isSimDevice(deviceId)) return ok(res, simDailyData(deviceId, date))
       return ok(res, await getDailyData(deviceId, date))
     }
     if (path === '/v1/hardware/today') {
@@ -881,6 +919,7 @@ async function handleHardwareProxy(req, res, authPayload, url, path) {
       if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
         return send(res, 403, 403, '公屏只能查询在册设备体征')
       }
+      if (isSimDevice(deviceId)) return ok(res, simTodayData(deviceId))
       return ok(res, await getTodayData(deviceId))
     }
     if (path === '/v1/hardware/sleep') {
@@ -888,6 +927,9 @@ async function handleHardwareProxy(req, res, authPayload, url, path) {
       if (!deviceId) return badRequest(res, 'device_id 必填（对接 API 2.8.5）')
       if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
         return send(res, 403, 403, '公屏只能查询在册设备体征')
+      }
+      if (isSimDevice(deviceId)) {
+        return ok(res, simSleepStats(deviceId, url.searchParams.get('date') || new Date().toISOString().slice(0, 10)))
       }
       return ok(res, await getSleepStats(deviceId, url.searchParams.get('date') || undefined))
     }
@@ -897,6 +939,7 @@ async function handleHardwareProxy(req, res, authPayload, url, path) {
       if (screen && !screenMayReadHardware(authPayload, path, deviceId)) {
         return send(res, 403, 403, '公屏只能查询在册设备体征')
       }
+      if (isSimDevice(deviceId)) return ok(res, simReportDates(deviceId))
       const dates = await getReportDates(deviceId)
       return ok(res, Array.isArray(dates) ? dates : [])
     }
@@ -908,6 +951,9 @@ async function handleHardwareProxy(req, res, authPayload, url, path) {
       const page = Number(url.searchParams.get('page') || 1)
       const pageSize = Number(url.searchParams.get('page_size') || 20)
       const status = url.searchParams.get('status') || undefined
+      if (deviceId && isSimDevice(deviceId)) {
+        return ok(res, simAlarms(deviceId, { page, pageSize, status }))
+      }
       const data = await getAlarms(deviceId, page, pageSize, status)
       return ok(res, data || { items: [], total: 0 })
     }
@@ -1381,10 +1427,11 @@ const SCREEN_GET_DETAIL = [
 ]
 
 function isSuqianScreenRequest(req, url) {
+  const screenTenant = String(req.headers['x-screen-tenant'] || url?.searchParams?.get('tenant') || '').trim()
+  if (screenTenant === 'anqiao') return false
+  if (screenTenant === 'bureau_suqian') return true
   const referer = String(req.headers.referer || req.headers.origin || '')
-  const screenTenant = String(req.headers['x-screen-tenant'] || url?.searchParams?.get('tenant') || '')
   return (
-    screenTenant === 'bureau_suqian' ||
     referer.includes('suqian') ||
     url?.searchParams?.get('pool') === 'suqian' ||
     String(url?.pathname || '').includes('suqian')
@@ -1496,16 +1543,25 @@ function handleWsUpgrade(req, socket) {
   socket.on('error', cleanup)
 
   // 连接建立即推一版 overview，便于前端立即对齐
-  wsSend(socket, 'overview', computeOverview(tenantId))
+  try {
+    const ov = computeOverview(tenantId)
+    if (ov) wsSend(socket, 'overview', ov)
+  } catch (err) {
+    console.error(`[ws] push initial overview error for tenant ${tenantId}:`, err && err.message)
+  }
 }
 
 // ---------- WS 推送循环（全局租户级，断连客户端自动从注册表清理）----------
 // vitals：每 3 秒每租户随机挑 1-3 个床位推一条（厂商租户无床位体征，自动跳过）
 setInterval(() => {
   for (const tenantId of TENANT_IDS) {
-    const updates = walkVitals(tenantId)
-    if (updates.length > 0 && wsClients.has(tenantId)) {
-      for (const u of updates) broadcast(tenantId, 'vitals', u)
+    try {
+      const updates = walkVitals(tenantId)
+      if (updates.length > 0 && wsClients.has(tenantId)) {
+        for (const u of updates) broadcast(tenantId, 'vitals', u)
+      }
+    } catch (err) {
+      console.error(`[ws] walkVitals error for ${tenantId}:`, err && err.message)
     }
   }
 }, 3000)
@@ -1525,7 +1581,12 @@ function scheduleLiveAlert(tenantId) {
     }
     if (alert && wsClients.has(tenantId)) {
       broadcast(tenantId, 'alert', alert)
-      broadcast(tenantId, 'overview', computeOverview(tenantId))
+      try {
+        const ov = computeOverview(tenantId)
+        if (ov) broadcast(tenantId, 'overview', ov)
+      } catch (err) {
+        console.error('[ws] alert broadcast overview error:', err && err.message)
+      }
     }
     scheduleLiveAlert(tenantId)
   }, delay)
@@ -1535,7 +1596,12 @@ for (const id of TENANT_IDS) scheduleLiveAlert(id)
 // overview：每 30 秒低频推送
 setInterval(() => {
   for (const tenantId of wsClients.keys()) {
-    broadcast(tenantId, 'overview', computeOverview(tenantId))
+    try {
+      const ov = computeOverview(tenantId)
+      if (ov) broadcast(tenantId, 'overview', ov)
+    } catch (err) {
+      console.error('[ws] interval broadcast overview error:', err && err.message)
+    }
   }
 }, 30_000)
 
@@ -1549,7 +1615,7 @@ const server = http.createServer(async (req, res) => {
   if (method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': corsOrigin(req),
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Screen-Tenant',
       'Access-Control-Max-Age': '86400',
     })
@@ -1563,13 +1629,40 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && path === '/v1/auth/screen') {
       return handleScreenAuth(req, res, url)
     }
+    if (method === 'POST' && path === '/v1/public/leads') {
+      const ip = clientIp(req)
+      const limited = checkPublicLeadRate(ip)
+      if (!limited.ok) return send(res, 429, 429, `提交过于频繁，请 ${limited.retryAfter} 秒后重试`)
+      let body
+      try {
+        body = await readBody(req)
+      } catch {
+        return badRequest(res, '请求体格式错误')
+      }
+      try {
+        const result = await createWebsiteLead({
+          body,
+          ip,
+          referer: typeof req.headers.referer === 'string' ? req.headers.referer : null,
+        })
+        if (!result.ok) return badRequest(res, result.message)
+        return ok(res, result.data)
+      } catch (err) {
+        console.error('[public-leads] persist failed:', err && err.message)
+        return send(res, 500, 500, '提交失败，请稍后重试')
+      }
+    }
 
     // 以下接口要求 Bearer 令牌。公屏只读 GET 可注入受限 screen_viewer，禁止冒充医保/LTC；硬件仅在册 2.8 只读。
     if (path.startsWith('/v1/')) {
       let authPayload = auth(req)
+      const reqTenant = req.headers['x-screen-tenant']
+      if (authPayload && isScreenViewer(authPayload) && reqTenant && authPayload.tenant_id !== reqTenant) {
+        authPayload = null
+      }
       if (!authPayload) {
         if (!isScreenPublicGet(method, path)) {
-          return unauthorized(res)
+          return unauthorized(res, '公屏会话已失效，请重新校验')
         }
         authPayload = screenViewerAuth(req, url)
       }
@@ -1820,6 +1913,33 @@ const server = http.createServer(async (req, res) => {
       }
       if (method === 'GET' && path === '/v1/partner/channels') {
         return handlePartnerChannels(req, res, authPayload)
+      }
+      if (method === 'POST' && path === '/v1/partner/leads') {
+        const account = ACCOUNTS.find((a) => a.username === authPayload.username)
+        if (!account) return unauthorized(res)
+        let body
+        try {
+          body = await readBody(req)
+        } catch {
+          return badRequest(res, '请求体格式错误')
+        }
+        const result = await createWorkbenchLead({ account, body, ip: clientIp(req) })
+        if (!result.ok) return badRequest(res, result.message)
+        return ok(res, result.data)
+      }
+      const partnerLeadAdvance = /^\/v1\/partner\/leads\/([A-Za-z0-9_-]+)\/advance$/.exec(path)
+      if (method === 'POST' && partnerLeadAdvance) {
+        const account = ACCOUNTS.find((a) => a.username === authPayload.username)
+        if (!account) return unauthorized(res)
+        let body = {}
+        try {
+          body = await readBody(req)
+        } catch {
+          return badRequest(res, '请求体格式错误')
+        }
+        const result = await advanceLead({ account, leadId: partnerLeadAdvance[1], status: body.status })
+        if (!result.ok) return notFound(res, '线索不存在')
+        return ok(res, result.data)
       }
       // 硬件云服务端代理（API-CONTRACT §3.5）。公屏仅 2.8/2.7.4 在册 SN 只读，管理接口仍 403。
       if (path.startsWith('/v1/hardware/')) {

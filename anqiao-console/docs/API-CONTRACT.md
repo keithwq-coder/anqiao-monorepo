@@ -1,11 +1,13 @@
-# 安守护护理院系统 · API 数据契约 v0.3
+# 安守护护理院系统 · API 数据契约 v0.5
 
-> 状态：基线（v0.2 起作为三仓整合的唯一接口契约生效；v0.3 补齐实现态路由与项目配置下发）
-> 日期：2026-09-23（v0.1：2026-09-19；v0.2：2026-09-23）
+> 状态：基线（v0.2 起作为三仓整合的唯一接口契约生效；v0.3 补齐实现态路由与项目配置下发；v0.4 接入官网公开线索；v0.5 补 SIM 仿真源分流）
+> 日期：2026-10-08（v0.1：2026-09-19；v0.2：2026-09-23；v0.3：2026-09-23；v0.4：2026-09-29）
 > 读者：后端、前端工程师
 > 原则：**界面上的每个数字必须有且仅有一个来源**；本契约是前后端联调的唯一依据，字段变更必须改文档再改代码。
 > v0.2 变更：①明确唯一业务后端为 `anqiao-console/server`，大屏与管理控制台均为纯前端消费方（仓库拓扑/部署/切换窗口以 `docs/INTEGRATION-SPEC.md` 为唯一来源）；②新增 §3.1 路由实现状态索引；③§5 补充硬件云凭据服务端化的目标态口径。
 > v0.3 变更：①登录/切换响应补齐 `workspace`/`principal`/`permissions`/`data_scope`；②§3.2 固化设备资产与合作伙伴渠道字段（原 🆕）；③§3.3 定义 `GET /v1/project/config`（对齐 INTEGRATION-SPEC §5.1）；④§3.4 列出 `/v1/ltc/*` 已实现路由全集（流程细节仍以 `LTC-INSURANCE-SPEC` 为唯一来源）；⑤§7 标注授权/工作台实现态；⑥Data Scope 补 `channel`。
+> v0.4 变更：①消费方补官网（第四端）；②新增无鉴权 `POST /v1/public/leads`；③渠道工作台补 `POST /v1/partner/leads` 与推进接口，禁止前端假写入。
+> v0.5 变更：①§3.5 硬件代理补 SIM 仿真源分流（`SIM-` 前缀设备由内置确定性仿真源应答 2.8 六路由，见 SIM-TELEMETRY-DESIGN §3）。
 
 ---
 
@@ -16,13 +18,13 @@
                 ↓ 数据同步/聚合（目标态：业务后端按 V1.0 代理，见 §3.5 / §5）
         护理院业务后端（= anqiao-console/server，本契约定义）
                 ↓ REST + WebSocket
-        管理控制台前端 / 凯健大屏 / 宿迁大屏 / 家属端（预留）
+        管理控制台前端 / 凯健大屏 / 宿迁大屏 / 官网 / 家属端（预留）
 ```
 
 - 设备原始数据（心率/呼吸/体温/在床/睡眠）继续走**安樵平台现有 API**，业务后端消费平台数据（推送或定时拉取），不在本契约重复定义。
 - 本契约定义业务后端对上层应用提供的 **B 端（护理院维度）聚合 API**：护理院 → 楼层 → 专区 → 床位 → 长者 → 设备，以及实时推送通道。
-- **上层消费方一律为纯前端**：大屏、控制台、家属端不得自带后端服务或业务数据种子，全部经本契约接入；mock 数据仅限本地开发显式开关（纪律见 INTEGRATION-SPEC 硬性基线 5）。
-- 鉴权复用平台机制：登录获取 JWT Bearer，令牌有效期以平台为准；请求头 `Authorization: Bearer {token}`。
+- **上层消费方**：大屏、控制台、家属端为纯前端；官网（`WEB/`，Next.js）是第四消费方，自身只做展示与表单校验，线索写入必须走本契约 `POST /v1/public/leads`。mock 数据仅限本地开发显式开关（纪律见 INTEGRATION-SPEC 硬性基线 5）。
+- 鉴权复用平台机制：登录获取 JWT Bearer，令牌有效期以平台为准；请求头 `Authorization: Bearer {token}`。公开线索写入是唯一无 Bearer 旁路，见 §3.6。
 - 多租户：所有业务接口隐含当前登录账号所属护理院（`tenant_id`），由后端从令牌解析，**前端不传递租户参数**。
 
 ## 2. 数据模型
@@ -163,27 +165,31 @@
 | `GET /v1/floors`、`/v1/wards`、`/v1/beds` | ✅ | 契约有效（§3 表），console 已从 seed 内存态聚合 |
 | `GET /v1/stats/demographics`、`/v1/stats/rankings` | ✅ | 同上，字段见 §3 表 |
 | `GET /v1/devices`、`POST /v1/devices/{id}/lifecycle`、`GET /v1/devices/lifecycle-logs` | ✅ | 设备资产域，字段见 §3.2 |
-| `GET /v1/partner/channels` | ✅ | 合作伙伴渠道域，字段见 §3.2 |
+| `GET /v1/partner/channels` | ✅ | 合作伙伴渠道域，字段见 §3.2；官网/工作台线索合并进 `leads` |
+| `POST /v1/public/leads` | ✅ | 官网公开线索写入，无 Bearer；限流 + 校验见 §3.6 |
+| `POST /v1/partner/leads`、`POST /v1/partner/leads/{id}/advance` | ✅ | 渠道工作台真写入/推进，Bearer 鉴权；禁止前端 `prompt()` 假写入 |
 | `GET /v1/project/config` | ✅ | 项目配置下发，字段定义见 §3.3；suqian `cloudScanMode=compare_only`、devices 恒 3 台 |
 | `/v1/ltc/*` 长护险全家桶 | ✅ | 路由全集见 §3.4；流程/状态机以 `docs/LTC-INSURANCE-SPEC.md` 为唯一来源 |
 | `GET /v1/hardware/*` 硬件云代理 | ✅ | 服务端按《AI 健康守护仪对接API V1.0》转发（§3.5）；浏览器不直连硬件云 |
 
-### 3.5 硬件云服务端代理（v0.4 / 阶段四）
+### 3.5 硬件云服务端代理（v0.4 / 阶段四；v0.5 补 SIM 仿真源分流）
 
 > 上游以《AI 健康守护仪对接API（V1.0）》为准。上层前端只带**业务** `Authorization: Bearer` 访问本表路由；**禁止**前端直连 `api.health-track.anqiaokj.com` 或持有硬件云口令/长期 JWT。
 >
 > 2.8 硬件数据查询（2.8.2–2.8.6）请求体只有 `device_id`（夜间接口另加 `date`）。账号/密码属于 2.4.2 用户登录，**不是** 2.8 的入参，代理不得因缺少 `HW_ACCOUNT` / `HW_PASSWORD` 返回 503。2.8.1 upload 是设备上报，本代理不转发写接口。V1.0 未定义的上游路径（如 `/api/v1/hardware/status`）不代理。
+>
+> **SIM 仿真源（v0.5，SIM-TELEMETRY-DESIGN §3）**：`device_id` 以 `SIM-` 开头的设备**不转发硬件云**，由内置确定性仿真源（`server/sim-telemetry.js`）在本表 2.8 六条路由上应答；响应形状与本表上游一致，同 `(device_id, date)` 任何时刻/任何次重启逐字段一致，隔日自然更新。`SIM-` 前缀即路由依据，鉴权与公屏在册校验对 SIM 设备同等生效。`/v1/hardware/devices`（2.5.1，user_id 维度）**不做** SIM 分流。
 
 | 方法 | 路径 | 转发上游 | 关键参数 |
 |---|---|---|---|
 | GET | `/v1/hardware/devices` | `POST /api/v1/device/list`（2.5.1） | `user_id` 必填 |
 | GET | `/v1/hardware/devices/raw` | 同上（原始包） | `user_id` 必填 |
-| GET | `/v1/hardware/latest` | `POST /api/v1/hardware/latest_data`（2.8.2） | `device_id` 必填（宿迁在册：ASH01086 / ASH01078 / ASH01092） |
-| GET | `/v1/hardware/daily` | `POST /api/v1/hardware/daily_data`（2.8.3） | `device_id`、`date` 必填（夜间窗：前一日 20:00 至当日 08:00） |
-| GET | `/v1/hardware/today` | `POST /api/v1/hardware/today_data`（2.8.4） | `device_id` 必填 |
-| GET | `/v1/hardware/sleep` | `POST /api/v1/hardware/sleep_stats`（2.8.5） | `device_id` 必填；`date` 为夜间窗结束日 |
-| GET | `/v1/hardware/report-dates` | `POST /api/v1/hardware/report_dates`（2.8.6） | `device_id` 必填 |
-| GET | `/v1/hardware/alarms` | `POST /api/v1/alarm/list`（2.7.4） | `device_id` 可选（不传则查全部）、`status` 可选、`page`、`page_size` |
+| GET | `/v1/hardware/latest` | `POST /api/v1/hardware/latest_data`（2.8.2） | `device_id` 必填（宿迁在册：ASH01086 / ASH01078 / ASH01092；`SIM-` 前缀走仿真源） |
+| GET | `/v1/hardware/daily` | `POST /api/v1/hardware/daily_data`（2.8.3） | `device_id`、`date` 必填（夜间窗：前一日 20:00 至当日 08:00）；`SIM-` 前缀走仿真源 |
+| GET | `/v1/hardware/today` | `POST /api/v1/hardware/today_data`（2.8.4） | `device_id` 必填；`SIM-` 前缀走仿真源 |
+| GET | `/v1/hardware/sleep` | `POST /api/v1/hardware/sleep_stats`（2.8.5） | `device_id` 必填；`date` 为夜间窗结束日；`SIM-` 前缀走仿真源 |
+| GET | `/v1/hardware/report-dates` | `POST /api/v1/hardware/report_dates`（2.8.6） | `device_id` 必填；`SIM-` 前缀走仿真源 |
+| GET | `/v1/hardware/alarms` | `POST /api/v1/alarm/list`（2.7.4） | `device_id` 可选（不传则查全部）、`status` 可选、`page`、`page_size`；带 `SIM-` device_id 时走仿真源 |
 
 统一响应包 `{code,msg,data}`；`data` 为上游业务字段（或本契约包装后的列表）。权限：登录席位持 `device:read` 可读本表；公屏 `screen_viewer` **仅**可 GET 2.8 查询与 2.7.4 告警，且 `device_id` 必须在册（宿迁公屏锁定 ASH01086 / ASH01078 / ASH01092；安樵公屏锁定 `DEVICE_ASSETS`）。`/v1/hardware/devices`、无 `device_id` 的告警、文档未定义路径对公屏一律 403。写回硬件云不在本表（suqian `cloudScanMode=compare_only` 红线不变）。
 
@@ -287,15 +293,64 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
     "partner_org_id": "partner_p1",
     "partner_name": "…",
     "developed_customers": [{ "org_id": "…", "org_name": "…", "contact": "…", "phone": "…", "devices_count": 3, "active_monitoring": 2, "created_at": "…", "referrer_partner_id": "partner_p1" }],
-    "leads": [{ "lead_id": "…", "title": "…", "status": "…", "created_at": "…" }]
+    "leads": [{ "lead_id": "…", "name": "…", "contact": "…", "status": "…", "estimated_devices": 0, "updated_at": "…" }]
   }],
   "customers": [ /* 展平的 developed_customers */ ],
-  "leads": [ /* 展平的 leads */ ],
+  "leads": [
+    {
+      "lead_id": "WEB-0001",
+      "name": "意向机构名称",
+      "contact": "对接人",
+      "status": "官网询价",
+      "estimated_devices": 0,
+      "updated_at": "2026-09-29 12:00:00",
+      "source": "website",
+      "type": "inquiry",
+      "inquiry_type": "设备采购",
+      "customer_type": "养老机构",
+      "product": "AI健康守护仪",
+      "message": "需求说明"
+    }
+  ],
   "total": 1
 }
 ```
 
-> 红线：`partner_*` **不见客户数据正文**（长者/体征/告警详情），仅渠道组织、设备计数与线索元数据。
+> 红线：`partner_*` **不见客户数据正文**（长者/体征/告警详情），仅渠道组织、设备计数与线索元数据。官网未分配线索（`partner_org_id` 为空）**不对** `partner_admin` 可见；厂商运营 / 销售 / 超管可见全部。响应 `leads` **不回传**提交 IP。
+
+#### POST `/v1/public/leads`（v0.4 / §3.6）
+
+官网 Server Action 服务端调用。无 Bearer。同一 IP 60 秒最多 3 次，超限 `429`。生产禁止回退到官网本地 `leads.jsonl`。
+
+请求：
+
+```json
+{
+  "type": "inquiry",
+  "name": "张三",
+  "phone": "13405084570",
+  "organization": "某某养老院",
+  "inquiry_type": "设备采购",
+  "customer_type": "养老机构",
+  "product": "AI健康守护仪",
+  "message": "需要 20 台床旁监测"
+}
+```
+
+- `type`：`inquiry` | `dealer`，缺省 `inquiry`
+- `inquiry_type` 必填，枚举：`设备采购` / `方案咨询` / `经销商加盟`
+- `customer_type` 可选，枚举：`养老机构` / `社区居家` / `医疗卫生` / `大健康美业` / `装修适老化改造` / `其他`
+- 长度上限：姓名 40、电话 20、机构 80、产品 80、说明 500
+
+成功响应 `data`：`{ "lead_id": "WEB-0001", "status": "官网询价" }`。CRM 不是硬依赖，本接口直接写入基座 `public_leads`。
+
+#### POST `/v1/partner/leads`
+
+渠道工作台新增意向客户。Bearer 鉴权。`partner_admin` 写入时强制挂本组织 `org_id`。
+
+#### POST `/v1/partner/leads/{id}/advance`
+
+推进商务状态，缺省下一状态为 `方案提报与商务签约`。越权按 404（不暴露他渠线索是否存在）。
 
 ### 3.3 项目配置下发（目标态）
 
