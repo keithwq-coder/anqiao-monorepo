@@ -72,7 +72,7 @@ SaaS 后端 server/index.js handleHardwareProxy（既有入口，鉴权不变）
 
 ### 3.1 SN 规则与路由
 
-- 仿真设备 SN 统一格式：`SIM-<4位大写字母数字>`，如 `SIM-A1B2`。`SIM-` 前缀即路由依据，全系统一致（代理层、设备资产、租户配置）
+- 仿真设备 SN 统一前缀 `SIM-`，前缀后接 4-8 位大写字母数字（具体构成见 §5.1），如 `SIM-A1B203`。`SIM-` 前缀即路由依据，全系统一致（代理层、设备资产、租户配置）
 - `handleHardwareProxy` 内：`device_id` 以 `SIM-` 开头 → 调 sim-telemetry；否则走既有 hw.js 代理。分流在**服务端**完成，前端零感知
 - 鉴权不变：公屏只读白名单、`device:read` 权限校验、在册校验（SIM 设备登记进 DEVICE_ASSETS/device_registry 后即在册）对 SIM 设备同等生效
 
@@ -150,7 +150,7 @@ SaaS 后端 server/index.js handleHardwareProxy（既有入口，鉴权不变）
 开通动作（服务端一次完成，全部自动）：
 
 1. `registerTenant`（既有）注册租户配置
-2. 生成 SIM 设备批次：`SIM-<tenantId哈希4位><序号>`，登记进设备资产（`customer_org_id` = 新租户、`hardware_asset_owner` = anqiao、`procurement_channel` = `demo_sim`）
+2. 生成 SIM 设备批次：SN 规则 `SIM-<tenantId哈希4位><序号2位>`（如 `SIM-A1B203`，序号 01 起），登记进设备资产（`customer_org_id` = 新租户、`hardware_asset_owner` = anqiao、`procurement_channel` = `demo_sim`）
 3. 按业态模板生成**完整角色栈账号群**（护理院 = 既有 16 角色，复用康宁的角色定义），账号写入 `saas_users`（既有 db.js 机制），初始密码同 SEED_ACCOUNT_PASSWORD 注入策略，用户名规则 `<tenantId>_<role>`（如 `partner_acme_admin`）
 4. 租户数据面：床位/患者结构复用康宁模板布局（87 在住/96 床位规格），长者人格**从既有虚构姓名池派生新组合**（不与康宁重复展示同一批人名），护士/医生花名同池派生
 5. 账号群与租户落库后返回账号清单（用户名+角色+workspace），管理侧转交伙伴
