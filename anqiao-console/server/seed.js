@@ -7,6 +7,7 @@ import { scryptSync, timingSafeEqual } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
+import { workspaceOf } from './auth.js'
 
 // ---------- 确定性 PRNG ----------
 export function mulberry32(seed) {
@@ -350,8 +351,10 @@ function buildPatients(cfg) {
     if (abnormalPlan?.type === 'fall') vitals.in_bed = false
 
     const isMale = rnd() < 0.47
-    const maleIdx = (i * 7 + 3) % ELDER_MALE_NAMES.length
-    const femaleIdx = (i * 11 + 5) % ELDER_FEMALE_NAMES.length
+    // 姓名池索引：康宁用固定步长（7/11）；伙伴沙箱传 nameStrideOffset 错开组合，避免与康宁重复展示同一批人名
+    const stride = cfg.nameStrideOffset || 0
+    const maleIdx = (i * 7 + 3 + stride) % ELDER_MALE_NAMES.length
+    const femaleIdx = (i * 11 + 5 + stride) % ELDER_FEMALE_NAMES.length
     const elderName = isMale ? ELDER_MALE_NAMES[maleIdx] : ELDER_FEMALE_NAMES[femaleIdx]
 
     return {
@@ -1417,7 +1420,113 @@ export function registerTenant(tenantId, { name, vertical, template }) {
   const cfg = factory(name, Date.now() % 100000000)
   TENANT_CONFIGS[tenantId] = cfg
   TENANT_DATA[tenantId] = buildTenant(cfg)
+  tenantBuildDate.set(tenantId, todayStr8())
   return cfg
+}
+
+// ---------- 伙伴沙箱租户（SIM-TELEMETRY-DESIGN §5）：一次开出租户 + SIM 设备 + 16 角色账号群 ----------
+// 复用康宁业态模板（87 在住/96 床位同构），长者人格从既有虚构姓名池**错开步长派生**
+// （不与康宁重复展示同一批人名）；账号名 <tenantId>_<role>，初始密码同 SEED_ACCOUNT_PASSWORD 策略。
+const NURSING_ROLE_STACK = [
+  { suffix: 'station',   role: 'nursing_station',     staff_name: '护理台' },
+  { suffix: 'head',      role: 'nursing_head',        staff_name: '护士长' },
+  { suffix: 'nurse',     role: 'nursing_nurse',       staff_name: '责任护士' },
+  { suffix: 'caregiver', role: 'nursing_caregiver',   staff_name: '管床护工' },
+  { suffix: 'admin',     role: 'nursing_admin',       staff_name: '院长' },
+  { suffix: 'dossier',   role: 'patient_dossier',     staff_name: '病案管理' },
+  { suffix: 'ops',       role: 'device_user',         staff_name: '院内物联运维' },
+  { suffix: 'reports',   role: 'reports_center',      staff_name: '结算报表' },
+  { suffix: 'rehab',     role: 'rehab_therapist',     staff_name: '康复治疗师' },
+  { suffix: 'dementia',  role: 'dementia_specialist', staff_name: '认知症照护' },
+  { suffix: 'doctor',    role: 'facility_doctor',     staff_name: '医生' },
+  { suffix: 'hr',        role: 'facility_hr',          staff_name: '人事' },
+  { suffix: 'finance',   role: 'facility_finance',    staff_name: '财务' },
+  { suffix: 'marketing', role: 'facility_marketing',  staff_name: '营销' },
+  { suffix: 'affairs',   role: 'facility_admin',      staff_name: '行政' },
+  { suffix: 'it',        role: 'facility_it',          staff_name: 'IT' },
+]
+
+/** SIM SN：SIM-<tenantId哈希4位><序号2位>（哈希4位 = fnv1a(tenant_id) 36 进制；生成后仍查重防撞，撞号序号顺延）*/
+export function simDeviceSnFor(tenantId, seq, existsFn) {
+  const hash4 = (fnv1aLocal(tenantId) % 1679616).toString(36).toUpperCase().padStart(4, '0')
+  let sn = `SIM-${hash4}${String(seq).padStart(2, '0')}`
+  let n = seq
+  while (existsFn && existsFn(sn)) {
+    n += 1
+    sn = `SIM-${hash4}${String(n).padStart(2, '0')}`
+  }
+  return sn
+}
+
+function fnv1aLocal(str) {
+  let h = 0x811c9dc5
+  for (let i = 0; i < String(str).length; i++) {
+    h ^= String(str).charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+
+/**
+ * 伙伴沙箱数据面：康宁同构（床位/楼层/告警类型），但姓名派生步长与种子错开——
+ * 同一 index 不会选中与康宁相同的姓名组合（maleIdx/femaleIdx 公式同构、偏移不同）。
+ */
+function buildPartnerSandboxCfg(tenantId, name, baseSeed) {
+  return {
+    name, kind: 'nursing_home', vertical: 'nursing_home', template: 'nursing_home_v1', deployment: 'saas',
+    seed: baseSeed, alertIdBase: 91001,
+    occupiedBeds: NURSING_DEMO_OCCUPIED_BEDS, vacantBeds: NURSING_DEMO_VACANT_BEDS,
+    floorWards: NURSING_DEMO_FLOOR_WARDS, floorCare: NURSING_DEMO_FLOOR_CARE,
+    nurses: NURSES.length, inBedRatio: 0.85,
+    abnormalPlan: [
+      { idx: 2, type: 'hr' },
+      { idx: 7, type: 'off_bed' },
+      { idx: 13, type: 'fall' },
+      { idx: 19, type: 'tp' },
+    ],
+    patientTotal: NURSING_DEMO_OCCUPIED_BEDS.length,
+    alertTypes: ['fall','off_bed','hr','br','tp','off_bed','hr','fall','off_bed','hr','br','tp'],
+    alertStatuses: ['handled','handling','handled','triggered','handled','missed','handled','triggered','handled','handling','handled','handled'],
+    nameStrideOffset: (fnv1aLocal(tenantId) % 97) + 13, // 姓名池错开偏移（buildPatients 不读此字段，仅文档性）
+  }
+}
+
+/**
+ * 开通伙伴沙箱（N27a）：注册租户 + 生成 16 角色账号定义（写入由 index.js 落 saas_users）。
+ * 返回 { cfg, accounts, simDevices }；cfg 已进 TENANT_CONFIGS/TENANT_DATA。
+ */
+export function registerPartnerSandbox(tenantId, { name, vertical, template }, { simDeviceCount = 12, snExists }) {
+  if (vertical !== 'nursing_home') return null // 首期仅支持 nursing_home（模板工厂现状）
+  const tpl = template || 'nursing_home_v1'
+  if (TENANT_CONFIGS[tenantId]) return null
+  if (!VERTICAL_TEMPLATE_FACTORIES[tpl]) return null
+  const cfg = buildPartnerSandboxCfg(tenantId, name, 20261000 + (fnv1aLocal(tenantId) % 8999))
+  TENANT_CONFIGS[tenantId] = cfg
+  TENANT_DATA[tenantId] = buildTenant(cfg)
+  tenantBuildDate.set(tenantId, todayStr8())
+
+  const accounts = NURSING_ROLE_STACK.map((r) => ({
+    username: `${tenantId}_${r.suffix}`,
+    staff_name: r.staff_name,
+    role: r.role,
+    unified_role: r.role,
+    tenant_id: tenantId,
+    org_id: tenantId,
+    workspace: workspaceOf(r.role),
+    scope: 'org',
+    assigned_title: `${name} 专属沙箱 · ${r.staff_name}（演示环境 · 数据为模拟）`,
+  }))
+
+  const simDevices = []
+  for (let i = 1; i <= Math.max(1, Number(simDeviceCount) || 12); i++) {
+    simDevices.push({
+      sn: simDeviceSnFor(tenantId, i, snExists),
+      customer_org_id: tenantId,
+      hardware_asset_owner: 'anqiao',
+      procurement_channel: 'demo_sim',
+    })
+  }
+  return { cfg, accounts, simDevices }
 }
 
 // ---------- Overview 实时计算（含处置/新告警后的指标变化），不硬编码 ----------

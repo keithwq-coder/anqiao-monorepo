@@ -7,7 +7,7 @@
 > v0.2 变更：①明确唯一业务后端为 `anqiao-console/server`，大屏与管理控制台均为纯前端消费方（仓库拓扑/部署/切换窗口以 `docs/INTEGRATION-SPEC.md` 为唯一来源）；②新增 §3.1 路由实现状态索引；③§5 补充硬件云凭据服务端化的目标态口径。
 > v0.3 变更：①登录/切换响应补齐 `workspace`/`principal`/`permissions`/`data_scope`；②§3.2 固化设备资产与合作伙伴渠道字段（原 🆕）；③§3.3 定义 `GET /v1/project/config`（对齐 INTEGRATION-SPEC §5.1）；④§3.4 列出 `/v1/ltc/*` 已实现路由全集（流程细节仍以 `LTC-INSURANCE-SPEC` 为唯一来源）；⑤§7 标注授权/工作台实现态；⑥Data Scope 补 `channel`。
 > v0.4 变更：①消费方补官网（第四端）；②新增无鉴权 `POST /v1/public/leads`；③渠道工作台补 `POST /v1/partner/leads` 与推进接口，禁止前端假写入。
-> v0.5 变更：①§3.5 硬件代理补 SIM 仿真源分流（`SIM-` 前缀设备由内置确定性仿真源应答 2.8 六路由，见 SIM-TELEMETRY-DESIGN §3）。
+> v0.5 变更：①§3.5 硬件代理补 SIM 仿真源分流（`SIM-` 前缀设备由内置确定性仿真源应答 2.8 六路由，见 SIM-TELEMETRY-DESIGN §3）；②N27 补记请求体结构并扩展 `partner_sandbox` 伙伴沙箱开通（N27a，见 SIM-TELEMETRY-DESIGN §5）。
 
 ---
 
@@ -267,6 +267,25 @@ body：`{ "to_status": "<lifecycle_status>", "remark": "…", "location": "…" 
 | N25 | GET `/v1/sales/institutions/{org}/telemetry?device_id=&range=today\|sleep` | 同 N21 | 遥测曲线：硬件云代理只读转发（设备 SN 校验属机构）；按 2.8 只转发 `device_id`，上游失败 502 | 已实现（同上） |
 | N26 | GET `/v1/tenants` | `su`/`platform_admin` | 租户注册表：含 `vertical`/`template`/`deployment` 三字段（seed.js TENANT_CONFIGS） | 已实现 |
 | N27 | POST `/v1/admin/tenants` | 守卫 `role === 'su'`（与 `/v1/admin/users` 同守卫 `canAllocateUsers`；禁止按中文名硬编码） | 选业态模板开租户（运行时注册，`registerTenant`）：重复 409、非法业态 400 | 已实现 |
+| N27a | POST `/v1/admin/tenants`（`partner_sandbox` 字段） | 同 N27 | **伙伴沙箱开通（SIM-TELEMETRY-DESIGN §5）**：请求体扩展，一次开出"租户 + SIM 设备批次 + 16 角色账号群 + 康宁同构数据面"，见下方请求体定义 | 已实现 |
+
+**N27 请求体**（v0.5 起登记）：
+
+```jsonc
+{
+  "tenant_id": "partner_acme",   // 必填，/^[a-z0-9_]{3,64}$/；伙伴沙箱实际建议 ≤24 位（用户名 = tenantId + "_" + 角色后缀，saas_users.username 上限 64）
+  "name": "XX养老服务有限公司",     // 必填，伙伴的真实机构名（身份展示，见 SIM-TELEMETRY §5.3 红线说明）
+  "vertical": "nursing_home",    // 必填，四业态枚举；partner_sandbox 首期仅支持 nursing_home（模板工厂仅 nursing_home_v1）
+  "template": "nursing_home_v1",  // 可选，省略时按 vertical 推默认
+  "partner_sandbox": {            // 可选；出现即进入沙箱开通流程
+    "sim_device_count": 12       // SIM 设备数，默认 12；演示标识恒开不可关
+  }
+}
+```
+
+- 不带 `partner_sandbox`：行为与 v0.4 前完全一致（仅注册空租户）
+- 带 `partner_sandbox` 响应扩展：`accounts`（16 角色账号清单：username/role/workspace/staff_name）+ `sim_devices`（SN 列表，规则 `SIM-<tenantId哈希4位><序号2位>`，登记进 DEVICE_ASSETS：`customer_org_id` = 新租户、`hardware_asset_owner` = anqiao、`procurement_channel` = demo_sim）；账号初始密码 = SEED_ACCOUNT_PASSWORD 注入策略，写 saas_users
+- 持久化边界（如实登记）：账号（saas_users）与设备资产（device_registry）持久化；租户配置/数据面现状为内存态，**重启即丢**（需重开通）
 
 > 红线：CRM 域（若接入镜像）**只读**，严禁任何写操作；宿迁 3 设备 3 长者真实数据只读且不得进入无权席位任何视图；越权读 404、无权操作 403（沿用账号矩阵 §4 规则）。
 

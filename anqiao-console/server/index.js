@@ -9,6 +9,7 @@ import {
   ACCOUNTS,
   verifyPassword,
   hashPassword,
+  hashPasswordArgon2,
   upgradeSeedPasswordHashes,
   getTenantData,
   getTenantName,
@@ -34,6 +35,7 @@ import {
   getProjectConfig,
   TENANT_CONFIGS,
   registerTenant,
+  registerPartnerSandbox,
   mulberry32,
   dateSeed,
   todayStr8,
@@ -50,6 +52,7 @@ import {
   saveTenantVitalsSnapshot,
   saveSaaSUser,
   loadSaaSUsers,
+  saveDeviceRegistry,
   deleteSaaSUser,
 } from './db.js'
 import {
@@ -1876,6 +1879,106 @@ const server = http.createServer(async (req, res) => {
         if (!['nursing_home', 'senior_community', 'home_care', 'health_wellness'].includes(newTenantVertical)) {
           return badRequest(res, 'vertical 必须为四业态之一')
         }
+
+        // N27a 伙伴沙箱（SIM-TELEMETRY-DESIGN §5）：partner_sandbox 字段出现即走沙箱开通
+        if (body?.partner_sandbox) {
+          if (newTenantVertical !== 'nursing_home') {
+            return badRequest(res, '伙伴沙箱首期仅支持 nursing_home 业态')
+          }
+          const initPassword = process.env.SEED_ACCOUNT_PASSWORD
+          if (!initPassword) return send(res, 500, 500, 'SEED_ACCOUNT_PASSWORD 未注入，无法为沙箱账号设初始密码')
+          // 用户名 = tenantId_角色后缀，saas_users.username 上限 64；tenant_id ≤24 保证最长角色后缀不超限
+          if (newTenantId.length > 24) {
+            return badRequest(res, '伙伴沙箱 tenant_id 过长（≤24 位，账号名 = tenantId_角色后缀 且 username 上限 64）')
+          }
+          const sandbox = registerPartnerSandbox(
+            newTenantId,
+            { name: newTenantName, vertical: newTenantVertical, template: newTenantTemplate },
+            {
+              simDeviceCount: Number(body.partner_sandbox.sim_device_count) || 12,
+              snExists: (sn) => DEVICE_ASSETS.some((d) => d.sn === sn || d.device_id === sn),
+            },
+          )
+          if (!sandbox) return send(res, 409, 409, '租户已存在或该业态模板未上线')
+
+          // 账号落 ACCOUNTS + saas_users（既有机制，散列同种子策略：argon2id 随机 salt）
+          const createdAccounts = []
+          for (const acct of sandbox.accounts) {
+            if (ACCOUNTS.some((a) => a.username === acct.username)) continue
+            const nu = {
+              ...acct,
+              password_hash: await hashPasswordArgon2(initPassword),
+            }
+            ACCOUNTS.push(nu)
+            await saveSaaSUser({
+              username: nu.username,
+              password_hash: nu.password_hash,
+              display_name: nu.staff_name,
+              unified_role: nu.unified_role,
+              role: nu.role,
+              tenant_id: nu.tenant_id,
+              workspace: nu.workspace,
+              scope: nu.scope,
+              is_seed: true,
+              created_by: authPayload.username,
+            }).catch((err) => console.error('[server] 沙箱账号落库失败:', nu.username, err.message))
+            createdAccounts.push({
+              username: nu.username, role: nu.role, workspace: nu.workspace, staff_name: nu.staff_name,
+            })
+          }
+
+          // SIM 设备登记进 DEVICE_ASSETS（公屏在册白名单同源；生命周期日志 + 持久化走既有机制）
+          const createdDevices = []
+          for (const sd of sandbox.simDevices) {
+            if (DEVICE_ASSETS.some((d) => d.sn === sd.sn || d.device_id === sd.sn)) continue
+            const dev = {
+              device_id: sd.sn,
+              sn: sd.sn,
+              label: `${newTenantName} · 演示设备`,
+              type: 'health_guardian',
+              hardware_asset_owner: sd.hardware_asset_owner,
+              customer_org_id: sd.customer_org_id,
+              procurement_channel: sd.procurement_channel,
+              lifecycle_status: 'monitoring',
+              online: true,
+              last_data_time: nowIso8(),
+            }
+            DEVICE_ASSETS.push(dev)
+            DEVICE_LIFECYCLE_LOGS.push({
+              log_id: 'LOG-' + Date.now().toString(36).toUpperCase() + '-' + String(DEVICE_LIFECYCLE_LOGS.length + 1),
+              device_id: dev.device_id,
+              from_status: 'created',
+              to_status: dev.lifecycle_status,
+              operator_id: authPayload.username,
+              organization_id: authPayload.tenant_id,
+              occurred_at: nowIso8(),
+              location: '',
+              remark: '伙伴沙箱 SIM 设备开通 (N27a)',
+            })
+            createdDevices.push(sd.sn)
+          }
+          // 与 ltc.js persistDeviceRegistry 同构：仅持久层模式生效
+          if (['sqlite', 'mysql'].includes(dataLayerMode())) {
+            saveDeviceRegistry(DEVICE_ASSETS, DEVICE_LIFECYCLE_LOGS).catch((err) =>
+              console.error('[server] 沙箱设备注册表持久化失败:', err.message),
+            )
+          }
+
+          return ok(res, {
+            tenant_id: newTenantId,
+            name: sandbox.cfg.name,
+            vertical: sandbox.cfg.vertical,
+            template: sandbox.cfg.template,
+            deployment: sandbox.cfg.deployment,
+            partner_sandbox: {
+              demo_disclaimer: true, // 常驻演示标识，恒开不可关（SIM-TELEMETRY §5.3）
+              accounts: createdAccounts,
+              sim_devices: createdDevices,
+              persistence_note: '租户配置为内存态：服务重启后账号与设备资产仍在库，租户需重新开通',
+            },
+          })
+        }
+
         const createdCfg = registerTenant(newTenantId, { name: newTenantName, vertical: newTenantVertical, template: newTenantTemplate })
         if (!createdCfg) return send(res, 409, 409, '租户已存在或该业态模板未上线')
         return ok(res, {
