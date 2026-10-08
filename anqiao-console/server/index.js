@@ -34,6 +34,9 @@ import {
   getProjectConfig,
   TENANT_CONFIGS,
   registerTenant,
+  mulberry32,
+  dateSeed,
+  todayStr8,
 } from './seed.js'
 import { saveState, loadState } from './store.js'
 import {
@@ -1568,10 +1571,28 @@ setInterval(() => {
 
 // alert：低频新告警（45-75s；WS_ALERT_FAST=1 时 5-8s），插入租户数据并广播 + 推 overview
 // 模拟器故障只记日志，绝不允许杀死 API 进程（2026-09-27 生产 502 事故教训）
+// 间隔的随机相位由（租户, 当日, 轮次）种子派生（SIM-TELEMETRY-DESIGN §4.2）——
+// 时序间隔本身不属"数据稳定性"承诺，确定性仅用于可复现测试。
 const ALERT_INTERVAL_RANGE = process.env.WS_ALERT_FAST ? [5000, 8000] : [45000, 75000]
-function scheduleLiveAlert(tenantId) {
+let alertRoundSeq = 0
+function fnv1aHash(str) {
+  let h = 0x811c9dc5
+  for (let i = 0; i < String(str).length; i++) {
+    h ^= String(str).charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+function dateSeedHash(dateStr) {
+  return fnv1aHash(String(dateStr))
+}
+function nextAlertDelay(tenantId) {
   const [min, max] = ALERT_INTERVAL_RANGE
-  const delay = min + Math.random() * (max - min)
+  const rnd = mulberry32((alertRoundSeq++ ^ (fnv1aHash(tenantId) ^ dateSeedHash(todayStr8()))) >>> 0)
+  return min + rnd() * (max - min)
+}
+function scheduleLiveAlert(tenantId) {
+  const delay = nextAlertDelay(tenantId)
   setTimeout(() => {
     let alert = null
     try {

@@ -11,7 +11,24 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ACCOUNTS, nowIso8, DEVICE_ASSETS, DEVICE_LIFECYCLE_LOGS } from './seed.js'
+import { ACCOUNTS, nowIso8, DEVICE_ASSETS, DEVICE_LIFECYCLE_LOGS, mulberry32, dateSeed, todayStr8 } from './seed.js'
+
+// ---------- 确定性单号（SIM-TELEMETRY-DESIGN §4.3）----------
+// 编号由单据内容 + 时间戳派生；唯一性由业务键保证，随机性非必需。禁 Math.random。
+function fnv1a(str) {
+  let h = 0x811c9dc5
+  for (let i = 0; i < String(str).length; i++) {
+    h ^= String(str).charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+
+/** 业务键 → 36 进制 6 位大写后缀（同键同日恒定） */
+function serialSuffix(bizKey) {
+  const rnd = mulberry32((fnv1a(bizKey) ^ dateSeed(todayStr8())) >>> 0)
+  return Math.floor(rnd() * 2176782336).toString(36).toUpperCase().padStart(6, '0')
+}
 
 // 阶段四：设备资产注册表持久化恢复（mysql/sqlite 模式；seed 引用数组原地替换保持引用一致）
 if (['sqlite', 'mysql'].includes(dataLayerMode())) {
@@ -3053,8 +3070,8 @@ export function reviewSettlement(ctx, settlementId, input = {}) {
         medical_org: isSq ? '宿迁市医疗保障局 / 宿迁长护险试点工作组' : '某某市医疗保障局 / 某某市长护险管理服务中心',
         medical_reviewed_by: ctx.username,
         medical_reviewed_at: nowIso8(),
-        auth_code: `AQ-LTC-SEC-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-        bank_batch_no: `BK-PAY-202609-${Math.floor(100000 + Math.random() * 900000)}`,
+        auth_code: `AQ-LTC-SEC-${serialSuffix('voucher:' + set.settlement_id)}`,
+        bank_batch_no: `BK-PAY-202609-${serialSuffix('bank:' + set.settlement_id).slice(0, 6)}`,
         seal_name: '医疗保障局·长护险统筹基金专用章（电子核准）',
         status: 'generated',
       }
@@ -3374,7 +3391,7 @@ export function dispatchSupervisionClue(ctx, clueId, input = {}) {
 
   const poolPrefix = clue.pool_id === 'suqian' ? '宿' : '苏'
   const year = new Date().getFullYear()
-  const orderNum = String(Math.floor(10 + Math.random() * 90))
+  const orderNum = String(10 + (Number(serialSuffix('dispatch:' + clue.clue_id).slice(-2), 36) % 90))
   const orderNo = `${poolPrefix}医保长护督字〔${year}〕第${orderNum}号`
 
   clue.status = 'dispatched'
@@ -3447,7 +3464,7 @@ export function adjudicateSupervisionClue(ctx, clueId, input = {}) {
 
   const poolPrefix = clue.pool_id === 'suqian' ? '宿' : '苏'
   const year = new Date().getFullYear()
-  const docNo = `${poolPrefix}医保长护处字〔${year}〕第0${Math.floor(10 + Math.random() * 89)}号`
+  const docNo = `${poolPrefix}医保长护处字〔${year}〕第0${String(10 + (Number(serialSuffix('adjudication:' + clue.clue_id).slice(-2), 36) % 89))}号`
 
   clue.status = 'adjudicated'
   clue.adjudication = {
@@ -3831,8 +3848,8 @@ export function getSettlementVoucher(ctx, settlementId) {
       medical_org: isSq ? '宿迁市医疗保障局 / 宿迁长护险试点工作组' : '某某市医疗保障局 / 某某市长护险管理服务中心',
       medical_reviewed_by: ctx.username,
       medical_reviewed_at: nowIso8(),
-      auth_code: `AQ-LTC-SEC-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-      bank_batch_no: `BK-PAY-202609-${Math.floor(100000 + Math.random() * 900000)}`,
+      auth_code: `AQ-LTC-SEC-${serialSuffix('voucher:' + set.settlement_id)}`,
+      bank_batch_no: `BK-PAY-202609-${serialSuffix('bank:' + set.settlement_id).slice(0, 6)}`,
       seal_name: '医疗保障局·长护险统筹基金专用章（电子核准）',
       status: set.status === 'disbursed' ? 'disbursed' : 'generated',
     }
@@ -4694,7 +4711,7 @@ export function getWorkbenchWorkflowTree(ctx, query = {}) {
 
 function buildReceipt(objectId, stateVal, version, nextOwnerRole) {
   return {
-    receipt_id: 'RCPT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+    receipt_id: 'RCPT-' + serialSuffix(`receipt:${objectId}:${stateVal}:${version ?? 1}:${nextOwnerRole || ''}`),
     object_id: objectId,
     state: stateVal,
     version: version ?? 1,
@@ -5292,7 +5309,7 @@ function findDeviceAsset(deviceId) {
 
 function pushDeviceLifecycleLog(device, fromStatus, toStatus, ctx, remark) {
   DEVICE_LIFECYCLE_LOGS.push({
-    log_id: 'LOG-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+    log_id: 'LOG-' + serialSuffix(`lifecycle:${device.device_id || device.sn}:${fromStatus}:${toStatus}:${DEVICE_LIFECYCLE_LOGS.length + 1}`),
     device_id: device.device_id || device.sn,
     from_status: fromStatus,
     to_status: toStatus,
@@ -5376,7 +5393,7 @@ export function createDeviceAssignment(ctx, body = {}) {
     throw new LtcError(409, '该设备已分配至该角色群')
   }
   const assignment = {
-    assignment_id: 'DA-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+    assignment_id: 'DA-' + serialSuffix(`assignment:${deviceId}:${roleGroup}:${store.length + 1}`),
     device_id: deviceId,
     role_group: roleGroup,
     assigned_by: ctx.account_id || ctx.username,

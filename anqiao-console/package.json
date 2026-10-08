@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "server": "node server/index.js",
     "backup:sqlite": "node server/backup-sqlite.mjs",
-    "test": "node --test --test-concurrency=1 server/test-ltc.mjs server/test-account-matrix.mjs server/test-device-crud.mjs server/test-device-assignment.mjs server/test-device-ltc.mjs server/test-phase-c.mjs server/test-phase-d.mjs server/test-real-devices-seed.mjs server/test-workbench.mjs server/test-workbench-workflow-tree.mjs server/test-workbench-sop-studio.mjs server/test-medical-supervision.mjs server/test-insurer-operations.mjs server/test-shared-terminal-fsm.mjs server/test-hardware-product-matrix.mjs server/test-multi-vertical.mjs server/test-sales-view.mjs server/test-public-leads.mjs server/test-sim-telemetry.mjs"
+    "test": "node --test --test-concurrency=1 server/test-ltc.mjs server/test-account-matrix.mjs server/test-device-crud.mjs server/test-device-assignment.mjs server/test-device-ltc.mjs server/test-phase-c.mjs server/test-phase-d.mjs server/test-real-devices-seed.mjs server/test-workbench.mjs server/test-workbench-workflow-tree.mjs server/test-workbench-sop-studio.mjs server/test-medical-supervision.mjs server/test-insurer-operations.mjs server/test-shared-terminal-fsm.mjs server/test-hardware-product-matrix.mjs server/test-multi-vertical.mjs server/test-sales-view.mjs server/test-public-leads.mjs server/test-sim-telemetry.mjs server/test-seed-daily.mjs"
   },
   "dependencies": {
     "argon2": "^0.45.1",

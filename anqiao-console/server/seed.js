@@ -173,8 +173,25 @@ export function nowIso8() {
   return toIso8(new Date())
 }
 
-function todayStr8() {
+export function todayStr8() {
+  // TEST_FAKE_TODAY：仅测试用时钟注入（V11 模拟跨日不重启），生产不设置
+  if (process.env.TEST_FAKE_TODAY) return process.env.TEST_FAKE_TODAY
   return nowIso8().slice(0, 10)
+}
+
+// ---------- 按日种子（SIM-TELEMETRY-DESIGN §4.1）：日敏感数据源的唯一日期分量 ----------
+// 不含 Date.now()/Math.random；同日恒定、隔日换新。fnv1a 与 sim-telemetry.js 同算法（独立复制避免循环依赖）。
+function fnv1a(str) {
+  let h = 0x811c9dc5
+  for (let i = 0; i < String(str).length; i++) {
+    h ^= String(str).charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+
+export function dateSeed(dateStr) {
+  return fnv1a(String(dateStr || todayStr8()))
 }
 
 // ---------- 床位与楼层布局（康宁护理院 · 演示租户专用，虚构机构） ----------
@@ -364,7 +381,8 @@ function seededShuffle(arr, rnd) {
 }
 
 function buildAlerts(cfg) {
-  const rnd = mulberry32(cfg.seed ^ 0xa1e7)
+  // 按日种子（SIM-TELEMETRY-DESIGN §4.1）：结构随 cfg.seed 稳定，日期分量保证"每日重启自然换新、同日重启结果一致"
+  const rnd = mulberry32(cfg.seed ^ 0xa1e7 ^ dateSeed(todayStr8()))
   const today = todayStr8()
   const types = seededShuffle(cfg.alertTypes, rnd)
   const statuses = seededShuffle(cfg.alertStatuses, rnd)
@@ -1330,7 +1348,33 @@ const TENANT_DATA = {
 
 export const TENANT_IDS = Object.keys(TENANT_DATA)
 
+// ---------- 跨日锚点（SIM-TELEMETRY-DESIGN §4.1 / G1a）：按日惰性重建 ----------
+// 长运行跨天不重启时，seed 告警的 occurred_at 停在启动日（现状缺口）。
+// 读取路径 getTenantData 首次发现"数据面构建日 ≠ 今日"时，仅重建**日敏感**的告警面
+// （buildAlerts 按日种子 → 同日稳定、隔日换新）；床位/患者等结构数据不重建；
+// 处置状态（claimed/handled）不保留到重建——演示语义下"昨日处置"随昨日数据翻篇。
+// 结构数据与告警分离重建：patients 引用保持不变（WS 游走在原对象上继续演进）。
+const tenantBuildDate = new Map()
+for (const tid of Object.keys(TENANT_DATA)) tenantBuildDate.set(tid, todayStr8())
+
+function ensureDailyRefresh(tenantId) {
+  const d = TENANT_DATA[tenantId]
+  if (!d) return
+  const today = todayStr8()
+  if (tenantBuildDate.get(tenantId) === today) return
+  tenantBuildDate.set(tenantId, today)
+  if (d.cfg.kind === 'vendor') {
+    d.alerts = buildVendorAlerts(d.cfg)
+    d.liveAlertSeq = 0
+    return
+  }
+  if (!d.cfg.occupiedBeds) return // 监管/平台型租户无日敏感数据
+  d.alerts = buildAlerts(d.cfg)
+  d.liveAlertSeq = 0
+}
+
 export function getTenantData(tenantId) {
+  ensureDailyRefresh(tenantId)
   return TENANT_DATA[tenantId] ?? null
 }
 
@@ -1380,23 +1424,25 @@ export function registerTenant(tenantId, { name, vertical, template }) {
 export function computeOverview(tenantId) {
   const d = TENANT_DATA[tenantId]
   if (!d) return null
-  const { cfg, patients, alerts } = d
-  const closed = alerts.filter((a) => a.status === 'handled' || a.status === 'missed').length
+  const { cfg, patients = [], alerts = [] } = d
+  const pList = Array.isArray(patients) ? patients : []
+  const aList = Array.isArray(alerts) ? alerts : []
+  const closed = aList.filter((a) => a.status === 'handled' || a.status === 'missed').length
 
   // 厂商租户：自营设备聚合 + 覆盖城市数（按设备档案实际去重统计）
   if (cfg.kind === 'vendor') {
-    const devices = d.devices
+    const devices = Array.isArray(d.devices) ? d.devices : []
     const online = devices.filter((x) => x.online).length
     return {
       device_total: devices.length,
       device_online: online,
-      device_online_rate: Math.round((online / devices.length) * 1000) / 10,
+      device_online_rate: devices.length ? Math.round((online / devices.length) * 1000) / 10 : 0,
       patient_total: 0,
       patient_male: 0,
       patient_female: 0,
       bed_occupied: 0,
       bed_total: 0,
-      alerts_today: alerts.length,
+      alerts_today: aList.length,
       alerts_closed_today: closed,
       in_bed_count: 0,
       in_bed_rate: 0,
@@ -1405,21 +1451,50 @@ export function computeOverview(tenantId) {
     }
   }
 
-  const male = patients.filter((p) => p.gender === 'male').length
-  const inBed = patients.filter((p) => p.vitals.in_bed).length
+  // 宿迁医保 / 生态试点租户（无床位或轻量试点设备）
+  if (tenantId === 'bureau_suqian' || cfg.kind === 'medical_bureau' || cfg.vertical === 'ltc_ecosystem') {
+    const devTotal = cfg.deviceTotal ?? 3
+    const devOnline = cfg.deviceOnline ?? 3
+    const pTotal = pList.length > 0 ? pList.length : devTotal
+    const male = pList.filter((p) => p.gender === 'male').length
+    const occupied = Array.isArray(cfg.occupiedBeds) ? cfg.occupiedBeds.length : devTotal
+    return {
+      device_total: devTotal,
+      device_online: devOnline,
+      device_online_rate: devTotal ? Math.round((devOnline / devTotal) * 1000) / 10 : 100,
+      patient_total: pTotal,
+      patient_male: male || 1,
+      patient_female: Math.max(0, pTotal - (male || 1)),
+      bed_occupied: occupied,
+      bed_total: cfg.bedTotal ?? occupied,
+      alerts_today: aList.length,
+      alerts_closed_today: closed,
+      in_bed_count: 0,
+      in_bed_rate: 0,
+      city_count: 1,
+      generated_at: nowIso8(),
+    }
+  }
+
+  const occupiedBeds = Array.isArray(cfg.occupiedBeds) ? cfg.occupiedBeds : []
+  const male = pList.filter((p) => p.gender === 'male').length
+  const inBed = pList.filter((p) => p.vitals?.in_bed).length
+  const devTotal = cfg.deviceTotal ?? (Array.isArray(d.devices) ? d.devices.length : pList.length)
+  const devOnline = cfg.deviceOnline ?? (Array.isArray(d.devices) ? d.devices.filter((x) => x.online).length : devTotal)
+
   return {
-    device_total: cfg.deviceTotal,
-    device_online: cfg.deviceOnline,
-    device_online_rate: Math.round((cfg.deviceOnline / cfg.deviceTotal) * 1000) / 10,
-    patient_total: patients.length,
+    device_total: devTotal,
+    device_online: devOnline,
+    device_online_rate: devTotal ? Math.round((devOnline / devTotal) * 1000) / 10 : 0,
+    patient_total: pList.length,
     patient_male: male,
-    patient_female: patients.length - male,
-    bed_occupied: cfg.occupiedBeds.length,
-    bed_total: cfg.bedTotal,
-    alerts_today: alerts.length,
+    patient_female: Math.max(0, pList.length - male),
+    bed_occupied: occupiedBeds.length,
+    bed_total: cfg.bedTotal ?? occupiedBeds.length,
+    alerts_today: aList.length,
     alerts_closed_today: closed,
     in_bed_count: inBed,
-    in_bed_rate: Math.round((inBed / patients.length) * 1000) / 10,
+    in_bed_rate: pList.length ? Math.round((inBed / pList.length) * 1000) / 10 : 0,
     city_count: 1,
     generated_at: nowIso8(),
   }
@@ -1802,15 +1877,21 @@ export function getProjectConfig(tenantId) {
 }
 
 // ---------- WS 实时数据源 ----------
-// 体征随机游走：在前值附近小幅波动，返回变更payload（契约 §4 vitals 事件形状）
+// 体征随机游走（SIM-TELEMETRY-DESIGN §4.2）：Math.random → 按（租户, 当日）种子的确定序列，
+// walkSeq 进程内递增。单进程内按确定序列演进（直播感保留）；重启后回到当日第 0 步重新走。
+const walkSeqByTenant = new Map()
+
 export function walkVitals(tenantId) {
   const d = TENANT_DATA[tenantId]
-  if (!d || d.patients.length === 0) return []
-  const rnd = Math.random
+  if (!d || !Array.isArray(d.patients) || d.patients.length === 0) return []
+  const seq = walkSeqByTenant.get(tenantId) || 0
+  walkSeqByTenant.set(tenantId, seq + 1)
+  const rnd = mulberry32((dateSeed(todayStr8()) ^ fnv1a(tenantId) ^ Math.imul(seq + 1, 0x9e3779b1)) >>> 0)
   const picks = 1 + Math.floor(rnd() * 3)
   const updates = []
   for (let k = 0; k < picks; k++) {
     const p = d.patients[Math.floor(rnd() * d.patients.length)]
+    if (!p || !p.vitals) continue
     p.vitals.hr = Math.min(120, Math.max(50, p.vitals.hr + Math.round((rnd() - 0.5) * 4)))
     p.vitals.br = Math.min(28, Math.max(10, p.vitals.br + Math.round((rnd() - 0.5) * 2)))
     p.vitals.tp = Math.min(38, Math.max(35.8, Math.round((p.vitals.tp + (rnd() - 0.5) * 0.2) * 10) / 10))
@@ -1822,17 +1903,21 @@ export function walkVitals(tenantId) {
 }
 
 // 生成一条新告警并真正插入租户告警数据（REST /v1/alerts 可查），返回该告警
+// （SIM-TELEMETRY-DESIGN §4.2）：随机源接按日种子 + liveAlertSeq——同一步序号内容确定，
+// 内容/床位/类型由当日种子决定；空数据守卫（502 事故教训）保留不动。
 export function generateLiveAlert(tenantId) {
   const d = TENANT_DATA[tenantId]
   if (!d) return null
-  const rnd = Math.random
+  const rnd = mulberry32((dateSeed(todayStr8()) ^ fnv1a(tenantId) ^ Math.imul((d.liveAlertSeq || 0) + 1, 0x6d2b79f5)) >>> 0)
   const types = ['fall', 'off_bed', 'off_bed', 'hr', 'hr', 'br', 'tp']
   const type = types[Math.floor(rnd() * types.length)]
   const def = ALERT_TYPE_DEFS[type]
 
   // 厂商租户：设备维度告警（离线/数据中断），挂在真实在册 SN 上
   if (d.cfg.kind === 'vendor') {
-    const dev = d.devices[Math.floor(rnd() * d.devices.length)]
+    const devices = Array.isArray(d.devices) ? d.devices : []
+    if (devices.length === 0) return null
+    const dev = devices[Math.floor(rnd() * devices.length)]
     // 在线设备不产生离线类告警，降级为数据中断/抖动类事件，保持与在线状态自洽
     const vTypes = Object.keys(VENDOR_ALERT_DEFS)
     let vType = vTypes[Math.floor(rnd() * vTypes.length)]
@@ -1860,9 +1945,17 @@ export function generateLiveAlert(tenantId) {
     return alert
   }
 
-  const p = d.patients[Math.floor(rnd() * d.patients.length)]
+  // 机构照护/有长者的租户：必须有患者才生成床位/患者维度的实时告警；无患者的租户（如宿迁医保 bureau_suqian）直接返回 null
+  const patients = Array.isArray(d.patients) ? d.patients : []
+  if (patients.length === 0) {
+    return null
+  }
+
+  const p = patients[Math.floor(rnd() * patients.length)]
+  if (!p || !p.bed_id) return null
+
   const alert = {
-    alert_id: 'A' + String(d.cfg.alertIdBase + 1000 + d.liveAlertSeq++),
+    alert_id: 'A' + String((d.cfg.alertIdBase || 80000) + 1000 + d.liveAlertSeq++),
     bed_id: p.bed_id,
     patient_id: p.patient_id,
     type,
