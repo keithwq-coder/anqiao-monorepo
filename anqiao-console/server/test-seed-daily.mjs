@@ -11,6 +11,8 @@ const PORT = 2852
 const BASE = `http://127.0.0.1:${PORT}`
 const TOKEN_SECRET = 'test-seed-daily-secret'
 const SEED_PASS = 'seed-pass-123456'
+const TODAY = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10)
+const TOMORROW = new Date(Date.now() + 8 * 3600 * 1000 + 24 * 3600 * 1000).toISOString().slice(0, 10)
 
 let child
 let serverReady
@@ -99,9 +101,11 @@ test('V5 种子日稳定：同日跨进程告警集合一致，不同日重建�
   assert.equal(day1RunA, day1RunB, '同日两次独立进程（模拟重启）告警集合必须逐字段一致')
   assert.ok(day1RunA.length > 10, '康宁种子告警非空')
 
-  const day2 = await assertInChild('2026-10-09', code)
-  assert.notEqual(day2, day1RunA, '不同日期种子（2026-10-09）告警集合应不同')
-  assert.ok(day2.includes('2026-10-09'), '隔日告警 occurred_at 应锚定新日期')
+  // 注入日动态取「明日」：写死日期会在真实日历走到该日时假失败（2026-10-09 当天即撞车）
+  const tomorrow = new Date(Date.now() + 8 * 3600 * 1000 + 24 * 3600 * 1000).toISOString().slice(0, 10)
+  const day2 = await assertInChild(tomorrow, code)
+  assert.notEqual(day2, day1RunA, `不同日期种子（${tomorrow}）告警集合应不同`)
+  assert.ok(day2.includes(tomorrow), '隔日告警 occurred_at 应锚定新日期')
 })
 
 // ---------- V6 实时告警健壮性：502 守卫回归 + 内容由当日种子决定 ----------
@@ -132,29 +136,29 @@ test('V11 长运行跨日：时钟跨日后 getTenantData 惰性重建当日告�
     process.stdout.write('day1:' + sig1)
   `
   // 进程 A：D1 = 2026-10-08 启动（与真实今日相同的假日期）
-  const outD1 = await assertInChild('2026-10-08', code)
-  assert.ok(outD1.includes('2026-10-08'), 'D1 告警锚定 D1')
+  const outD1 = await assertInChild(new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10), code)
+  assert.ok(outD1.includes(TODAY), 'D1 告警锚定 D1')
 
   // 进程 B：直接以 D2 启动——模块加载即 D2，验证"隔天启动"数据换新
-  const outD2 = await assertInChild('2026-10-09', code)
-  assert.ok(outD2.includes('2026-10-09'), 'D2 启动告警锚定 D2')
+  const outD2 = await assertInChild(TOMORROW, code)
+  assert.ok(outD2.includes(TOMORROW), 'D2 启动告警锚定 D2')
 
   // 同进程惰性重建：模块加载于 D1，运行中把假时钟拨到 D2，再次读取触发重建
   const lazyCode = `
     const m = await import(${JSON.stringify(pathToFileURLStr(path.join(__dirname, 'seed.js')))});
     const d1 = m.getTenantData('kangning')
     const before = d1.alerts.map(a => a.occurred_at.slice(0, 10))
-    process.env.TEST_FAKE_TODAY = '2026-10-09' // 进程不重启，时钟跨日
+    process.env.TEST_FAKE_TODAY = ${JSON.stringify(TOMORROW)} // 进程不重启，时钟跨日
     const d2 = m.getTenantData('kangning') // 读取路径触发按日惰性重建
     const after = d2.alerts.map(a => a.occurred_at.slice(0, 10))
-    assert.ok(before.every(x => x === '2026-10-08'), '跨日前锚定 D1')
-    assert.ok(after.every(x => x === '2026-10-09'), '跨日后惰性重建为 D2 告警')
+    assert.ok(before.every(x => x === ${JSON.stringify(TODAY)}), '跨日前锚定 D1')
+    assert.ok(after.every(x => x === ${JSON.stringify(TOMORROW)}), '跨日后惰性重建为 D2 告警')
     assert.notEqual(JSON.stringify(before), JSON.stringify(after), '跨日告警集合换新')
     // 结构数据不重建：患者引用与长度不变
     assert.equal(d1.patients.length, d2.patients.length, '患者结构不重建')
     process.stdout.write('OK')
   `
-  const outLazy = await assertInChild('2026-10-08', lazyCode)
+  const outLazy = await assertInChild(TODAY, lazyCode)
   assert.ok(outLazy.endsWith('OK'), '长运行跨日惰性重建通过')
 })
 

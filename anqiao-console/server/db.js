@@ -129,6 +129,14 @@ async function ensureDb() {
           payload TEXT NOT NULL,
           updated_at TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS perm_groups (
+          group_id TEXT PRIMARY KEY,
+          tenant_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          codes TEXT NOT NULL DEFAULT '[]',
+          created_by TEXT NOT NULL DEFAULT '',
+          updated_at TEXT NOT NULL
+        );
       `)
       db.prepare("INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', '1')").run()
       migrateSqliteColumns(db)
@@ -224,6 +232,15 @@ async function ensureMysql() {
           payload MEDIUMTEXT NOT NULL,
           updated_at VARCHAR(40) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+      await mysqlPool.query(`
+        CREATE TABLE IF NOT EXISTS perm_groups (
+          group_id VARCHAR(64) NOT NULL PRIMARY KEY,
+          tenant_id VARCHAR(64) NOT NULL,
+          name VARCHAR(64) NOT NULL,
+          codes MEDIUMTEXT NOT NULL,
+          created_by VARCHAR(64) NOT NULL DEFAULT '',
+          updated_at VARCHAR(40) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
       await mysqlPool.query("INSERT IGNORE INTO meta (`key`, `value`) VALUES ('schema_version', '1')")
       await migrateMysqlColumns(mysqlPool).catch((err) => console.error('[db] mysql 列迁移失败:', err.message))
       return mysqlPool
@@ -284,6 +301,85 @@ export async function loadSaaSUsers() {
     return rows
   } catch (err) {
     console.error('[db] loadSaaSUsers failed:', err.message)
+    return []
+  }
+}
+
+// ---------- 权限组（N28 组 CRUD，租户私有自定义组）----------
+
+export async function savePermGroup(g) {
+  try {
+    const codes = JSON.stringify(Array.isArray(g.codes) ? g.codes : [])
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      d.prepare(`INSERT INTO perm_groups (group_id, tenant_id, name, codes, created_by, updated_at)
+        VALUES (?,?,?,?,?,?)
+        ON CONFLICT(group_id) DO UPDATE SET
+          name = excluded.name, codes = excluded.codes, updated_at = excluded.updated_at`)
+        .run(g.group_id, g.tenant_id, g.name, codes, g.created_by || '', now())
+      return true
+    }
+    const pool = await ensureMysql()
+    await pool.execute(
+      `INSERT INTO perm_groups (group_id, tenant_id, name, codes, created_by, updated_at)
+       VALUES (?,?,?,?,?,?)
+       ON DUPLICATE KEY UPDATE name = VALUES(name), codes = VALUES(codes), updated_at = VALUES(updated_at)`,
+      [g.group_id, g.tenant_id, g.name, codes, g.created_by || '', now()],
+    )
+    return true
+  } catch (err) {
+    console.error('[db] savePermGroup failed:', err.message)
+    return false
+  }
+}
+
+export async function loadPermGroups(tenantId = null) {
+  try {
+    let rows
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      if (tenantId) {
+        rows = d.prepare('SELECT * FROM perm_groups WHERE tenant_id = ? ORDER BY group_id').all(tenantId)
+      } else {
+        rows = d.prepare('SELECT * FROM perm_groups ORDER BY group_id').all()
+      }
+    } else {
+      const pool = await ensureMysql()
+      if (tenantId) {
+        ;[rows] = await pool.execute('SELECT * FROM perm_groups WHERE tenant_id = ? ORDER BY group_id', [tenantId])
+      } else {
+        ;[rows] = await pool.execute('SELECT * FROM perm_groups ORDER BY group_id')
+      }
+    }
+    return rows.map((r) => ({ ...r, codes: safeParseCodes(r.codes) }))
+  } catch (err) {
+    console.error('[db] loadPermGroups failed:', err.message)
+    return []
+  }
+}
+
+export async function deletePermGroup(groupId, tenantId) {
+  try {
+    if (dataLayerMode() === 'sqlite') {
+      const d = await ensureDb()
+      d.prepare('DELETE FROM perm_groups WHERE group_id = ? AND tenant_id = ?').run(groupId, tenantId)
+      return true
+    }
+    const pool = await ensureMysql()
+    await pool.execute('DELETE FROM perm_groups WHERE group_id = ? AND tenant_id = ?', [groupId, tenantId])
+    return true
+  } catch (err) {
+    console.error('[db] deletePermGroup failed:', err.message)
+    return false
+  }
+}
+
+function safeParseCodes(raw) {
+  if (Array.isArray(raw)) return raw
+  try {
+    const arr = JSON.parse(String(raw || '[]'))
+    return Array.isArray(arr) ? arr : []
+  } catch {
     return []
   }
 }

@@ -888,12 +888,23 @@
           <span class="font-bold">🔐 账号与权限管理</span>
           <span class="ml-3 text-xs text-muted">本组织账号均挂权限组（组即角色默认颗粒套餐），可对单个账号逐颗加开/关闭；改动保存后，目标账号重新登录或刷新会话生效。平台不提供伙伴自建账号。</span>
         </div>
+        <div class="group-bar mb-3">
+          <button class="btn btn-primary btn-sm" @click="openGroupCreate">＋ 新建权限组</button>
+          <span class="text-xs text-muted ml-2">自定义组：从 91 颗权限中勾选组合（如「值班组长」）；内置 51 组只读可挂不可改。</span>
+        </div>
+        <div v-if="customGroups.length" class="group-chip-row mb-3">
+          <span v-for="g in customGroups" :key="g.group_id" class="group-chip">
+            {{ g.name }} · {{ g.codes.length }}颗
+            <button class="chip-act" @click="openGroupEdit(g)">改</button>
+            <button class="chip-act chip-danger" @click="removeGroup(g)">删</button>
+          </span>
+        </div>
         <table class="data-table">
           <thead>
             <tr>
               <th>账号</th>
               <th>姓名/席位</th>
-              <th>权限组（角色）</th>
+              <th>所属组（可切换）</th>
               <th>工作台</th>
               <th>颗粒微调</th>
               <th>操作</th>
@@ -903,7 +914,12 @@
             <tr v-for="u in orgUsers" :key="u.username">
               <td class="font-mono text-primary font-bold">{{ u.username }}</td>
               <td>{{ u.display_name }}</td>
-              <td><span class="badge badge-purple text-xs">{{ u.role }}</span></td>
+              <td>
+                <select class="group-select" :value="u.role" @change="assignGroup(u.username, ($event.target as HTMLSelectElement).value)">
+                  <option v-for="opt in groupOptions()" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                  <option v-if="!groupOptions().some((o) => o.value === u.role)" :value="u.role">{{ u.role }}（当前）</option>
+                </select>
+              </td>
               <td class="text-xs text-muted font-mono">{{ u.workspace }}</td>
               <td>
                 <span v-if="u.granted_perms.length || u.revoked_perms.length" class="badge badge-info text-xs">
@@ -939,6 +955,30 @@
           </tbody>
         </table>
       </template>
+
+      <!-- 组编辑器 -->
+      <div v-if="showGroupEditor" class="modal-backdrop" @click="showGroupEditor = false">
+        <div class="modal-dialog" @click.stop>
+          <div class="modal-title font-bold">{{ editingGroupId ? '编辑权限组' : '新建权限组' }}</div>
+          <div class="mb-3">
+            <input v-model="groupDraftName" class="input" placeholder="组名（如：值班组长）" maxlength="40" />
+          </div>
+          <div class="perm-matrix">
+            <button
+              v-for="code in permCatalog"
+              :key="code"
+              :class="['perm-chip', groupDraftCodes.includes(code) && 'granted']"
+              @click="toggleGroupCode(code)"
+            >
+              {{ code }}
+            </button>
+          </div>
+          <div class="mt-3 text-right">
+            <button class="btn btn-sm" @click="showGroupEditor = false">取消</button>
+            <button class="btn btn-primary btn-sm ml-2" @click="saveGroupDraft">保存</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== 长者全景健康档案弹窗 ==================== -->
@@ -1045,7 +1085,7 @@
 <script setup lang="ts">
 import InstitutionLtcEntry from '../../../features/ltc-workbench/pages/InstitutionLtcEntry.vue'
 import { ref, onMounted, computed } from 'vue'
-import { getOverview, getPatients, getAlerts, getOrgUsers, getPermissionCatalog, patchOrgUser, type OrgUserRow } from '../../../api/client'
+import { getOverview, getPatients, getAlerts, getOrgUsers, getPermissionCatalog, patchOrgUser, getPermGroups, createPermGroup, patchPermGroup, deletePermGroup, type OrgUserRow, type PermGroup } from '../../../api/client'
 import { useOrgIdentity } from '../../../features/ltc-workbench/org-identity'
 import type { Overview, Patient, Alert } from '../../../api/types'
 
@@ -1127,6 +1167,98 @@ async function resetUserPerms(username: string) {
   } catch (e: any) {
     showToast(e?.message || '重置失败')
   }
+}
+
+// ---- N28a 自定义权限组（组 CRUD + 账号换组）----
+const builtinGroups = ref<PermGroup[]>([])
+const customGroups = ref<PermGroup[]>([])
+const groupsLoading = ref(false)
+const showGroupEditor = ref(false)
+const editingGroupId = ref<string | null>(null)
+const groupDraftName = ref('')
+const groupDraftCodes = ref<string[]>([])
+
+async function loadPermGroupsUI() {
+  groupsLoading.value = true
+  try {
+    const resp = await getPermGroups()
+    builtinGroups.value = resp.builtin
+    customGroups.value = resp.custom
+  } catch {
+    showToast('权限组加载失败')
+  } finally {
+    groupsLoading.value = false
+  }
+}
+
+async function loadAccountsTab() {
+  await Promise.all([loadOrgUsers(), loadPermGroupsUI()])
+}
+
+function openGroupCreate() {
+  editingGroupId.value = null
+  groupDraftName.value = ''
+  groupDraftCodes.value = []
+  showGroupEditor.value = true
+}
+
+function openGroupEdit(g: PermGroup) {
+  editingGroupId.value = g.group_id
+  groupDraftName.value = g.name
+  groupDraftCodes.value = [...g.codes]
+  showGroupEditor.value = true
+}
+
+function toggleGroupCode(code: string) {
+  const s = new Set(groupDraftCodes.value)
+  if (s.has(code)) s.delete(code)
+  else s.add(code)
+  groupDraftCodes.value = [...s]
+}
+
+async function saveGroupDraft() {
+  if (!groupDraftName.value.trim()) { showToast('组名必填'); return }
+  try {
+    if (editingGroupId.value) {
+      await patchPermGroup(editingGroupId.value, { name: groupDraftName.value.trim(), codes: groupDraftCodes.value })
+      showToast('组已更新')
+    } else {
+      const created = await createPermGroup({ name: groupDraftName.value.trim(), codes: groupDraftCodes.value })
+      showToast(`组已创建：${created.name}`)
+    }
+    showGroupEditor.value = false
+    await loadPermGroupsUI()
+  } catch (e: any) {
+    showToast(e?.message || '组保存失败')
+  }
+}
+
+async function removeGroup(g: PermGroup) {
+  try {
+    await deletePermGroup(g.group_id)
+    showToast(`组「${g.name}」已删除`)
+    await loadPermGroupsUI()
+  } catch (e: any) {
+    showToast(e?.message || '删除失败（组仍被账号引用）')
+  }
+}
+
+/** 账号换组：内置组用组键，自定义组用 custom:<id>；换组自动清空旧微调 */
+async function assignGroup(username: string, groupKey: string) {
+  try {
+    await patchOrgUser(username, { group: groupKey })
+    showToast(`${username} 已换组（旧颗粒微调已清空）`)
+    await loadOrgUsers()
+  } catch (e: any) {
+    showToast(e?.message || '换组失败')
+  }
+}
+
+function groupOptions() {
+  return [
+    ...builtinGroups.value.map((g) => ({ value: g.group_id, label: `${g.name}（内置）` })),
+    ...customGroups.value.map((g) => ({ value: `custom:${g.group_id}`, label: `${g.name}（自定义）` })),
+  ]
 }
 
 const filterFloor = ref('')
@@ -1327,7 +1459,7 @@ function exportInstitutionalReport() {
 }
 
 onMounted(() => {
-  void loadOrgUsers()
+  void loadAccountsTab()
   loadData()
 })
 </script>
@@ -1597,6 +1729,12 @@ onMounted(() => {
 }
 
 .perm-matrix-cell { background: rgba(255,255,255,0.02); }
+.group-bar { display: flex; align-items: center; }
+.group-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.group-chip { border: 1px solid rgba(139,92,246,0.4); border-radius: 8px; padding: 2px 8px; font-size: 12px; }
+.chip-act { border: none; background: none; cursor: pointer; color: var(--primary, #6366f1); font-size: 11px; }
+.chip-danger { color: #ef4444; }
+.group-select { font-size: 12px; padding: 2px 4px; background: transparent; color: inherit; border: 1px solid var(--border, #d0d7de); border-radius: 4px; max-width: 160px; }
 .perm-matrix { display: flex; flex-wrap: wrap; gap: 6px; max-width: 960px; }
 .perm-chip {
   border: 1px solid var(--border, #d0d7de); border-radius: 999px; padding: 2px 10px;

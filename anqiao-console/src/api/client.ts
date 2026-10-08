@@ -686,9 +686,22 @@ export interface OrgUsersResp {
 
 export interface OrgUserPatchResp {
   username: string
+  role?: string
   granted_perms: string[]
   revoked_perms: string[]
   permissions: string[]
+}
+
+export interface PermGroup {
+  group_id: string
+  name: string
+  codes: string[]
+  builtin: boolean
+}
+
+export interface PermGroupsResp {
+  builtin: PermGroup[]
+  custom: PermGroup[]
 }
 
 /** 本租户账号列表（含每人组归属与颗粒覆盖明细） */
@@ -696,15 +709,35 @@ export function getOrgUsers(): Promise<OrgUsersResp> {
   return http.get<OrgUsersResp>('/v1/org/users')
 }
 
+/** 权限组列表（内置只读组 + 本租户自定义组） */
+export function getPermGroups(): Promise<PermGroupsResp> {
+  return http.get<PermGroupsResp>('/v1/org/perm-groups')
+}
+
+/** 新建本租户自定义权限组 */
+export function createPermGroup(input: { name: string; codes: string[] }): Promise<PermGroup> {
+  return http.post<PermGroup>('/v1/org/perm-groups', input)
+}
+
+/** 修改自定义权限组（名称或权限颗粒） */
+export function patchPermGroup(groupId: string, input: { name?: string; codes?: string[] }): Promise<PermGroup> {
+  return http.patch<PermGroup>(`/v1/org/perm-groups/${encodeURIComponent(groupId)}`, input)
+}
+
+/** 删除自定义权限组（无账号引用时方可删除） */
+export function deletePermGroup(groupId: string): Promise<{ group_id: string; deleted: boolean }> {
+  return http.delete<{ group_id: string; deleted: boolean }>(`/v1/org/perm-groups/${encodeURIComponent(groupId)}`)
+}
+
 /** 权限颗粒目录（全量可开关清单） */
 export function getPermissionCatalog(): Promise<{ codes: string[] }> {
   return http.get<{ codes: string[] }>('/v1/org/permission-catalog')
 }
 
-/** 账号颗粒微调（granted/revoked 传全量数组；reset_perms 一键回组默认；new_password 重置口令） */
+/** 账号颗粒微调与换组（group 传内置组键或 custom:<id>；granted/revoked 传全量数组；reset_perms 一键回组默认；new_password 重置口令） */
 export function patchOrgUser(
   username: string,
-  body: { granted_perms?: string[]; revoked_perms?: string[]; reset_perms?: boolean; new_password?: string },
+  body: { group?: string; granted_perms?: string[]; revoked_perms?: string[]; reset_perms?: boolean; new_password?: string },
 ): Promise<OrgUserPatchResp> {
   return http.patch<OrgUserPatchResp>(`/v1/org/users/${encodeURIComponent(username)}`, body)
 }
@@ -720,4 +753,9 @@ export function getAuthSession(): Promise<{
   revoked_perms: string[]
 }> {
   return http.get('/v1/auth/session')
+}
+
+/** 账号换组（内置组键或 custom:<group_id>；换组自动清空旧微调） */
+export function assignOrgUserGroup(username: string, group: string): Promise<OrgUserPatchResp> {
+  return http.patch<OrgUserPatchResp>(`/v1/org/users/${encodeURIComponent(username)}`, { group })
 }

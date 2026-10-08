@@ -217,3 +217,129 @@ test('挂载自检：本文件已在 npm test 显式清单中', () => {
   const pkg = JSON.parse(readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'))
   assert.match(pkg.scripts.test, /test-perm-engine\.mjs/, 'package.json test script 必须包含 test-perm-engine.mjs')
 })
+
+// ---------- G1 建组：admin 新建自定义组，颗粒须全集内 ----------
+test('G1 建组：POST /v1/org/perm-groups → 200；未知颗粒 400；与内置组键同名 400', async () => {
+  const admin = await login('kangning_admin')
+  const created = await postJson('/v1/org/perm-groups', { name: '值班组长', codes: ['patient:read', 'alert:read', 'shift:write'] }, admin.token)
+  assert.equal(created.code, 200, JSON.stringify(created))
+  assert.ok(created.data.group_id.startsWith('pg_'), '组 id 约定 pg_ 前缀')
+
+  const badCodes = await postJson('/v1/org/perm-groups', { name: '坏组', codes: ['bogus:x'] }, admin.token)
+  assert.equal(badCodes.code, 400)
+
+  const clash = await postJson('/v1/org/perm-groups', { name: 'nursing_nurse', codes: ['patient:read'] }, admin.token)
+  assert.equal(clash.code, 400, '与内置组键同名必须 400')
+
+  // 护士无 user:manage → 403
+  const nurse = await login('kangning_nurse')
+  const denied = await postJson('/v1/org/perm-groups', { name: 'x', codes: ['patient:read'] }, nurse.token)
+  assert.equal(denied.code, 403)
+})
+
+// ---------- G2 换组：账号挂 custom 组，重登后权限 = 组颗粒 ----------
+test('G2 换组：PATCH 账号 group=custom:<id> → 生效权限 = 组 codes；换组清空旧微调', async () => {
+  const admin = await login('kangning_admin')
+  const created = await postJson('/v1/org/perm-groups', { name: 'G2 组', codes: ['patient:read', 'overview:read'] }, admin.token)
+  assert.equal(created.code, 200)
+  const gid = created.data.group_id
+
+  // 先给护士留一笔微调（换组应清空）
+  await patchJson('/v1/org/users/kangning_nurse', { granted_perms: ['report:read'] }, admin.token)
+
+  const assigned = await patchJson('/v1/org/users/kangning_nurse', { group: `custom:${gid}` }, admin.token)
+  assert.equal(assigned.code, 200, JSON.stringify(assigned))
+  assert.deepEqual([...assigned.data.permissions].sort(), ['overview:read', 'patient:read'])
+
+  const session = await getJson('/v1/auth/session', (await login('kangning_nurse')).token)
+  assert.deepEqual([...session.data.permissions].sort(), ['overview:read', 'patient:read'])
+
+  // 挂不存在的 custom 组 → 404
+  const ghost = await patchJson('/v1/org/users/kangning_nurse', { group: 'custom:pg_nope' }, admin.token)
+  assert.equal(ghost.code, 404)
+
+  // 挂未知内置键 → 400
+  const badKey = await patchJson('/v1/org/users/kangning_nurse', { group: 'not_a_group' }, admin.token)
+  assert.equal(badKey.code, 400)
+})
+
+// ---------- G3 改组：改组颗粒后，挂组账号权限随组实时变 ----------
+test('G3 改组：PATCH 组 codes → 挂组账号无需操作权限即变', async () => {
+  const admin = await login('kangning_admin')
+  const created = await postJson('/v1/org/perm-groups', { name: 'G3 组', codes: ['patient:read'] }, admin.token)
+  const gid = created.data.group_id
+  await patchJson('/v1/org/users/kangning_dossier', { group: `custom:${gid}` }, admin.token)
+
+  const updated = await patchJson(`/v1/org/perm-groups/${gid}`, { codes: ['patient:read', 'alert:claim'] }, admin.token)
+  assert.equal(updated.code, 200)
+
+  const session = await getJson('/v1/auth/session', (await login('kangning_dossier')).token)
+  assert.ok(session.data.permissions.includes('alert:claim'), '改组后挂组账号实时获得新颗粒')
+})
+
+// ---------- G4 删组：被引用拒删（400），解除引用后可删 ----------
+test('G4 删组：引用检查 → 400；换出后 → 200；内置组 DELETE 403', async () => {
+  const admin = await login('kangning_admin')
+  const created = await postJson('/v1/org/perm-groups', { name: 'G4 组', codes: ['patient:read'] }, admin.token)
+  const gid = created.data.group_id
+  await patchJson('/v1/org/users/kangning_caregiver', { group: `custom:${gid}` }, admin.token)
+
+  const refused = await fetch(`${BASE}/v1/org/perm-groups/${gid}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${admin.token}` },
+  })
+  assert.equal((await refused.json()).code, 400, '被引用组删除必须 400')
+
+  await patchJson('/v1/org/users/kangning_caregiver', { group: 'nursing_caregiver' }, admin.token)
+  const removed = await fetch(`${BASE}/v1/org/perm-groups/${gid}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${admin.token}` },
+  })
+  assert.equal((await removed.json()).code, 200)
+
+  // 内置组 DELETE → 403
+  const builtinTry = await fetch(`${BASE}/v1/org/perm-groups/nursing_nurse`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${admin.token}` },
+  })
+  assert.equal((await builtinTry.json()).code, 403, '内置组运行时不可删')
+})
+
+// ---------- G5 跨租户组隔离：康宁建组，伙伴沙箱不可见/不可改 ----------
+test('G5 组租户隔离：A 租户的组对 B 租户不可见且不可改删', async () => {
+  const admin = await login('kangning_admin')
+  const created = await postJson('/v1/org/perm-groups', { name: '康宁专属组', codes: ['patient:read'] }, admin.token)
+  const gid = created.data.group_id
+
+  // 伙伴沙箱视角：GET 不含康宁的组
+  const su = await login('su01')
+  await postJson('/v1/admin/tenants', {
+    tenant_id: 'partner_perm_g5',
+    name: 'G5 隔离验证机构',
+    vertical: 'nursing_home',
+    partner_sandbox: { sim_device_count: 1 },
+  }, su.token)
+  const partnerAdmin = await login('partner_perm_g5_admin')
+  const groups = await getJson('/v1/org/perm-groups', partnerAdmin.token)
+  assert.equal(groups.code, 200)
+  assert.ok(!groups.data.custom.some((g) => g.group_id === gid), '康宁自定义组不得出现在伙伴租户组表')
+
+  // 伙伴改/删康宁的组 → 404
+  const patchTry = await patchJson(`/v1/org/perm-groups/${gid}`, { name: '劫持' }, partnerAdmin.token)
+  assert.equal(patchTry.code, 404)
+  const delTry = await fetch(`${BASE}/v1/org/perm-groups/${gid}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${partnerAdmin.token}` },
+  })
+  assert.equal((await delTry.json()).code, 404)
+
+  // 清理：把引用该组的康宁账号换回内置组再删组（G4 建立的组已在 G4 删）
+  const knUsers = await getJson('/v1/org/users', admin.token)
+  for (const u of knUsers.data.list) {
+    if (u.role === `custom:${gid}`) await patchJson(`/v1/org/users/${u.username}`, { group: 'nursing_admin' }, admin.token)
+  }
+  await fetch(`${BASE}/v1/org/perm-groups/${gid}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${admin.token}` },
+  })
+})

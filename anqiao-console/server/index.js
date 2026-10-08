@@ -53,6 +53,9 @@ import {
   saveSaaSUser,
   loadSaaSUsers,
   saveDeviceRegistry,
+  savePermGroup,
+  loadPermGroups,
+  deletePermGroup,
   deleteSaaSUser,
 } from './db.js'
 import {
@@ -92,6 +95,8 @@ import {
   authorize,
   effectivePermissionsOf,
   ALL_PERMISSION_CODES,
+  registerCustomGroupLookup,
+  ROLE_PERMISSIONS,
   createDeviceAsset,
   updateDeviceAsset,
   deleteDeviceAsset,
@@ -290,6 +295,42 @@ async function ensureSaasAccounts() {
   }
 }
 await ensureSaasAccounts()
+
+// ---------- N28 自定义权限组：启动加载全库组表并注入引擎解析器 ----------
+// 组键约定 custom:<group_id>；租户私有隔离在 CRUD 守卫层做，group_id 全局唯一。
+const permGroupsById = new Map()
+let permGroupsLoaded = false
+
+async function loadAllPermGroups() {
+  permGroupsById.clear()
+  if (!['sqlite', 'mysql'].includes(dataLayerMode())) {
+    permGroupsLoaded = true
+    return
+  }
+  try {
+    const rows = await loadPermGroups()
+    for (const r of rows) permGroupsById.set(r.group_id, r)
+  } catch (err) {
+    console.error('[server] perm_groups 加载失败（自定义组按空集处理）:', err.message)
+  }
+  permGroupsLoaded = true
+}
+
+registerCustomGroupLookup((groupKey) => {
+  const row = permGroupsById.get(String(groupKey).slice('custom:'.length))
+  if (!row) return null
+  let codes = row.codes
+  if (typeof codes === 'string') {
+    try {
+      codes = JSON.parse(codes)
+    } catch {
+      codes = []
+    }
+  }
+  return Array.isArray(codes) ? codes : []
+})
+
+await loadAllPermGroups()
 
 function persistTenantAlerts(tenantId) {
   const d = getTenantData(tenantId)
@@ -1787,6 +1828,69 @@ const server = http.createServer(async (req, res) => {
         if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
         return ok(res, { codes: ALL_PERMISSION_CODES })
       }
+
+      // ---------- N28a 权限组 CRUD（自定义组，租户私有）----------
+      // 守卫：user:manage + 组必须属本租户；内置组（auth.js ROLE_PERMISSIONS 键）只读不可增删改；
+      // 组名只是显示名，账号挂组靠 group_id（role 字段存 custom:<group_id> 或内置组键）。
+      if (path === '/v1/org/perm-groups' && ['GET', 'POST'].includes(method)) {
+        const authRes = authorize(authPayload, 'user:manage')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
+        if (method === 'GET') {
+          const rows = await loadPermGroups(authPayload.tenant_id)
+          return ok(res, {
+            builtin: Object.keys(ROLE_PERMISSIONS).map((k) => ({ group_id: k, name: k, codes: ROLE_PERMISSIONS[k], builtin: true })),
+            custom: rows.map((r) => ({ group_id: r.group_id, name: r.name, codes: r.codes, builtin: false })),
+          })
+        }
+        // POST 新建
+        const body = await readBody(req).catch(() => ({}))
+        const gName = String(body?.name || '').trim()
+        const gCodes = Array.isArray(body?.codes) ? body?.codes : null
+        if (!gName || gName.length > 40) return badRequest(res, '组名必填（≤40 字符）')
+        if (!gCodes) return badRequest(res, 'codes 必填（颗粒数组）')
+        const bad = gCodes.filter((c) => !ALL_PERMISSION_CODES.includes(c))
+        if (bad.length) return badRequest(res, `未知权限颗粒: ${bad.join(', ')}`)
+        if (Object.prototype.hasOwnProperty.call(ROLE_PERMISSIONS, gName)) {
+          return badRequest(res, '组名与内置组键冲突')
+        }
+        const groupId = 'pg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6)
+        const group = { group_id: groupId, tenant_id: authPayload.tenant_id, name: gName, codes: [...new Set(gCodes)], created_by: authPayload.username }
+        const saved = await savePermGroup(group)
+        if (!saved) return send(res, 500, 500, '组保存失败')
+        permGroupsById.set(groupId, { ...group, codes: JSON.stringify(group.codes) })
+        return ok(res, { group_id: groupId, name: gName, codes: group.codes, builtin: false })
+      }
+      const permGroupMatch = /^\/v1\/org\/perm-groups\/([A-Za-z0-9_-]+)$/.exec(path)
+      if (permGroupMatch && ['PATCH', 'DELETE'].includes(method)) {
+        const authRes = authorize(authPayload, 'user:manage')
+        if (!authRes.allow) return send(res, authRes.status, authRes.status, authRes.message)
+        const groupId = permGroupMatch[1]
+        if (Object.prototype.hasOwnProperty.call(ROLE_PERMISSIONS, groupId)) {
+          return send(res, 403, 403, '内置组只读（代码发版变更），不可运行时增删改')
+        }
+        const owned = (await loadPermGroups(authPayload.tenant_id)).find((g) => g.group_id === groupId)
+        if (!owned) return notFound(res, '权限组不存在')
+        if (method === 'DELETE') {
+          const refCount = ACCOUNTS.filter((a) => a.tenant_id === authPayload.tenant_id && a.role === `custom:${groupId}`).length
+          if (refCount > 0) return badRequest(res, `该组仍被 ${refCount} 个账号引用，先改挂其他组再删除`)
+          await deletePermGroup(groupId, authPayload.tenant_id)
+          permGroupsById.delete(groupId)
+          return ok(res, { group_id: groupId, deleted: true })
+        }
+        // PATCH 改名/改颗粒
+        const body = await readBody(req).catch(() => ({}))
+        const next = { ...owned }
+        if (typeof body?.name === 'string' && body.name.trim()) next.name = body.name.trim().slice(0, 40)
+        if (Array.isArray(body?.codes)) {
+          const bad = body.codes.filter((c) => !ALL_PERMISSION_CODES.includes(c))
+          if (bad.length) return badRequest(res, `未知权限颗粒: ${bad.join(', ')}`)
+          next.codes = [...new Set(body.codes)]
+        }
+        const saved = await savePermGroup({ ...next, created_by: owned.created_by })
+        if (!saved) return send(res, 500, 500, '组保存失败')
+        permGroupsById.set(groupId, { ...next, codes: JSON.stringify(next.codes) })
+        return ok(res, { group_id: groupId, name: next.name, codes: next.codes, builtin: false })
+      }
       const orgUserMatch = /^\/v1\/org\/users\/([A-Za-z0-9_-]+)$/.exec(path)
       if (orgUserMatch && method === 'PATCH') {
         const authRes = authorize(authPayload, 'user:manage')
@@ -1800,6 +1904,23 @@ const server = http.createServer(async (req, res) => {
           return send(res, 403, 403, '平台超管账号不受租户级微调约束')
         }
         const body = await readBody(req).catch(() => ({}))
+
+        // 换组（N28a）：group = 内置组键 或 custom:<group_id>（本租户自定义组）
+        if (typeof body.group === 'string' && body.group) {
+          const g = body.group
+          if (g.startsWith('custom:')) {
+            const gid = g.slice('custom:'.length)
+            const owned = (await loadPermGroups(target.tenant_id)).find((x) => x.group_id === gid)
+            if (!owned) return notFound(res, '自定义组不存在或不属本租户')
+          } else if (!Object.prototype.hasOwnProperty.call(ROLE_PERMISSIONS, g)) {
+            return badRequest(res, `未知组: ${g}`)
+          }
+          target.role = g
+          target.unified_role = g
+          // 换组后清空旧微调，避免跨组语义残留（组已换，旧覆盖不再有意义）
+          target.granted_perms = []
+          target.revoked_perms = []
+        }
 
         // 颗粒微调：只接受全集内的字符串；reset_perms 一键回组默认
         if (body.reset_perms) {
@@ -1835,6 +1956,7 @@ const server = http.createServer(async (req, res) => {
         })
         return ok(res, {
           username: target.username,
+          role: target.role,
           granted_perms: target.granted_perms,
           revoked_perms: target.revoked_perms,
           permissions: effectivePermissionsOf(target),

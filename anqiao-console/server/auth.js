@@ -478,9 +478,25 @@ function parsePermList(raw) {
  * account 可为 saas_users 行、内存 ACCOUNTS 实体或 principal（含 role 即可）。
  * su 组（'*' 通配）不适用微调——平台超管恒全权，任何 granted/revoked 对其无效。
  */
+/**
+ * 自定义组解析器注入点（N28 组 CRUD）：index.js 启动时注入
+ * lookupCustomGroup(groupKey) → codes[] | null（groupKey 形如 'custom:<group_id>'）。
+ * 无注入时（纯单元测试场景）自定义组键退化为空集，行为与内置组缺省一致。
+ */
+let customGroupLookup = null
+export function registerCustomGroupLookup(fn) {
+  customGroupLookup = typeof fn === 'function' ? fn : null
+}
+
+function groupPermsOf(role) {
+  const builtin = permissionsOf(role)
+  if (builtin.length || !String(role || '').startsWith('custom:')) return builtin
+  return customGroupLookup ? (customGroupLookup(role) ?? []) : []
+}
+
 export function effectivePermissionsOf(account) {
   const role = account?.role
-  const groupPerms = permissionsOf(role)
+  const groupPerms = groupPermsOf(role)
   if (groupPerms.includes('*')) return ['*']
   const granted = parsePermList(account?.granted_perms)
   const revoked = parsePermList(account?.revoked_perms)
@@ -493,10 +509,12 @@ export function effectivePermissionsOf(account) {
 }
 
 export function dataScopeOf(role) {
+  // 自定义组（custom:）：数据范围恒 org（租户内自定义组不引入跨租户/池语义）
   return ROLE_DATA_SCOPE_MAP[role] ?? 'org'
 }
 
 export function workspaceOf(role) {
+  // 自定义组（custom:）：工作台回退护理院管理台（沙箱账号主界面；custom 组不映射专属工作台）
   return ROLE_WORKSPACE_MAP[role] ?? WORKSPACES.NURSING_HOME_ADMIN
 }
 

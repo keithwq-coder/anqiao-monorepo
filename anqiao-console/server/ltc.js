@@ -63,6 +63,7 @@ import {
   authorize,
   effectivePermissionsOf,
   ALL_PERMISSION_CODES,
+  registerCustomGroupLookup,
 } from './auth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -76,7 +77,7 @@ export class LtcError extends Error {
   }
 }
 
-export { permissionsOf, dataScopeOf, workspaceOf, authorize, effectivePermissionsOf, ALL_PERMISSION_CODES }
+export { ROLE_PERMISSIONS, permissionsOf, dataScopeOf, workspaceOf, authorize, effectivePermissionsOf, ALL_PERMISSION_CODES, registerCustomGroupLookup }
 
 export const ROLES = [
   'su',
@@ -5675,6 +5676,7 @@ export function authorizedWorkspacesFor(role, account = null) {
     patient_dossier: ['patient_dossier', 'device_monitoring', 'reports_center'],
     reports_center: ['reports_center'],
   }
+  // 自定义组（custom:，N28 组 CRUD）：工作台回退护理院管理台（组定义只管颗粒，工作台不随组变）
   const list = extras[role] || [workspaceOf(role)]
   return list.filter((w, i, arr) => arr.indexOf(w) === i)
 }
